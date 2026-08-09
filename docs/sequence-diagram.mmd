@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Client as 浏览器
+    participant Router as Router
+    participant Controller as BookController
+    participant Service as BookQueryService
+    participant Repo as EbookRepository
+    participant DB as SQLite
+
+    Client->>Router: GET /api/books
+    Router->>Controller: listBooks(ctx)
+    Controller->>Service: getBookList()
+    Service->>Repo: findAll()
+    Repo->>DB: SELECT * FROM ebooks
+    DB-->>Repo: 原始数据
+    Repo-->>Service: [Ebook模型]
+    Service->>Service: 转换为DTO
+    Service-->>Controller: [BookDTO]
+    Controller->>Controller: 包装为 {success, data}
+    Controller-->>Router: ctx.body
+    Router-->>Client: 200 JSON

@@ -1,10 +1,6 @@
-node_modules/*
-UnitTest/*
-Data/*
-Debug/*
-
-
-Entity/version.json
-package-lock.json
-.vscode/settings.json
-UserConfig.json
+node_modules/
+data/*.sqlite
+data/*.sqlite-journal
+config/local.js
+.env.local
+.DS_Store

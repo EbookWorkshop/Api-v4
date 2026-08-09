@@ -1,0 +1,47 @@
+classDiagram
+    class BookController {
+        -BookQueryService bookQueryService
+        +listBooks(ctx)
+    }
+
+    class BookQueryService {
+        -EbookRepository ebookRepository
+        +getBookList() List~BookDTO~
+    }
+
+    class EbookRepository {
+        -SequelizeModel EbookModel
+        +findAll() List~Ebook~
+        +findById(id)
+        +bulkCreate(data)
+    }
+
+    class EbookEntity {
+        +id
+        +BookName
+        +Author
+        +Hotness
+    }
+
+    class ConfigLoader {
+        -env
+        -configDir
+        +load() Config
+    }
+
+    class DatabaseConnection {
+        +createDatabaseConnection(dbPath) Sequelize
+    }
+
+    class SystemCompositionRoot {
+        +assemble() App
+    }
+
+    SystemCompositionRoot --> BookController : injects
+    SystemCompositionRoot --> BookQueryService : injects
+    SystemCompositionRoot --> EbookRepository : injects
+    SystemCompositionRoot --> ConfigLoader : uses
+    BookController --> BookQueryService : depends
+    BookQueryService --> EbookRepository : depends
+    EbookRepository --> EbookEntity : maps
+    EbookRepository --> DatabaseConnection : uses

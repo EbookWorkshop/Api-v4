@@ -1,0 +1,10 @@
+node_modules/*
+UnitTest/*
+Data/*
+Debug/*
+
+
+Entity/version.json
+package-lock.json
+.vscode/settings.json
+UserConfig.json
