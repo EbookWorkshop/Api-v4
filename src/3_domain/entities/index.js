@@ -12,6 +12,7 @@ import ReviewRule from "./ReviewRule.js";
 import ReviewRuleUsing from "./ReviewRuleUsing.js";
 import ReviewDictionary from "./ReviewDictionary.js";
 import Tag from "./Tag.js"
+import Bookmark from './Bookmark.js';
 
 export const entityDefinitions = [
   Ebook,
@@ -28,4 +29,5 @@ export const entityDefinitions = [
   ReviewRuleUsing,
   ReviewDictionary,
   Tag,
+  Bookmark,
 ];
