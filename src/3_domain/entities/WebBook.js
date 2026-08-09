@@ -1,0 +1,22 @@
+import { DataTypes } from "sequelize";
+
+/**
+ * Webbook
+ * 网文配置
+ * 映射到 Entity/WebBook
+ * @param {*} sqlConnect 
+ * @returns 
+ */
+export default function (sqlConnect) {
+    return sqlConnect.define("WebBook", {
+        //默认用哪个网址——用于多来源的情景//需要改造
+        defaultIndex: { type: DataTypes.INTEGER, defaultValue: 0 },
+        //网文书名-网文识别合并的唯一标识   (不要改名)
+        WebBookName: { type: DataTypes.STRING(50), allowNull: false },
+        //是否自动获取内容
+        AutoSyncEnabled: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+        //是否检查章节重复
+        isCheckRepeat: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+        BookId: { type: DataTypes.INTEGER, allowNull: false },
+    });
+}

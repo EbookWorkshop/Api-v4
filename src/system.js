@@ -47,20 +47,20 @@ app.use(router.routes()).use(router.allowedMethods());
 
 // 10. 数据库同步与种子数据
 async function initializeDatabase() {
-  if (process.env.NODE_ENV === 'development') {
-    await sequelize.sync({ alter: true, force: true });
-    console.log('✅ 数据库表结构已同步 (development)');
+  // if (process.env.NODE_ENV === 'development') {
+  await sequelize.sync({ alter: true, force: true });
+  console.log('✅ 数据库表结构已同步 (development)');
 
-    const count = await ebookRepository.getModel().count();
-    if (count === 0) {
-      await ebookRepository.bulkCreate([
-        { BookName: '三体：黑暗森林', Author: '刘慈欣', Hotness: 98 },
-        { BookName: '银河系漫游指南', Author: '道格拉斯·亚当斯', Hotness: 85 },
-        { BookName: '代码大全', Author: '史蒂夫·迈克康奈尔', Hotness: 72 },
-      ]);
-      console.log('📚 已插入示例数据');
-    }
-  }
+  // const count = await ebookRepository.getModel().count();
+  // if (count === 0) {
+  //   await ebookRepository.bulkCreate([
+  //     { BookName: '三体：黑暗森林', Author: '刘慈欣', Hotness: 98 },
+  //     { BookName: '银河系漫游指南', Author: '道格拉斯·亚当斯', Hotness: 85 },
+  //     { BookName: '代码大全', Author: '史蒂夫·迈克康奈尔', Hotness: 72 },
+  //   ]);
+  //   console.log('📚 已插入示例数据');
+  // }
+  // }
 }
 
 export { app, config, initializeDatabase, sequelize };

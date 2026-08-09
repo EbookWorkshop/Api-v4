@@ -1,9 +1,9 @@
-# V2 Book Collector 架构蓝图 V2.5
+# V4 Book Collector 架构蓝图 V4.0
 
 ## 项目根目录
 
 ```
-v2-book-collector/
+Api-V4/
 │
 ├── config/                                 # 【配置目录】存放所有配置文件（与 src 平级）
 │   ├── default.js                          # 默认配置（所有环境继承，Git 提交）

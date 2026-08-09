@@ -1,7 +1,31 @@
-import defineEbookEntity from './EbookEntity.js';
-// 未来新增实体：import defineChapterEntity from './ChapterEntity.js';
+import Ebook from './Ebook.js';
+import EbookChapter from "./EbookChapter.js"
+import EbookTag from './EbookTag.js';
+import Volume from './Volume.js';
+import WebBook from "./WebBook.js";
+import WebBookChapter from './WebBookChapter.js';
+import WebBookIndexSourceURL from "./WebBookIndexSourceURL.js";
+import WebBookIndexURL from './WebBookIndexURL.js';
+import RuleForWeb from "./RuleForWeb.js";
+import SystemConfig from "./SystemConfig.js"
+import ReviewRule from "./ReviewRule.js";
+import ReviewRuleUsing from "./ReviewRuleUsing.js";
+import ReviewDictionary from "./ReviewDictionary.js";
+import Tag from "./Tag.js"
 
 export const entityDefinitions = [
-  defineEbookEntity,
-  // 新增实体时追加到这里
+  Ebook,
+  EbookChapter,
+  EbookTag,
+  Volume,
+  WebBook,
+  WebBookChapter,
+  WebBookIndexSourceURL,
+  WebBookIndexURL,
+  RuleForWeb,
+  SystemConfig,
+  ReviewRule,
+  ReviewRuleUsing,
+  ReviewDictionary,
+  Tag,
 ];
