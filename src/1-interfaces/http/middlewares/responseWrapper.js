@@ -13,6 +13,11 @@ export function createResponseWrapperMiddleware() {
       console.trace();
     }
 
+    if (ctx.body instanceof Promise) {
+      console.error("错误返回了未完成的Promise:", ctx.method, ctx.href)
+      ctx.body = await ctx.body;
+    }
+
     // 2. 拦截已经设置好的响应体
     // 仅处理成功的 2xx 响应，且 body 存在且未被显式跳过包装
     if (

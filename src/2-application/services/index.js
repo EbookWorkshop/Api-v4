@@ -5,14 +5,15 @@ import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
 import { FontService } from './FontService.js';
 import { BookDetailQueryService } from "./BookDetailQueryService.js";
+import { ChapterQueryService } from "./ChapterQueryService.js"
 
 export function createServices(repositories, config = {}) {
-  const { ebookRepository, tagRepository, systemConfigRepository } = repositories;
+  const { ebookRepository, tagRepository, systemConfigRepository, chapterRepository } = repositories;
   const bookDetailQueryService = new BookDetailQueryService(
     ebookRepository,
     repositories.volumeRepository,
     repositories.indexRepository,
-    repositories.chapterRepository
+    chapterRepository
   );
 
   // ========== 基础服务 ==========
@@ -35,5 +36,6 @@ export function createServices(repositories, config = {}) {
     tagQuery: new TagQueryService(tagRepository),
     systemConfig: systemConfigService,
     font: fontService,
+    chapterQuery: new ChapterQueryService(chapterRepository),
   };
 }

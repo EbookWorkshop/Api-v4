@@ -2,13 +2,23 @@ import { Op } from "sequelize";
 import { IntroductionName } from '../../3-domain/constants/BookConstants.js';
 export class ChapterRepository {
     #ChapterModel;
+    #EbookModel;
 
     constructor(sequelize) {
         this.#ChapterModel = sequelize.models.EbookChapter;
+        this.#EbookModel = sequelize.models.Ebook;
     }
 
-    async findAll(bookId) {
-        return
+    /**
+     * 找到具体章节
+     * @param {*} chapterId 
+     * @returns 
+     */
+    async findByPK(chapterId) {
+        return await this.#ChapterModel.findByPk(chapterId, {
+            include: [{ model: this.#EbookModel, as: "Ebook" }],
+            attributes: { include: [["id", "IndexId"]], exclude: ["id"] }
+        });
     }
 
     /**

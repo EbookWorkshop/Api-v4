@@ -1,8 +1,8 @@
 import Router from '@koa/router';
 import { createBookRoutes } from './bookRoutes.js';
+import { createChapterRoutes } from "./chapterRoutes.js";
 import { createTagRoutes } from './tagRoutes.js';
 import { createFontRoutes } from './fontRoutes.js';
-
 
 /**
  * 
@@ -16,6 +16,10 @@ export function createMainRouter(controllers) {
   const bookRouter = createBookRoutes(controllers.book);
   router.use(bookRouter.routes());
   router.use(bookRouter.allowedMethods());
+
+  const chapterRouter = createChapterRoutes(controllers.chapter);
+  router.use(chapterRouter.routes());
+  router.use(chapterRouter.allowedMethods());
 
   const tagRouter = createTagRoutes(controllers.tag);
   router.use(tagRouter.routes());
