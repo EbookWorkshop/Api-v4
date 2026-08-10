@@ -2,7 +2,7 @@
   "name": "ebook-api",
   "version": "4.0.0",
   "type": "module",
-  "description": "优雅分层架构的电子书采集系统 (V4)",
+  "description": "新分层架构的电子书管理系统 (V4)",
   "scripts": {
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",

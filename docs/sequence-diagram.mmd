@@ -1,20 +1,39 @@
 sequenceDiagram
     participant Client as 浏览器
+    participant MW as Middlewares
     participant Router as Router
     participant Controller as BookController
-    participant Service as BookQueryService
+    participant Query as BookQueryService
+    participant Command as BookCommandService
     participant Repo as EbookRepository
     participant DB as SQLite
 
-    Client->>Router: GET /api/books
+    Note over Client,DB: GET /api/books (查询)
+    Client->>MW: GET /api/books
+    MW->>Router: 路由匹配
     Router->>Controller: listBooks(ctx)
-    Controller->>Service: getBookList()
-    Service->>Repo: findAll()
+    Controller->>Query: getBookList()
+    Query->>Repo: findAll()
     Repo->>DB: SELECT * FROM ebooks
     DB-->>Repo: 原始数据
-    Repo-->>Service: [Ebook模型]
-    Service->>Service: 转换为DTO
-    Service-->>Controller: [BookDTO]
-    Controller->>Controller: 包装为 {success, data}
-    Controller-->>Router: ctx.body
-    Router-->>Client: 200 JSON
+    Repo-->>Query: [Ebook模型]
+    Query->>Query: 转换为DTO
+    Query-->>Controller: [BookDTO]
+    Controller-->>MW: ctx.body = data
+    MW->>MW: 包装为 {code,data,msg}
+    MW-->>Client: 200 JSON
+
+    Note over Client,DB: POST /api/books (写入)
+    Client->>MW: POST /api/books {bookName}
+    MW->>Router: 路由匹配
+    Router->>Controller: createBook(ctx)
+    Controller->>Command: createBook(bookDTO)
+    Command->>Command: 业务校验
+    Command->>Repo: create(rawData)
+    Repo->>DB: INSERT INTO ebooks
+    DB-->>Repo: 新记录
+    Repo-->>Command: 新Entity
+    Command-->>Controller: {id, bookName}
+    Controller-->>MW: ctx.status=201, body=data
+    MW->>MW: 包装为 {code,data,msg}
+    MW-->>Client: 201 JSON

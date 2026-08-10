@@ -6,9 +6,7 @@ await initializeDatabase();
 
 app.listen(PORT, () => {
   console.log(`🚀 服务器已启动: http://localhost:${PORT}`);
-  console.log(`📖 测试 API: http://localhost:${PORT}/api/books`);
-  console.log(`💚 健康检查: http://localhost:${PORT}/api/health`);
-  console.log(`⚙️  环境: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`⚙️ 配置环境: ${process.env.NODE_ENV || 'development'}`);
 });
 
 process.on('SIGTERM', () => {

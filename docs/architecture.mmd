@@ -3,28 +3,31 @@ flowchart TB
         User[浏览器 / 前端]
     end
 
-    subgraph Layer1["1_Interfaces（接口适配层）"]
+    subgraph Layer1["1-interfaces（接口适配层）"]
         Controller[BookController]
         Router[Router]
         DTO[DTOs]
+        Middlewares[Middlewares<br>Error/Logger/Wrapper]
     end
 
-    subgraph Layer2["2_Application（应用服务层）"]
-        Service[BookQueryService]
+    subgraph Layer2["2-application（应用服务层）"]
+        Query[BookQueryService]
+        Command[BookCommandService]
         Ports[Ports 抽象接口]
     end
 
-    subgraph Layer3["3_Domain（领域模型层）"]
+    subgraph Layer3["3-domain（领域模型层）"]
         Entity[EbookEntity]
+        Assoc[Associations]
     end
 
-    subgraph Layer4["4_Infrastructure（基础设施层）"]
+    subgraph Layer4["4-infrastructure（基础设施层）"]
         Repo[EbookRepository]
-        DB[DatabaseConnection]
+        DB[databaseConnection]
         Config[ConfigLoader]
     end
 
-    subgraph Layer5["5_Shared（共享工具层）"]
+    subgraph Layer5["5-shared（共享工具层）"]
         Errors[AppError]
     end
 
@@ -33,19 +36,21 @@ flowchart TB
     end
 
     User -->|HTTP| Router
-    Router --> Controller
-    Controller -->|调用| Service
-    Service -->|调用| Repo
+    Router -->|路由匹配| Controller
+    Controller -->|调用| Query
+    Controller -->|调用| Command
+    Query -->|调用| Repo
+    Command -->|调用| Repo
     Repo -->|使用| DB
     Repo -->|映射| Entity
-    Service -->|返回 DTO| DTO
+    Entity -->|引用| Assoc
     DI -->|组装| Controller
-    DI -->|组装| Service
+    DI -->|组装| Query
+    DI -->|组装| Command
     DI -->|组装| Repo
     DI -->|加载| Config
     Config -->|提供配置| DB
-    Controller -->|使用| Errors
-    Service -->|使用| Errors
+    Middlewares -.->|包裹| Router
 
     classDef outer fill:#e1f5fe,stroke:#01579b;
     classDef inner fill:#f3e5f5,stroke:#4a148c;

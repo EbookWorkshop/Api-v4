@@ -34,7 +34,7 @@ Api-V4/
 │
 ├── src/                                    # 【源码根目录】所有新代码
 │   │
-│   ├── 1_interfaces/                       # 【接口适配层】外部请求的入口与协议适配
+│   ├── 1-Taginterfaces/                       # 【接口适配层】外部请求的入口与协议适配
 │   │   ├── http/                           # HTTP 协议（Koa）
 │   │   │   ├── controllers/                # 职责：解析 ctx，调用 Service，封装 HTTP 响应。挂载 Swagger 注解。
 │   │   │   │   └── BookController.js
@@ -47,7 +47,7 @@ Api-V4/
 │   │   └── websocket/                      # WebSocket 协议（可选）
 │   │       └── SocketService.js            # 职责：处理 ws 连接，将消息转为内部命令
 │   │
-│   ├── 2_application/                      # 【应用服务层】业务用例编排（核心大脑）
+│   ├── 2-Tagapplication/                      # 【应用服务层】业务用例编排（核心大脑）
 │   │   ├── services/                       # 职责：实现具体业务用例（Use Cases）。编排 Repository 和 Ports。
 │   │   │   ├── BookQueryService.js         # 书籍查询用例（返回纯 DTO）
 │   │   │   ├── EpubImportService.js        # EPUB 一次性导入用例
@@ -58,16 +58,19 @@ Api-V4/
 │   │   └── ports/                          # 职责：定义抽象接口（依赖倒置原则）
 │   │       └── IChapterFetcher.js          # 抓取器抽象契约（Service 依赖抽象，而非具体实现）
 │   │
-│   ├── 3_domain/                           # 【领域模型层】纯数据结构（与技术无关）
+│   ├── 3-Tagdomain/                           # 【领域模型层】纯数据结构（与技术无关）
 │   │   ├── entities/                       # 职责：数据库表结构映射（Sequelize 定义）
 │   │   │   ├── index.js                    # 桶文件：显式导出所有实体定义函数（新增模型只改这里）
 │   │   │   ├── EbookEntity.js              # Ebook 表定义（仅字段、类型、关联）
 │   │   │   ├── ChapterEntity.js            # 章节表定义
 │   │   │   └── CollectionTaskEntity.js     # 采集任务进度表定义
+│   │   ├── associations/                   # 职责：模型关系定义
+│   │   │   ├── index.js                    # 核心：导出一个 setupAssociations 函数
+│   │   │   └── scope.js                    # 原 Scope 文件迁移至此（如果它定义了查询作用域）
 │   │   └── value-objects/                  # 职责：值对象（封装校验逻辑）
 │   │       └── ISBN.js                     # ISBN 校验与格式化（如需要）
 │   │
-│   ├── 4_infrastructure/                   # 【基础设施层】具体技术实现（可替换的细节）
+│   ├── 4-Taginfrastructure/                   # 【基础设施层】具体技术实现（可替换的细节）
 │   │   ├── config/                         # 职责：配置加载与管理
 │   │   │   └── ConfigLoader.js             # 多层配置合并器（default → env → local → 环境变量）
 │   │   ├── database/                       # 职责：数据库连接管理
@@ -95,7 +98,7 @@ Api-V4/
 │   │   └── server/                         # 职责：文件与目录工具（原 Server.js）
 │   │       └── FileSystemUtils.js          # 封装 fs 操作（递归创建目录、检查文件存在性）
 │   │
-│   ├── 5_shared/                           # 【共享工具层】跨层通用的零散工具
+│   ├── 5-Tagshared/                           # 【共享工具层】跨层通用的零散工具
 │   │   ├── errors/                         # 职责：自定义业务异常类
 │   │   │   ├── AppError.js                 # 基类（统一错误码处理）
 │   │   │   └── CollectionInterruptedError.js # 采集被用户手动终止的特定异常
@@ -122,26 +125,50 @@ Api-V4/
 
 | 原则 | 说明 |
 | :--- | :--- |
-| **依赖方向** | `1_Interfaces` → `2_Application` → `3_Domain` ← `4_Infrastructure`（内层绝不依赖外层） |
+| **依赖方向** | `1-TagInterfaces` → `2-TagApplication` → `3-TagDomain` ← `4-TagInfrastructure`（内层绝不依赖外层） |
 | **组合根唯一性** | 所有 `new` 操作只在 `src/system.js` 中出现，其他地方不得实例化 Service/Repository |
 | **显式优于隐式** | 模型注册（桶文件）、路由加载（聚合器）均显式声明，不采用文件扫描（除非特殊需求） |
 | **配置多层覆盖** | `default.js` → `{env}.js` → `local.js` → 环境变量（优先级递增） |
 | **DTO 与 ORM 隔离** | Controller/Service 只处理 DTO，ORM 模型仅限 Repository 内部使用 |
 | **Swagger 归属** | 注解写在 Controller 方法上，Schema 定义在 `http/dtos/` 目录中 |
 
+`入口(1) → 业务(2) → 核心(3) ← 技术实现(4)`
+
+*  `1-TagInterfaces` 是入口（最靠外）。
+*  `2-TagApplication` 编排业务（调用核心）。
+*  `3-TagDomain` 是核心实体（被所有层依赖，但因为它是定义，不是执行层，所以放在 3）。
+*  `4-TagInfrastructure` 是执行层（数据库、抓取器）。
 ---
 
 ## 扩展示例：如何新增一个功能模块？
 
 ### 1. 新增模型（如 `User`）
-- 在 `3_domain/entities/UserEntity.js` 定义 Sequelize 模型
-- 在 `3_domain/entities/index.js` 的 `entityDefinitions` 数组中追加导入
+- 在 `3-Tagdomain/entities/UserEntity.js` 定义 Sequelize 模型
+- 在 `3-Tagdomain/entities/index.js` 的 `entityDefinitions` 数组中追加导入
 
 ### 2. 新增路由
-- 在 `1_interfaces/http/routes/userRoutes.js` 定义子路由
-- 在 `1_interfaces/http/routes/index.js` 中显式导入并挂载
+- 在 `1-Taginterfaces/http/routes/userRoutes.js` 定义子路由
+- 在 `1-Taginterfaces/http/routes/index.js` 中显式导入并挂载
 
 ### 3. 新增接口
-- 在 `1_interfaces/http/dtos/` 定义请求/响应 Schema（含 Swagger）
-- 在 `1_interfaces/http/controllers/UserController.js` 新增方法，挂载 Swagger 注解
+- 在 `1-Taginterfaces/http/dtos/` 定义请求/响应 Schema（含 Swagger）
+- 在 `1-Taginterfaces/http/controllers/UserController.js` 新增方法，挂载 Swagger 注解
 - 在 `src/system.js` 中实例化 Controller，注入对应的 Service
+
+## 命名规范（项目标准）
+
+| 代码元素 | 命名风格（Case） | 示例 | 理由 |
+| :--- | :--- | :--- | :--- |
+| **目录 / 文件夹** | **`kebab-case`**（全小写，连字符分隔） | `1-interfaces`、`http`、`middlewares`、`database` | 1. Linux/Unix 系统区分大小写，全小写最安全。<br>2. `kebab-case` 是 npm 包和现代前端/Node 项目的通用标准（如 `@koa/router`）。<br>3. 避免与类名（大驼峰）混淆。 |
+| **JavaScript 文件（导出类）** | **`PascalCase`**（大驼峰） | `BookController.js`、`ConfigLoader.js`、`EbookEntity.js` | 类名与文件名严格对应，IDE 和 `import` 时一目了然。 |
+| **JavaScript 文件（导出函数/工具）** | **`camelCase`**（小驼峰） | `logger.js`、`errorHandler.js`、`databaseConnection.js` | 表明它不是一个“类实体”，而是一个“功能模块”。 |
+| **变量 / 函数 / 方法** | **`camelCase`**（小驼峰） | `getBookList()`、`bookQueryService` | JavaScript 语言标准风格（`Array.prototype.map`）。 |
+| **类名** | **`PascalCase`**（大驼峰） | `BookController`、`EbookRepository` | 类型与构造函数的标准标识。 |
+| **常量（硬编码值）** | **`UPPER_SNAKE_CASE`**（全大写，下划线） | `MAX_RETRY_TIMES`、`DEFAULT_PORT` | 一目了然区分“可变变量”与“固定常量”。 |
+| **数据库表名 / 字段名** | **`snake_case`**（全小写，下划线） | `ebooks`、`book_name`、`hotness` | Sequelize 官方推荐（配合 `underscored: true`），与 SQL 语法习惯对齐。 |
+
+### 为什么（类 vs 函数）？
+这是为了**通过“文件名”就能快速判断文件内容**，无需打开看代码：
+
+- 看到 `BookController.js`（大驼峰） → 立即知道里面是一个 `class BookController {}`。
+- 看到 `logger.js`（小驼峰） → 立即知道里面是一个 `function logger()` 或 `export const createLogger = () => {}`。

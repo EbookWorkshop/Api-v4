@@ -34,7 +34,7 @@ export class ConfigLoader {
       finalConfig = this.#deepMerge(finalConfig, mod.default || mod);
     }
 
-    // 合并 local.js (本地覆盖)
+    // 合并 local.js
     const localFile = path.join(this.configDir, 'local.js');
     if (fs.existsSync(localFile)) {
       const mod = await import(`${localFile}?t=${Date.now()}`);
@@ -43,6 +43,7 @@ export class ConfigLoader {
 
     // 环境变量覆盖
     finalConfig = this.#applyEnvOverrides(finalConfig);
+    finalConfig.env = this.env;
 
     return Object.freeze(finalConfig);
   }

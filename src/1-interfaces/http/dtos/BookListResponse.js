@@ -5,9 +5,9 @@
  *     BookListResponse:
  *       type: object
  *       properties:
- *         success:
- *           type: boolean
- *           example: true
+ *         code:
+ *           type: integer
+ *           example: 0
  *         data:
  *           type: array
  *           items:
@@ -24,7 +24,8 @@
  *               createdAt:
  *                 type: string
  *                 format: date-time
- *         total:
- *           type: integer
+ *         msg:
+ *           type: string
+ *           example: success
  */
 export class BookListResponse {}

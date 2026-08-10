@@ -1,5 +1,3 @@
-import { Op } from 'sequelize';
-
 export class EbookRepository {
   #EbookModel;
 
@@ -13,6 +11,10 @@ export class EbookRepository {
 
   async findById(id) {
     return await this.#EbookModel.findByPk(id);
+  }
+
+  async create(data) {
+    return await this.#EbookModel.create(data);
   }
 
   async bulkCreate(books) {
