@@ -23,7 +23,7 @@ export class BookDetailQueryService {
 
         // 组装成 DTO
         return {
-            ...ebook.dataValues,
+            ...ebook,
             Introduction: intro.Content,
             Index,
             Volumes,

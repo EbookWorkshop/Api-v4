@@ -16,9 +16,20 @@ export class ChapterRepository {
      */
     async findByPK(chapterId) {
         return await this.#ChapterModel.findByPk(chapterId, {
-            include: [{ model: this.#EbookModel, as: "Ebook" }],
             attributes: { include: [["id", "IndexId"]], exclude: ["id"] }
         });
+    }
+
+    /**
+     * 找到具体章节信息（含书本信息）
+     * @param {*} chapterId 
+     * @returns 
+     */
+    async findByPkWithEbook(chapterId) {
+        return (await this.#ChapterModel.findByPk(chapterId, {
+            include: [{ model: this.#EbookModel, as: "Ebook" }],
+            attributes: { include: [["id", "IndexId"]], exclude: ["id"] },
+        })).toJSON();
     }
 
     /**
@@ -34,4 +45,47 @@ export class ChapterRepository {
             attributes: ["Content"]
         });
     }
+
+
+
+
+    // const myModels = new Models();
+    // let chapter = await myModels.EbookIndex.findOne({
+    //     attributes: ["BookId", "OrderNum"],
+    //     where: { id: chapterId }
+    // });
+    // if (chapter == null) return null;
+
+    // let { OrderNum, BookId } = chapter.dataValues;
+    // let pre = await myModels.EbookIndex.findOne({
+    //     attributes: ["id"],
+    //     where: {
+    //         bookId: BookId,
+    //         OrderNum: {
+    //             [Models.Op.and]: [
+    //                 { [Models.Op.lt]: OrderNum },
+    //                 { [Models.Op.gt]: 0 }
+    //             ]
+    //         }
+    //     },
+    //     order: [
+    //         ["OrderNum", "DESC"]
+    //     ]
+    // });
+    // let next = await myModels.EbookIndex.findOne({
+    //     attributes: ["id"],
+    //     where: {
+    //         bookId: BookId,
+    //         OrderNum: {
+    //             [Models.Op.gt]: OrderNum
+    //         }
+    //     },
+    //     order: [
+    //         ["OrderNum", "ASC"]
+    //     ]
+    // });
+
+    // return { pre, next };
+
+
 }

@@ -18,12 +18,14 @@ export class ChapterQueryService {
      * @returns 
      */
     async getChapterById(chapterId) {
-        const cpt = await this.#chapterRepository.findByPK(chapterId);
-        const { Ebook, ...cp } = cpt.dataValues;
+        const cpt = await this.#chapterRepository.findByPkWithEbook(chapterId);
+        const { Ebook: book, ...chapter } = cpt;
         return {
-            Book: { "FontFamily": "", ...Ebook.dataValues },//TODO:修复FontFamily的耦合
-            ...cp
+            Book: { "FontFamily": "", ...book },//TODO:修复FontFamily的耦合
+            ...chapter
         }
     }
+
+
 
 }

@@ -12,23 +12,6 @@ export class BookQueryService {
   }
 
   async getBookList() {
-    const models = await this.#ebookRepository.findAll();
-    return models.map((model) => ({
-      BookId: model.id,
-      ...model.dataValues
-    }));
-  }
-
-  async getBook(bookId) {
-    const bookModel = await this.#ebookRepository.findById(bookId, false);
-    const { EbookChapter, id, ...tempBook } = bookModel.dataValues;
-    const introduction = await this.#ebookRepository.findIntroduction(bookId);
-
-    return {
-      BookId: id,
-      Index: EbookChapter,
-      Introduction: introduction?.Content,
-      ...tempBook
-    };
+    return await this.#ebookRepository.findAll();
   }
 }
