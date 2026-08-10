@@ -9,7 +9,7 @@ export function createResponseWrapperMiddleware() {
     try {
       await next();
     } catch (error) {
-      console.error("请求失败：", error);
+      console.error("接口请求失败：", error);
       console.trace();
     }
 

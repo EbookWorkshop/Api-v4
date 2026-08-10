@@ -1,8 +1,14 @@
+import { Op, where } from "sequelize";
+import { IntroductionName } from '../../3-domain/constants/BookConstants.js';
 export class EbookRepository {
   #EbookModel;
+  #ChapterModel;
+  #VolumeModel;
 
   constructor(sequelize) {
     this.#EbookModel = sequelize.models.Ebook;
+    this.#ChapterModel = sequelize.models.EbookChapter;
+    this.#VolumeModel = sequelize.models.Volume;
   }
 
   /**
@@ -14,17 +20,57 @@ export class EbookRepository {
     return await this.#EbookModel.findAll({ order: orderBy });
   }
 
-  async findById(id) {
-    return await this.#EbookModel.findByPk(id);
+  /**
+   * 获取书籍信息
+   * @param {number} id 书籍的ID
+   * @param {boolean} withContent 是否返回带书籍内容的
+   * @returns 
+   */
+  async findById(id, withContent) {
+    const attr = ["createdAt", "updatedAt", "id"];
+    const chapterScope = this.#ChapterModel.scope('withHasContent');
+    const scopeAttrs = chapterScope.options.scopes.withHasContent.attributes.include;
+    if (!withContent) attr.push('Content')
+    return await this.#EbookModel.findByPk(id, {
+      subQuery: false,
+      include: [{
+        model: chapterScope,
+        as: "EbookChapter",
+        attributes: {
+          include: [...scopeAttrs, ["id", "IndexId"]] || [],
+          exclude: attr
+        },
+        where: { OrderNum: { [Op.gte]: 0 } },
+        order: [['OrderNum', 'ASC']]
+      }, {
+        model: this.#VolumeModel,
+        as: "Volumes",
+        attributes: { include: [["id", "VolumeId"]] }
+      }]
+    });
   }
 
-  async create(data) {
-    return await this.#EbookModel.create(data);
+  /**
+   * 读取简介章
+   * @param {*} bookid 
+   */
+  async findIntroduction(bookid) {
+    return await this.#ChapterModel.findOne({
+      where: {
+        BookId: { [Op.eq]: bookid },
+        Title: { [Op.eq]: IntroductionName }
+      },
+      attributes: ["Content"]
+    });
   }
 
-  async bulkCreate(books) {
-    return await this.#EbookModel.bulkCreate(books);
-  }
+  // async create(data) {
+  //   return await this.#EbookModel.create(data);
+  // }
+
+  // async bulkCreate(books) {
+  //   return await this.#EbookModel.bulkCreate(books);
+  // }
 
   getModel() {
     return this.#EbookModel;

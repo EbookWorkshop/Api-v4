@@ -25,6 +25,11 @@ export class BookController {
     ctx.body = await this.#bookQueryService.getBookList();
   }
 
+  async queryBook(ctx) {
+    const bookId = ctx.query.bookid * 1;
+    ctx.body = await this.#bookQueryService.getBook(bookId);
+  }
+
   /**
    * @swagger
    * /api/books:

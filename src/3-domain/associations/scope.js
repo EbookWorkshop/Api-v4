@@ -10,7 +10,7 @@ export default function (models) {
             include: [
                 [
                     literal('CASE WHEN Content IS NOT NULL AND Content != "" THEN 1 ELSE 0 END'),
-                    'HasContent'
+                    'IsHasContent'
                 ]
             ]
         }
