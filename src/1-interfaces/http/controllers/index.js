@@ -1,6 +1,6 @@
 // src/1-interfaces/http/controllers/index.js
 import { BookController } from './BookController.js';
-// 未来新增：import { UserController } from './UserController.js';
+import { TagController } from './TagController.js';
 
 /**
  * 控制器工厂（统一组装所有 Controller）
@@ -8,9 +8,10 @@ import { BookController } from './BookController.js';
  */
 export function createControllers(services) {
   const { bookQuery, bookCommand } = services;
+  const { tagQuery } = services;
 
   return {
     book: new BookController(bookQuery, bookCommand),
-    // 新增：user: new UserController(services.user),
+    tag: new TagController(tagQuery),
   };
 }

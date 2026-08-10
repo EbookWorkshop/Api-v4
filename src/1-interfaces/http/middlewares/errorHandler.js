@@ -19,7 +19,7 @@ export function createErrorHandlerMiddleware() {
 
       ctx.status = statusCode;
       ctx.body = {
-        code: statusCode,
+        code: statusCode * 100,
         data: null,
         msg: message,
         timestamp: new Date().toISOString(),

@@ -1,12 +1,13 @@
 import { BookQueryService } from './BookQueryService.js';
 import { BookCommandService } from './BookCommandService.js';
+import { TagQueryService } from './TagQueryService.js';
 
 export function createServices(repositories) {
-  const { ebookRepository } = repositories;
+  const { ebookRepository, tagRepository } = repositories;
 
   return {
     bookQuery: new BookQueryService(ebookRepository),
     bookCommand: new BookCommandService(ebookRepository),
-    // 新增：user: new UserService(repositories.userRepository),
+    tagQuery: new TagQueryService(tagRepository),
   };
 }

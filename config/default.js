@@ -1,7 +1,7 @@
 // 默认配置（所有环境继承）
 export default {
   server: {
-    port: 3000,
+    port: 8300,
     host: '0.0.0.0',
   },
   database: {

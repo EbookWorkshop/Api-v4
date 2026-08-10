@@ -28,6 +28,7 @@ export function createLoggerMiddleware(config) {
             console.error(
                 `[ERROR] ${new Date().toISOString()} ${method} ${url} - ${ctx.status || 500} - ${duration}ms - ${err.message}`
             );
+            if (isDebug) console.log(err.stack);
             throw err; // 继续抛出，让上层错误中间件处理
         }
 

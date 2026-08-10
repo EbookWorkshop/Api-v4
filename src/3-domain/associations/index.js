@@ -48,10 +48,10 @@ export function setupAssociations(models) {
 
 
     // Ebook <-- --> EBookTag <-- --> Tag
-    models.Ebook.hasMany(models.Tag, { foreignKey: 'BookId', sourceKey: 'id', onDelete: 'CASCADE' });
-    models.Tag.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
-    models.Tag.belongsTo(models.Tag, { foreignKey: 'TagId', targetKey: 'id' });
-    models.Tag.hasMany(models.Tag, { foreignKey: 'TagId', sourceKey: 'id', onDelete: 'CASCADE' });
+    models.Ebook.hasMany(models.EBookTag, { foreignKey: 'BookId', sourceKey: 'id', onDelete: 'CASCADE' });
+    models.EBookTag.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
+    models.EBookTag.belongsTo(models.Tag, { foreignKey: 'TagId', targetKey: 'id' });
+    models.Tag.hasMany(models.EBookTag, { foreignKey: 'TagId', sourceKey: 'id', onDelete: 'CASCADE' });
 
     // EbookChapter <-- --> Bookmark
     models.EbookChapter.hasOne(models.Bookmark, { foreignKey: { name: 'IndexId', unique: true }, sourceKey: 'id', as: "EbookChapter", onDelete: 'CASCADE' });
