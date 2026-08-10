@@ -1,10 +1,19 @@
+import { BookDetailQueryService } from "../../../2-application/services/BookDetailQueryService.js";
 export class BookController {
   #bookQueryService;
   #bookCommandService;
+  #bookDetailQuery;
 
-  constructor(bookQueryService, bookCommandService) {
+  /**
+   * 
+   * @param {*} bookQueryService 
+   * @param {*} bookCommandService 
+   * @param {BookDetailQueryService} bookDetailQuery 
+   */
+  constructor(bookQueryService, bookCommandService, bookDetailQuery) {
     this.#bookQueryService = bookQueryService;
     this.#bookCommandService = bookCommandService;
+    this.#bookDetailQuery = bookDetailQuery;
   }
 
   /**
@@ -27,7 +36,7 @@ export class BookController {
 
   async queryBook(ctx) {
     const bookId = ctx.query.bookid * 1;
-    ctx.body = await this.#bookQueryService.getBook(bookId);
+    ctx.body = await this.#bookDetailQuery.getBookDetail(bookId);
   }
 
   /**

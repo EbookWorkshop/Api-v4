@@ -8,11 +8,11 @@ import { FontController } from "./FontController.js";
  * 新增 Controller 时：在此导入，并在 return 对象中添加一行即可
  */
 export function createControllers(services) {
-  const { bookQuery, bookCommand } = services;
+  const { bookQuery, bookCommand, bookDetailQuery } = services;
   const { tagQuery } = services;
 
   return {
-    book: new BookController(bookQuery, bookCommand),
+    book: new BookController(bookQuery, bookCommand, bookDetailQuery),
     tag: new TagController(tagQuery),
     font: new FontController(services.font, null),
   };

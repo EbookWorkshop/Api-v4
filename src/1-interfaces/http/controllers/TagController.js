@@ -34,7 +34,7 @@ export class TagController {
     }
 
     async ebookTags(ctx) {
-        const bookid = ctx.query.bookid * 1;
-        ctx.body = await this.#TagQueryService.getEbookTags(bookid);
+        const bookId = ctx.query.bookid * 1;
+        ctx.body = await this.#TagQueryService.getEbookTags(bookId);
     }
 }

@@ -19,10 +19,10 @@ export class BookQueryService {
     }));
   }
 
-  async getBook(bookid) {
-    const bookModel = await this.#ebookRepository.findById(bookid, false);
+  async getBook(bookId) {
+    const bookModel = await this.#ebookRepository.findById(bookId, false);
     const { EbookChapter, id, ...tempBook } = bookModel.dataValues;
-    const introduction = await this.#ebookRepository.findIntroduction(bookid);
+    const introduction = await this.#ebookRepository.findIntroduction(bookId);
 
     return {
       BookId: id,

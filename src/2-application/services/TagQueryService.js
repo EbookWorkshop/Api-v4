@@ -32,9 +32,9 @@ export class TagQueryService {
 
     /**
      * 
-     * @param {*} bookid 
+     * @param {*}bookId 
      */
-    async getEbookTags(bookid) {
-        return await this.#tagRepository.findTagForBook(bookid);
+    async getEbookTags(bookId) {
+        return await this.#tagRepository.findTagForBook(bookId);
     }
 }
