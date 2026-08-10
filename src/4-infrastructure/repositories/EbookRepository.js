@@ -22,6 +22,7 @@ export class EbookRepository {
 
   /**
    * 获取书籍信息
+   * 不含简介信息
    * @param {number} id 书籍的ID
    * @param {boolean} withContent 是否返回带书籍内容的
    * @returns 
@@ -45,7 +46,7 @@ export class EbookRepository {
       }, {
         model: this.#VolumeModel,
         as: "Volumes",
-        attributes: { include: [["id", "VolumeId"]] }
+        attributes: { include: [["id", "VolumeId"]], exclude: ["createdAt", "updatedAt", "id"] }
       }]
     });
   }

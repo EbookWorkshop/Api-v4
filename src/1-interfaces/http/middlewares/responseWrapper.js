@@ -13,14 +13,6 @@ export function createResponseWrapperMiddleware() {
       console.trace();
     }
 
-    // 2. 设置响应头
-    ctx.set("Access-Control-Allow-Origin", "*");
-    ctx.set("Access-Control-Allow-Methods", "OPTIONS, GET, PUT, POST, DELETE, PATCH");
-    ctx.set("Access-Control-Allow-Headers", "Content-Type,Access-Token,Authorization,Accept,Origin,X-Requested-With,Accept-Language,Content-Language");
-    ctx.set("Access-Control-Allow-Credentials", true);
-    if (ctx.request.method === 'OPTIONS') { // 直接响应数据 应对axios的跨域探测
-      ctx.status = 200;
-    }
 
     // 3. 拦截已经设置好的响应体
     // 仅处理成功的 2xx 响应，且 body 存在且未被显式跳过包装
