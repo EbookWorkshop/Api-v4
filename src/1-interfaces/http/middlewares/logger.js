@@ -9,6 +9,7 @@ import { performance } from 'node:perf_hooks';
 export function createLoggerMiddleware(config) {
     const isDebug = config.debug?.mode || false;
     const logLevel = config.debug?.level || 'info';
+    const requireLog = config.debug?.switch?.requireLog || false;
 
     return async function logger(ctx, next) {
         // 1. 记录请求开始时间（使用高精度时间）
@@ -37,7 +38,7 @@ export function createLoggerMiddleware(config) {
         const status = ctx.status || 404;
 
         // 根据配置决定是否输出日志（生产环境只输出 4xx/5xx，开发环境全量输出）
-        const shouldLog = isDebug || status >= 400;
+        const shouldLog = requireLog || status >= 400;
 
         if (shouldLog) {
             // 根据日志级别决定输出格式（简单 vs 详细）

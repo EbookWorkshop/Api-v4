@@ -1,12 +1,17 @@
 /**
- * 成功响应包装中间件
+ * 成功响应包装中间件    
  * 职责：将 Controller 返回的原始数据（ctx.body）包装为统一格式
  * 注意：必须在路由中间件之前挂载（利用 Koa 的洋葱模型，在 await next() 之后拦截）
  */
 export function createResponseWrapperMiddleware() {
   return async function responseWrapper(ctx, next) {
     // 1. 先执行后续中间件（路由 -> Controller -> Service）
-    await next();
+    try {
+      await next();
+    } catch (error) {
+      console.error("请求失败：", error);
+      console.trace();
+    }
 
     // 2. 设置响应头
     ctx.set("Access-Control-Allow-Origin", "*");

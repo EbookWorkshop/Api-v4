@@ -1,5 +1,11 @@
 // 默认配置（所有环境继承）
 export default {
+  repository‌: {
+    path: "../MyLibrary"
+  },
+  font: {
+    path: "/font"
+  },
   server: {
     port: 8300,
     host: '0.0.0.0',
@@ -11,6 +17,9 @@ export default {
   debug: {
     mode: false,
     level: 'info',
+    switch: {
+      requireLog: false,
+    }
   },
   collector: {
     timeout: 30000,

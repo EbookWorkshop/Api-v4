@@ -1,6 +1,7 @@
 // src/1-interfaces/http/controllers/index.js
 import { BookController } from './BookController.js';
 import { TagController } from './TagController.js';
+import { FontController } from "./FontController.js";
 
 /**
  * 控制器工厂（统一组装所有 Controller）
@@ -13,5 +14,6 @@ export function createControllers(services) {
   return {
     book: new BookController(bookQuery, bookCommand),
     tag: new TagController(tagQuery),
+    font: new FontController(services.font, null),
   };
 }

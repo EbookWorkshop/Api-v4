@@ -4,7 +4,7 @@ import { AppError } from '../../../5-shared/errors/AppError.js';
  * 全局异常捕获中间件（必须放在最外层）
  * 职责：捕获所有未被 try-catch 的错误，统一返回标准错误格式
  */
-export function createErrorHandlerMiddleware() {
+export function createErrorHandlerMiddleware(config) {
   return async function errorHandler(ctx, next) {
     try {
       await next();
@@ -13,7 +13,7 @@ export function createErrorHandlerMiddleware() {
       const message = err.message || 'Internal Server Error';
 
       console.error(`[Error] ${statusCode} - ${message}`);
-      if (process.env.NODE_ENV === 'development') {
+      if (config.env === 'development') {
         console.error(err.stack);
       }
 
@@ -24,7 +24,7 @@ export function createErrorHandlerMiddleware() {
         msg: message,
         timestamp: new Date().toISOString(),
         // 开发环境下附加堆栈信息（方便调试，生产环境请关闭）
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+        ...(config.env === 'development' && { stack: err.stack }),
       };
     }
   };

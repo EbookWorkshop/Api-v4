@@ -36,7 +36,7 @@ setupAssociations(sequelize.models);
 const repositories = createRepositories(sequelize);
 
 // 3.2 服务层 (Application) - 依赖 Repositories
-const services = createServices(repositories);
+const services = createServices(repositories, config);
 
 // 3.3 控制器层 (Interfaces) - 依赖 Services
 const controllers = createControllers(services);
