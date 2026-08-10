@@ -29,4 +29,12 @@ export class TagQueryService {
         result.sort((a, b) => b.Count - a.Count);
         return result;
     }
+
+    /**
+     * 
+     * @param {*} bookid 
+     */
+    async getEbookTags(bookid) {
+        return await this.#tagRepository.findTagForBook(bookid);
+    }
 }

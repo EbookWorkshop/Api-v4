@@ -13,8 +13,7 @@ export function createResponseWrapperMiddleware() {
       console.trace();
     }
 
-
-    // 3. 拦截已经设置好的响应体
+    // 2. 拦截已经设置好的响应体
     // 仅处理成功的 2xx 响应，且 body 存在且未被显式跳过包装
     if (
       ctx.body !== undefined &&
@@ -24,9 +23,7 @@ export function createResponseWrapperMiddleware() {
       !ctx.state.skipResponseWrapper // 允许某些接口跳过包装（如文件下载）
     ) {
       // 如果业务层已经返回了标准格式（如健康检查），则跳过双重包装
-      if (ctx.body.code !== undefined && ctx.body.data !== undefined) {
-        return;
-      }
+      if (ctx.body.code !== undefined && ctx.body.data !== undefined) { return; }
 
       // 执行标准化包装
       ctx.body = {

@@ -22,6 +22,17 @@ export class TagRepository {
         return await this.#TagModel.findAll({ include });
     }
 
+    async findTagForBook(bookid) {
+        return this.#TagModel.findAll({
+            include: [{
+                model: this.#EBookTag,
+                required: true,
+                where: { BookId: { [Op.eq]: bookid } },
+                attributes: [],
+            }]
+        })
+    }
+
     getModel() {
         return this.#TagModel;
     }
