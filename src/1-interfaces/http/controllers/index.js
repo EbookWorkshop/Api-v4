@@ -3,6 +3,7 @@ import { BookController } from './BookController.js';
 import { ChapterController } from './ChapterController.js';
 import { TagController } from './TagController.js';
 import { FontController } from "./FontController.js";
+import { WebBookController } from "./WebBookController.js"
 
 /**
  * 控制器工厂（统一组装所有 Controller）
@@ -14,6 +15,7 @@ export function createControllers(services) {
 
   return {
     book: new BookController(bookQuery, bookCommand, bookDetailQuery),
+    webBook: new WebBookController(services.webBookQuery),
     chapter: new ChapterController(services.chapterQuery),
     tag: new TagController(tagQuery),
     font: new FontController(services.font, null),

@@ -5,6 +5,7 @@ import { SystemConfigRepository } from './SystemConfigRepository.js';
 import { IndexRepository } from "./IndexRepository.js";
 import { ChapterRepository } from "./ChapterRepository.js";
 import { VolumeRepository } from "./VolumeRepository.js";
+import { WebBookRepository } from './WebBookRepository.js';
 
 
 export function createRepositories(sequelize) {
@@ -17,6 +18,8 @@ export function createRepositories(sequelize) {
     indexRepository:new IndexRepository(sequelize),
     chapterRepository:new ChapterRepository(sequelize),
     volumeRepository:new VolumeRepository(sequelize),
+
+    webBookRepository: new WebBookRepository(sequelize),
 
   };
 }

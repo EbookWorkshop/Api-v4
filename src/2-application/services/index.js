@@ -6,6 +6,7 @@ import { TagQueryService } from './TagQueryService.js';
 import { FontService } from './FontService.js';
 import { BookDetailQueryService } from "./BookDetailQueryService.js";
 import { ChapterQueryService } from "./ChapterQueryService.js"
+import { WebBookQueryService } from "./WebBookQueryService.js"
 
 export function createServices(repositories, config = {}) {
   const { ebookRepository, tagRepository, systemConfigRepository, chapterRepository } = repositories;
@@ -33,6 +34,7 @@ export function createServices(repositories, config = {}) {
     bookQuery: new BookQueryService(ebookRepository),
     bookDetailQuery: bookDetailQueryService,
     bookCommand: new BookCommandService(ebookRepository),
+    webBookQuery: new WebBookQueryService(repositories.webBookRepository),
     tagQuery: new TagQueryService(tagRepository),
     systemConfig: systemConfigService,
     font: fontService,

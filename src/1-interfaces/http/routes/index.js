@@ -3,6 +3,7 @@ import { createBookRoutes } from './bookRoutes.js';
 import { createChapterRoutes } from "./chapterRoutes.js";
 import { createTagRoutes } from './tagRoutes.js';
 import { createFontRoutes } from './fontRoutes.js';
+import { createWebBookRoutes } from './webBookRoutes.js';
 
 /**
  * 
@@ -16,6 +17,10 @@ export function createMainRouter(controllers) {
   const bookRouter = createBookRoutes(controllers.book);
   router.use(bookRouter.routes());
   router.use(bookRouter.allowedMethods());
+
+  const webBookRouter = createWebBookRoutes(controllers.webBook);
+  router.use(webBookRouter.routes());
+  router.use(webBookRouter.allowedMethods());
 
   const chapterRouter = createChapterRoutes(controllers.chapter);
   router.use(chapterRouter.routes());

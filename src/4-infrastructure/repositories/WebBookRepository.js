@@ -1,0 +1,50 @@
+import { Op } from "sequelize";
+export class WebBookRepository {
+  #WebBookModel;
+  #EbookModel;
+
+  constructor(sequelize) {
+    this.#WebBookModel = sequelize.models.WebBook;
+    this.#EbookModel = sequelize.models.Ebook;
+  }
+
+  /**
+   * 找到所有网文
+   * @param {*} orderBy 排序设置，默认按热度倒序
+   * @returns  JSON 格式的书籍列表
+   */
+  async findAll(orderBy = [['createdAt', 'DESC']]) {
+    const bl = await this.#WebBookModel.findAll({
+      include: [{
+        model: this.#EbookModel,
+        as: "Ebook",
+        required: true,
+        attributes: { include: [["id", "BookId"]] }
+      }],
+      order: orderBy, attributes: { include: [["id", "WebBookId"]] }
+    });
+    return bl.map(b => b.toJSON());
+  }
+
+  /**
+   * 找到具体的网文
+   * @param {*} bookId 书籍ID
+   * @returns JSON 格式的书籍信息
+   */
+  async findById(bookId) {
+    return await this.#WebBookModel.findByPk(bookId, { raw: true });
+  }
+
+
+  // async create(data) {
+  //   return await this.#WebBookModel.create(data);
+  // }
+
+  // async bulkCreate(books) {
+  //   return await this.#WebBookModel.bulkCreate(books);
+  // }
+
+  getModel() {
+    return this.#WebBookModel;
+  }
+}
