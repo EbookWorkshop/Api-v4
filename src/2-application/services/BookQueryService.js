@@ -14,4 +14,6 @@ export class BookQueryService {
   async getBookList() {
     return await this.#ebookRepository.findAll();
   }
+
+
 }

@@ -39,6 +39,13 @@ export class BookController {
     ctx.body = await this.#bookDetailQuery.getBookDetail(bookId);
   }
 
+  async getMetadata(ctx){
+    const bookId = ctx.query.bookid * 1;
+    ctx.body = await this.#bookDetailQuery.getMetadata(bookId);    
+  }
+
+
+
   /**
    * @swagger
    * /api/books:
