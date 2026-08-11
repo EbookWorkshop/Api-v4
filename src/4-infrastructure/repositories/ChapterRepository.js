@@ -46,46 +46,36 @@ export class ChapterRepository {
         });
     }
 
+    /**
+     * 查找上一章
+     * @param {number} bookId 书籍ID
+     * @param {number} currentOrderNum 当前章节序号
+     * @returns {Promise<Model|null>}
+     */
+    async findPrevious(bookId, currentOrderNum) {
+        return await this.#ChapterModel.findOne({
+            where: {
+                BookId: bookId,
+                OrderNum: { [Op.lt]: currentOrderNum }, // 小于当前序号
+            },
+            order: [['OrderNum', 'DESC']], // 倒序取第一条，即最近的上一章
+        });
+    }
 
-
-
-    // const myModels = new Models();
-    // let chapter = await myModels.EbookIndex.findOne({
-    //     attributes: ["BookId", "OrderNum"],
-    //     where: { id: chapterId }
-    // });
-    // if (chapter == null) return null;
-
-    // let { OrderNum, BookId } = chapter.dataValues;
-    // let pre = await myModels.EbookIndex.findOne({
-    //     attributes: ["id"],
-    //     where: {
-    //         bookId: BookId,
-    //         OrderNum: {
-    //             [Models.Op.and]: [
-    //                 { [Models.Op.lt]: OrderNum },
-    //                 { [Models.Op.gt]: 0 }
-    //             ]
-    //         }
-    //     },
-    //     order: [
-    //         ["OrderNum", "DESC"]
-    //     ]
-    // });
-    // let next = await myModels.EbookIndex.findOne({
-    //     attributes: ["id"],
-    //     where: {
-    //         bookId: BookId,
-    //         OrderNum: {
-    //             [Models.Op.gt]: OrderNum
-    //         }
-    //     },
-    //     order: [
-    //         ["OrderNum", "ASC"]
-    //     ]
-    // });
-
-    // return { pre, next };
-
+    /**
+     * 查找下一章
+     * @param {number} bookId 书籍ID
+     * @param {number} currentOrderNum 当前章节序号
+     * @returns {Promise<Model|null>}
+     */
+    async findNext(bookId, currentOrderNum) {
+        return await this.#ChapterModel.findOne({
+            where: {
+                BookId: bookId,
+                OrderNum: { [Op.gt]: currentOrderNum }, // 大于当前序号
+            },
+            order: [['OrderNum', 'ASC']], // 正序取第一条，即最近的下一章
+        });
+    }
 
 }

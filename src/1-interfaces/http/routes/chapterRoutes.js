@@ -6,8 +6,9 @@ import { ChapterController } from "../controllers/ChapterController.js"
  * @returns 
  */
 export function createChapterRoutes(chapterController) {
-  const router = new Router({ prefix: '/library' });
-  router.get('/book/chapter', (ctx) => chapterController.getChapterById(ctx));
+  const router = new Router({ prefix: '/library/book/chapter' });
+  router.get('/', (ctx) => chapterController.getChapterById(ctx));
+  router.get('/adjacent', (ctx) => chapterController.getAdjacentChapter(ctx));
 
   return router;
 }

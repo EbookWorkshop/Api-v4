@@ -26,6 +26,22 @@ export class ChapterQueryService {
         }
     }
 
+    /**
+     * 找到相邻章节
+     * @param {*} chapterid 
+     */
+    async getAdjacentChapter(chapterid) {
+        const currentEntity = await this.#chapterRepository.findByPK(chapterid);
 
+        const [prevEntity, nextEntity] = await Promise.all([
+            this.#chapterRepository.findPrevious(currentEntity.BookId, currentEntity.OrderNum),
+            this.#chapterRepository.findNext(currentEntity.BookId, currentEntity.OrderNum),
+        ]);
+
+        return {
+            pre: { id: prevEntity.id },
+            next: { id: nextEntity.id }
+        }
+    }
 
 }

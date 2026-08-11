@@ -20,4 +20,13 @@ export class ChapterController {
         ctx.body = await this.#chapterQueryService.getChapterById(cpId);
     }
 
+    /**
+     * 找到相邻章节
+     * @param {*} ctx 
+     */
+    async getAdjacentChapter(ctx) {
+        const cpId = ctx.query.chapterid * 1;
+        ctx.body = await this.#chapterQueryService.getAdjacentChapter(cpId);
+    }
+
 }
