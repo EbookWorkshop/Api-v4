@@ -11,8 +11,18 @@ export class BookQueryService {
     this.#ebookRepository = ebookRepository;
   }
 
-  async getBookList() {
-    return await this.#ebookRepository.findAll();
+  /**
+   * 查找书本列表
+   * @param {number?} tagId 包含的tagId
+   * @param {number[]?} excludeTagIds 排除的tags
+   * @returns 
+   */
+  async getBookList(tagId, excludeTagIds) {
+    return await this.#ebookRepository.findAllWithTagFilter({
+      tagId,
+      excludeTagIds,
+      orderBy: [['Hotness', 'DESC'], ['id', 'DESC']],
+    });
   }
 
 

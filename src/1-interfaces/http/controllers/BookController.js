@@ -1,3 +1,4 @@
+import { BookQueryService } from "../../../2-application/services/BookQueryService.js";
 import { BookDetailQueryService } from "../../../2-application/services/BookDetailQueryService.js";
 export class BookController {
   #bookQueryService;
@@ -6,7 +7,7 @@ export class BookController {
 
   /**
    * 
-   * @param {*} bookQueryService 
+   * @param {BookQueryService} bookQueryService 
    * @param {*} bookCommandService 
    * @param {BookDetailQueryService} bookDetailQuery 
    */
@@ -17,7 +18,12 @@ export class BookController {
   }
 
   async listBooks(ctx) {
-    ctx.body = await this.#bookQueryService.getBookList();
+    const tagid = ctx.query.tagid * 1;
+    let nottag = ctx.query.nottag;
+    try {
+      if (nottag) nottag = nottag.split(",").map(t => parseInt(t));
+    } catch (err) { }
+    ctx.body = await this.#bookQueryService.getBookList(tagid, nottag);
   }
 
   async queryBook(ctx) {
@@ -25,9 +31,9 @@ export class BookController {
     ctx.body = await this.#bookDetailQuery.getBookDetail(bookId);
   }
 
-  async getMetadata(ctx){
+  async getMetadata(ctx) {
     const bookId = ctx.query.bookid * 1;
-    ctx.body = await this.#bookDetailQuery.getMetadata(bookId);    
+    ctx.body = await this.#bookDetailQuery.getMetadata(bookId);
   }
 
 
