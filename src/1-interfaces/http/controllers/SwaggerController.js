@@ -37,7 +37,10 @@ export class SwaggerController {
 
     const options = {
       swaggerDefinition,
-      apis: ['./src/1-interfaces/http/**/*.js'],     // micromatch 规则
+      apis: [
+        './src/1-interfaces/http/controllers/**/*.js',
+        './src/1-interfaces/http/dtos/**/*.dto.js',
+      ],     // micromatch 规则
     };
     ctx.body = jsdoc(options)
   }
