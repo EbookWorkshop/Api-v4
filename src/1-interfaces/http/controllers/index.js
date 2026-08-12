@@ -11,7 +11,7 @@ import { SwaggerController } from "./SwaggerController.js"
  * @param {*} services 
  * @returns 
  */
-export function createControllers(services) {
+export function createControllers(services, config) {
   const { bookQuery, bookCommand, bookDetailQuery } = services;
   const { tagQuery } = services;
 
@@ -22,6 +22,6 @@ export function createControllers(services) {
     chapter: new ChapterController(services.chapterQuery),
     tag: new TagController(tagQuery),
     font: new FontController(services.font, null),
-    swagger: new SwaggerController(services),
+    swagger: new SwaggerController(config),
   };
 }

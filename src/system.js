@@ -1,7 +1,8 @@
 
 import Koa from 'koa';
 import { koaBody } from 'koa-body';
-
+import { EventEmitter } from 'node:events';
+import { EventManager } from './4-infrastructure/event/EventManager.js';
 import { loadConfig } from './4-infrastructure/config/index.js';
 import { createDatabaseConnection } from './4-infrastructure/database/databaseConnection.js';
 import { entityDefinitions } from './3-domain/entities/index.js';
@@ -29,6 +30,8 @@ const sequelize = createDatabaseConnection(
 entityDefinitions.forEach(defineFn => defineFn(sequelize));
 setupAssociations(sequelize.models);
 
+const eventManager = new EventManager(new EventEmitter());//消息管理模块
+
 // ============================================================
 // 3. 组装核心依赖链（依赖倒置：外层注入内层）
 // ============================================================
@@ -39,7 +42,7 @@ const repositories = createRepositories(sequelize);
 const services = createServices(repositories, config);
 
 // 3.3 控制器层 (Interfaces) - 依赖 Services
-const controllers = createControllers(services);
+const controllers = createControllers(services, config);
 
 // ============================================================
 // 4. 组装接口层（HTTP 适配）

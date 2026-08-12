@@ -25,4 +25,5 @@ export default {
     timeout: 30000,
     retries: 3,
   },
+  version: "0.0.0",   //当前程序版本
 };

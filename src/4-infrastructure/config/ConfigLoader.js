@@ -2,6 +2,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import packJSON from "../../../package.json" with {type: "json"}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEFAULT_CONFIG = {
@@ -44,6 +46,10 @@ export class ConfigLoader {
     // 环境变量覆盖
     finalConfig = this.#applyEnvOverrides(finalConfig);
     finalConfig.env = this.env;
+
+    //加载程序版本
+    const { version } = packJSON;
+    finalConfig.version = version;
 
     return Object.freeze(finalConfig);
   }
