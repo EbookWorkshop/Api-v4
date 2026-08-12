@@ -16,9 +16,9 @@ export function createMainRouter(controllers) {
   //如果追求1、2特性，可以将readdir改为手工排版的一个文件名数组，将需要导入的路由按需求顺序加载。
   readdir(import.meta.dirname).then(files => {
     for (const mf of files) {
-      if (!mf.endsWith("Routes.js")) continue;
+      if (!mf.endsWith(".routes.js")) continue;
 
-      const moduleName = mf.replace("Routes.js", "");
+      const moduleName = mf.replace(".routes.js", "");
       if (controllers[moduleName] === undefined) {
         console.warn(`路由【${mf}】没有对应的控制器，请注意修改：[src/1-interfaces/http/controllers/index.js]，并导出一个含【${moduleName}】的控制器。`);
         continue;

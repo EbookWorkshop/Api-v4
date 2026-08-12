@@ -10,7 +10,7 @@
 | :--- | :--- |
 | **依赖倒置** | `1-interfaces` → `2-application` → `3-domain` ← `4-infrastructure`（内层绝不依赖外层） |
 | **控制反转** | 所有 `new` 操作只在 `src/system.js` 及各层桶文件中执行，业务代码不直接实例化依赖 |
-| **显式优于隐式** | 模型注册（桶文件）、路由加载（聚合器）均显式声明，不采用文件扫描 |
+| **显式优于隐式** | 模型注册（桶文件）~~、路由加载（聚合器）~~均显式声明，不采用文件扫描 |
 | **配置多层覆盖** | `default.js` → `{env}.js` → `local.js` → 环境变量（优先级递增） |
 | **DTO 与 ORM 隔离** | Controller/Service 只处理 DTO，ORM 模型仅限 Repository 内部使用 |
 | **CQS（命令查询分离）** | 查询（Query）和写入（Command）使用独立的 Service 类 |
@@ -26,15 +26,16 @@
 
 ## 二、命名规范 项目标准）
 
-| 代码元素 | 命名风格（Case） | 示例 | 理由 |
-| :--- | :--- | :--- | :--- |
-| **目录 / 文件夹** | **`kebab-case`**（全小写，连字符分隔） | `1-interfaces`、`http`、`middlewares`、`database` | 1. Linux/Unix 系统区分大小写，全小写最安全。<br>2. `kebab-case` 是 npm 包和现代前端/Node 项目的通用标准（如 `@koa/router`）。<br>3. 避免与类名（大驼峰）混淆。 |
-| **JavaScript 文件（导出类）** | **`PascalCase`**（大驼峰） | `BookController.js`、`ConfigLoader.js`、`EbookEntity.js` | 类名与文件名严格对应，IDE 和 `import` 时一目了然。 |
-| **JavaScript 文件（导出函数/工具）** | **`camelCase`**（小驼峰） | `logger.js`、`errorHandler.js`、`databaseConnection.js` | 表明它不是一个“类实体”，而是一个“功能模块”。 |
-| **变量 / 函数 / 方法** | **`camelCase`**（小驼峰） | `getBookList()`、`bookQueryService` | JavaScript 语言标准风格（`Array.prototype.map`）。 |
-| **类名** | **`PascalCase`**（大驼峰） | `BookController`、`EbookRepository` | 类型与构造函数的标准标识。 |
-| **常量（硬编码值）** | **`UPPER_SNAKE_CASE`**（全大写，下划线） | `MAX_RETRY_TIMES`、`DEFAULT_PORT` | 一目了然区分“可变变量”与“固定常量”。 |
-> ~~~| **数据库表名 / 字段名** | **`snake_case`**（全小写，下划线） | `ebooks`、`book_name`、`hotness` | Sequelize 官方推荐（配合 `underscored: true`），与 SQL 语法习惯对齐。 |~~~   
+| 元素 | 风格 | 示例 |
+|------|------|------|
+| 目录 | kebab-case | `1-interfaces`, `http` |
+| 类文件 | PascalCase | `BookController.js` |
+| 函数/工具文件 | camelCase | `logger.js`, `databaseConnection.js` |
+| 路由文件 | {Resource}.routes.js | `book.routes.js` |
+| DTO 文件 | {Resource}{Purpose}.dto.js | `BookListResponse.dto.js` |
+| 类名 | PascalCase | `BookQueryService` |
+| 数据库字段 | snake_case | `book_name`, `created_at` |
+
 > 数据库从旧项目沿用下来，相关命名不再变更。    
 
 ### 为什么（类 vs 函数）？
@@ -82,7 +83,7 @@ Api-V4/
 │   │   │   │   └── BookListResponse.js
 │   │   │   ├── routes/                        # 职责：路由聚合器（显式组合子路由）
 │   │   │   │   ├── index.js                   # 主路由聚合器
-│   │   │   │   └── bookRoutes.js
+│   │   │   │   └── book.routes.js
 │   │   │   ├── middlewares/                   # 职责：错误处理、CORS、日志、响应包装
 │   │   │   │   ├── index.js                   # 桶文件：统一注册所有中间件
 │   │   │   │   ├── errorHandler.js
@@ -165,6 +166,22 @@ Api-V4/
 └── README.md
 ```
 
+### 目录层级与职责
+| 层级 | 目录 | 职责 |
+|------|------|------|
+| 1-interfaces | `http/controllers` | HTTP 协议适配，处理 ctx，挂载 Swagger 注解 |
+| | `http/dtos/components` | 可复用的数据结构片段（BookSummary, TagInfo） |
+| | `http/dtos/{module}` | 各模块请求/响应结构（含 Swagger schema） |
+| | `http/routes` | 路由映射（{Resource}.routes.js） |
+| | `http/middlewares` | 错误处理、CORS、日志、响应包装、静态文件 |
+| 2-application | `services` | 业务用例编排（Query/Command 分离） |
+| 3-domain | `entities` | 纯数据定义（Sequelize 模型） |
+| | `associations` | 模型关系定义 |
+| | `constants` | 业务常量 |
+| 4-infrastructure | `config` | 配置加载器 |
+| | `database` | 数据库连接工厂 |
+| | `repositories` | 具体 SQL/ORM 操作 |
+| 5-shared | `errors` | 自定义异常类 |
 ---
 
 
