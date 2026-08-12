@@ -7,15 +7,13 @@ import { FontService } from './FontService.js';
 import { BookDetailQueryService } from "./BookDetailQueryService.js";
 import { ChapterQueryService } from "./ChapterQueryService.js"
 import { WebBookQueryService } from "./WebBookQueryService.js"
+import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
 
 export function createServices(repositories, config = {}) {
-  const { ebookRepository, tagRepository, systemConfigRepository, chapterRepository } = repositories;
-  const bookDetailQueryService = new BookDetailQueryService(
-    ebookRepository,
-    repositories.volumeRepository,
-    repositories.indexRepository,
-    chapterRepository
-  );
+  const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
+  const { tagRepository, systemConfigRepository, } = repositories;
+
+  const bookDetailQueryService = new BookDetailQueryService(ebookRepository, volumeRepository, indexRepository, chapterRepository);
 
   // ========== 基础服务 ==========
   const systemConfigService = new SystemConfigService(systemConfigRepository);
@@ -35,6 +33,7 @@ export function createServices(repositories, config = {}) {
     bookDetailQuery: bookDetailQueryService,
     bookCommand: new BookCommandService(ebookRepository),
     webBookQuery: new WebBookQueryService(repositories.webBookRepository),
+    webBookDetailQuery: new WebBookDetailQueryService(ebookRepository, volumeRepository, indexRepository, chapterRepository, repositories.webBookRepository),
     tagQuery: new TagQueryService(tagRepository),
     systemConfig: systemConfigService,
     font: fontService,

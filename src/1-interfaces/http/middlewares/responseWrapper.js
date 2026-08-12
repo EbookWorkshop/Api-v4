@@ -6,12 +6,7 @@
 export function createResponseWrapperMiddleware() {
   return async function responseWrapper(ctx, next) {
     // 1. 先执行后续中间件（路由 -> Controller -> Service）
-    try {
-      await next();
-    } catch (error) {
-      console.error("接口请求失败：", error);
-      console.trace();
-    }
+    await next();   //不捕获处理错误，出错时会由错误处理中间件捕获。
 
     if (ctx.body instanceof Promise) {
       console.error("错误返回了未完成的Promise:", ctx.method, ctx.href)

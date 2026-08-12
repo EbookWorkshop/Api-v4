@@ -1,14 +1,26 @@
-// 2-application/services/BookDetailQueryService.js
-export class BookDetailQueryService {
+import { WebBookRepository } from "../../4-infrastructure/repositories/WebBookRepository.js";
+
+export class WebBookDetailQueryService {
+    #webBookRepo;
     #ebookRepo;
     #indexRepo;
     #volumeRepo;
     #chapterRepo;
-    constructor(ebookRepo, volumeRepo, indexRepo, chapterRepo) {
+
+    /**
+     * 
+     * @param {*} ebookRepo 
+     * @param {*} volumeRepo 
+     * @param {*} indexRepo 
+     * @param {*} chapterRepo 
+     * @param {WebBookRepository} webBookRepo 
+     */
+    constructor(ebookRepo, volumeRepo, indexRepo, chapterRepo, webBookRepo) {
         this.#ebookRepo = ebookRepo;
         this.#indexRepo = indexRepo;
         this.#volumeRepo = volumeRepo;
         this.#chapterRepo = chapterRepo;
+        this.#webBookRepo = webBookRepo;
     }
 
     /**
@@ -18,16 +30,18 @@ export class BookDetailQueryService {
      */
     async getBookDetail(bookId) {
         // 并发查询三个表（充分利用 I/O 并行）
-        const [ebook, Index, Volumes, intro] = await Promise.all([
+        const [ebook, webook, Index, Volumes, intro] = await Promise.all([
             this.#ebookRepo.findById(bookId),
+            this.#webBookRepo.findByBookId(bookId),
             this.#indexRepo.findByBookId(bookId),
             this.#volumeRepo.findByBookId(bookId),
-            this.#chapterRepo.findIntroduction(bookId)
+            this.#chapterRepo.findIntroduction(bookId),
         ]);
 
         // 组装成 DTO
         return {
             ...ebook,
+            ...webook,
             Index,
             Volumes,
             Introduction: intro?.Content,

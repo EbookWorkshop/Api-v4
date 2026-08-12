@@ -10,7 +10,7 @@ export function createErrorHandlerMiddleware(config) {
       await next();
     } catch (err) {
       const statusCode = err.statusCode || 500;
-      const message = err.message || 'Internal Server Error';
+      const message = err.message || '未知的服务器错误';
 
       console.error(`[Error] ${statusCode} - ${message}`);
       if (config.env === 'development') {
@@ -23,7 +23,7 @@ export function createErrorHandlerMiddleware(config) {
         data: null,
         msg: message,
         timestamp: new Date().toISOString(),
-        // 开发环境下附加堆栈信息（方便调试，生产环境请关闭）
+        // 开发环境下附加堆栈信息（方便调试，生产环境将关闭）
         ...(config.env === 'development' && { stack: err.stack }),
       };
     }

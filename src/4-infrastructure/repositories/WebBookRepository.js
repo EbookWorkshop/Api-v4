@@ -23,7 +23,10 @@ export class WebBookRepository {
       }],
       order: orderBy, attributes: { include: [["id", "WebBookId"]] }
     });
-    return bl.map(b => b.toJSON());
+    return bl.map(b => {
+      const { Ebook, ...bif } = b.toJSON();
+      return { ...Ebook, ...bif };
+    });
   }
 
   /**
@@ -31,8 +34,10 @@ export class WebBookRepository {
    * @param {*} bookId 书籍ID
    * @returns JSON 格式的书籍信息
    */
-  async findById(bookId) {
-    return await this.#WebBookModel.findByPk(bookId, { raw: true });
+  async findByBookId(bookId) {
+    return (await this.#WebBookModel.findOne({
+      where: { BookId: { [Op.eq]: bookId } }
+    })).toJSON();
   }
 
 

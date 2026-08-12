@@ -1,4 +1,6 @@
-import { BookDetailQueryService } from "../../../2-application/services/BookDetailQueryService.js";
+import { WebBookQueryService } from "../../../2-application/services/WebBookQueryService.js";
+import { WebBookDetailQueryService } from "../../../2-application/services/WebBookDetailQueryService.js";
+
 export class WebBookController {
   #webBookQueryService;
   #webBookCommandService;
@@ -6,9 +8,9 @@ export class WebBookController {
 
   /**
    * 
-   * @param {*} bookQueryService 
+   * @param {WebBookQueryService} bookQueryService 
    * @param {*} bookCommandService 
-   * @param {BookDetailQueryService} bookDetailQuery 
+   * @param {WebBookDetailQueryService} bookDetailQuery 
    */
   constructor(bookQueryService, bookCommandService, bookDetailQuery) {
     this.#webBookQueryService = bookQueryService;
@@ -16,20 +18,6 @@ export class WebBookController {
     this.#webBookDetailQuery = bookDetailQuery;
   }
 
-  /**
-   * @swagger
-   * /api/books:
-   *   get:
-   *     summary: 获取所有书籍
-   *     tags: [Books]
-   *     responses:
-   *       200:
-   *         description: 成功
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/BookListResponse'
-   */
   async listBooks(ctx) {
     ctx.body = await this.#webBookQueryService.getBookList();
   }

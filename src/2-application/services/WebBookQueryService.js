@@ -12,10 +12,7 @@ export class WebBookQueryService {
   }
 
   async getBookList() {
-    const bl = await this.#webBookRepository.findAll();
-    return bl.map(({ Ebook, ...b }) => ({
-      ...Ebook, ...b
-    }));
+    return await this.#webBookRepository.findAll();
   }
 
 
