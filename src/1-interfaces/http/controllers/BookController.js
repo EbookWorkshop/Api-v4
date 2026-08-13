@@ -2,6 +2,7 @@ import { AppError } from '../../../5-shared/errors/AppError.js';
 
 import { BookQueryService } from "../../../2-application/services/BookQueryService.js";
 import { BookDetailQueryService } from "../../../2-application/services/BookDetailQueryService.js";
+
 export class BookController {
   #bookQueryService;
   #bookCommandService;
@@ -27,6 +28,7 @@ export class BookController {
    *     description: 支持按标签筛选、排除标签，返回统一包装的图书列表
    *     tags:
    *       - Library —— 图书馆
+   *       - Book
    *     parameters:
    *       - $ref: '#/components/parameters/TagIdQuery'
    *       - $ref: '#/components/parameters/NotTagQuery'
@@ -47,25 +49,18 @@ export class BookController {
    *         content:
    *           application/json:
    *             schema:
-   *               allOf:
-   *                 - $ref: '#/components/schemas/ApiErrorResponse'
-   *                 - type: object
-   *                   properties:
-   *                     code:
-   *                       example: 60000
-   *                     msg:
-   *                       example: "排除标签必须为正整数，多个排除标签可用英文逗号隔开。"
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 60000
+   *               msg: "排除标签必须为正整数，多个排除标签可用英文逗号隔开。"
    *       500:
    *         description: 服务器内部错误
    *         content:
    *           application/json:
    *             schema:
-   *               allOf:
-   *                 - $ref: '#/components/schemas/ApiErrorResponse'
-   *                 - type: object
-   *                   properties:
-   *                     code:
-   *                       example: 50000
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 50000
    */
   async listBooks(ctx) {
     const tagid = ctx.query.tagid * 1;

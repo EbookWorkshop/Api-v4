@@ -43,6 +43,7 @@ export class EbookRepository {
         model: this.#EBookTagModel,
         required: true,
         where: { TagId: tagId },
+        attributes: [],//仅要求关联关系，不需要tag相关任何数据
       }] : [];
 
       const books = await this.#EbookModel.findAll({

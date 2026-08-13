@@ -7,7 +7,6 @@ import { createLoggerMiddleware } from './logger.js';
 import { createResponseWrapperMiddleware } from './responseWrapper.js';
 import { createCorsMiddleware } from './cors.js';
 export { createStaticServer } from "./staticServer.js"
-export { createSwaggerUI } from "./swaggerUI.js"
 
 /**
  * 逻辑处理之前响应的中间件

@@ -2,7 +2,7 @@
  * HTTP 层装配器
  * 顺序：前置中间件 → 功能端点 → 后置包装器 → 业务路由
  */
-import { registerPreResponseMiddlewares, registerPostResponseMiddlewares, createStaticServer, createSwaggerUI } from './middlewares/index.js';
+import { registerPreResponseMiddlewares, registerPostResponseMiddlewares, createStaticServer } from './middlewares/index.js';
 import { createMainRouter } from './routes/index.js';
 
 export function setupHttpServer(app, config, controllers) {
@@ -11,7 +11,6 @@ export function setupHttpServer(app, config, controllers) {
 
   // 2. 特定路径的功能端点（提前终止请求，不进入业务层）
   app.use(createStaticServer(config));
-  app.use(createSwaggerUI(config));
 
   // 3. 对正常响应进行统一格式化
   registerPostResponseMiddlewares(app, config);

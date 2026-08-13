@@ -1,11 +1,21 @@
+import { AppError } from "../../../5-shared/errors/AppError.js";
 
 export class SwaggerController {
   #config;
+  /**
+   * 可选的CDN
+   * https://unpkg.com/:package@:version/:file    //缺省version为latest
+   * https://cdn.jsdelivr.net/npm/:package@:version/:file    //缺省version为latest
+   */
+  #cdns;
 
-
+  /**
+   * 
+   * @param {*} config 
+   */
   constructor(config) {
-    this.CDN = "https://cdn.jsdelivr.net/npm";
     this.#config = config;
+    this.#cdns = ["https://unpkg.com", "https://cdn.jsdelivr.net/npm"]
   }
 
   async getJSONFile(ctx) {
@@ -32,7 +42,17 @@ export class SwaggerController {
         { name: 'Library - WebBook —— 网文图书馆' },
         { name: 'Library - Tag —— 图书馆管理' },
         { name: 'Library - Bookmark —— 图书馆书签' },
-      ]
+      ],
+      'x-tagGroups': [
+        {
+          name: '新系统架构',
+          tags: ['Book', 'Tag'],
+        },
+        {
+          name: '原风格排版',
+          tags: ['Library —— 图书馆', 'Library - Tag —— 图书馆管理'],
+        },
+      ],
     };
 
     const options = {
@@ -45,8 +65,8 @@ export class SwaggerController {
     ctx.body = jsdoc(options)
   }
 
-  getScalar(ctx) {
-    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : this.CDN;
+  async getScalar(ctx) {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
     ctx.set('Content-Type', 'text/html');
     ctx.state.skipResponseWrapper = true;
     ctx.body = `
@@ -64,8 +84,8 @@ export class SwaggerController {
 </html>`;
   }
 
-  getStoplight(ctx) {
-    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : this.CDN;
+  async getStoplight(ctx) {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
     ctx.set('Content-Type', 'text/html');
     ctx.state.skipResponseWrapper = true;
     ctx.body = `
@@ -89,8 +109,8 @@ export class SwaggerController {
 </html>`;
   }
 
-  getUIDist(ctx) {
-    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : this.CDN;
+  async getUIDist(ctx) {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
     ctx.set('Content-Type', 'text/html');
     ctx.state.skipResponseWrapper = true;
     ctx.body = `
@@ -107,4 +127,90 @@ export class SwaggerController {
   </body>
 </html>`;
   }
+
+  async getSwaggerUI(ctx) {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
+    ctx.set('Content-Type', 'text/html');
+    ctx.state.skipResponseWrapper = true;
+    ctx.body = `<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="SwaggerUI" />
+    <title>SwaggerUI</title>
+    <link rel="stylesheet" href="${myCDN}/swagger-ui-dist/swagger-ui.css" />
+  </head>
+  <body>
+  <div id="swagger-ui"></div>
+  <script src="${myCDN}/swagger-ui-dist/swagger-ui-bundle.js" crossorigin></script>
+  <script src="${myCDN}/swagger-ui-dist/swagger-ui-standalone-preset.js" crossorigin></script>
+  <script>
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
+        url: '/swagger.json',
+        dom_id: '#swagger-ui',
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        layout: "StandaloneLayout",
+      });
+    };
+  </script>
+  </body>
+</html>`;
+  }
+
+  async getRapiDoc(ctx) {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
+    ctx.set('Content-Type', 'text/html');
+    ctx.state.skipResponseWrapper = true;
+    ctx.body = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+    <script src="${myCDN}/rapidoc/dist/rapidoc-min.min.js"></script>
+  </head>
+  <body>
+    <rapi-doc spec-url="/swagger.json" > </rapi-doc>
+  </body>
+</html>`;
+  }
+
+  async getTest(ctx) {
+    const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
+    ctx.set('Content-Type', 'text/html');
+    ctx.state.skipResponseWrapper = true;
+    ctx.body = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+    <script src="${myCDN}/rapidoc/dist/rapidoc-min.min.js"></script>
+  </head>
+  <body>
+    <rapi-doc spec-url="/swagger.json" > </rapi-doc>
+  </body>
+</html>`;
+  }
+}
+
+/**
+ * 找到最快的CDN
+ * @param {*} urls 
+ * @returns 
+ */
+function findFastestCDN(urls) {
+  return Promise.any(urls.map(url =>
+    new Promise((resolve, reject) => {
+      const start = performance.now();
+      fetch(url, { method: 'HEAD', mode: 'no-cors' }) // 或加载图片
+        .then(() => resolve({ url, latency: performance.now() - start }))
+        .catch(() => reject());
+      // 设置超时（如 3秒）
+      setTimeout(() => reject(), 30_000);
+    })
+  )).catch(err => { throw new AppError("暂无可用CND，请稍候重试。已尝试CDN：" + urls.toString(), 500) });
 }

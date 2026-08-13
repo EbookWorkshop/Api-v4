@@ -9,7 +9,7 @@
  *           properties:
  *             code:
  *               description: 50000代表服务器执行失败，60000代表用户引起的失败（如输入错误类型等）。
- *               example: 60000
+ *               example: 50000
  *             msg:
  *               description: 错误具体信息
  *               example: "错误的具体描述"
