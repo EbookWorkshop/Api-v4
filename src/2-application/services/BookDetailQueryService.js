@@ -1,4 +1,4 @@
-// 2-application/services/BookDetailQueryService.js
+import { AppError } from "../../5-shared/errors/AppError.js"
 export class BookDetailQueryService {
     #ebookRepo;
     #indexRepo;
@@ -25,12 +25,14 @@ export class BookDetailQueryService {
             this.#chapterRepo.findIntroduction(bookId)
         ]);
 
+        if (!ebook) throw new AppError('书籍不存在', 404);
+
         // 组装成 DTO
         return {
             ...ebook,
+            Introduction: intro?.Content,
             Index,
             Volumes,
-            Introduction: intro?.Content,
         };
     }
 
@@ -41,6 +43,7 @@ export class BookDetailQueryService {
      */
     async getMetadata(bookId) {
         const ebook = await this.#ebookRepo.findById(bookId);
+        if (!ebook) throw new AppError('书籍不存在', 404);
         const intro = await this.#chapterRepo.findIntroduction(bookId);
         return {
             ...ebook,

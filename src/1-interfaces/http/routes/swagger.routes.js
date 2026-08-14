@@ -15,6 +15,7 @@ export function createSwaggerRoutes(swaggerController) {
   router.get('/scalar', (ctx) => swaggerController.getScalar(ctx));
   router.get('/stoplight', (ctx) => swaggerController.getStoplight(ctx));
   router.get('/rapidoc', (ctx) => swaggerController.getRapiDoc(ctx));
+  router.get('/redoc', (ctx) => swaggerController.getReDoc(ctx));
 
   return router;
 }

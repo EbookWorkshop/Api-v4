@@ -18,12 +18,11 @@ export class BookQueryService {
    * @returns 
    */
   async getBookList(tagId, excludeTagIds) {
-    return await this.#ebookRepository.findAllWithTagFilter({
+    const bookList = await this.#ebookRepository.findAllWithTagFilter({
       tagId,
       excludeTagIds,
       orderBy: [['Hotness', 'DESC'], ['id', 'DESC']],
     });
+    return bookList.map(({ id, ...book }) => ({ BookId: id, ...book }));
   }
-
-
 }

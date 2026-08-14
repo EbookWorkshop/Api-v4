@@ -21,7 +21,7 @@ export class SwaggerController {
   async getJSONFile(ctx) {
     //TDOD：如果要自动生成json，需要将服务分派到swagger-jsdoc
     ctx.state.skipResponseWrapper = true;
-    // ctx.body = await fsPromises.readFile(path.resolve(process.cwd(), "docs", "swagger.json"));
+    const isSafeHttpCode = ctx.query.safehttp == "1";//兼容部分不支持600的合同谈判编码的文档工具
 
     const { default: jsdoc } = await import("swagger-jsdoc");
     const { version, server: { port } } = this.#config;
@@ -62,7 +62,9 @@ export class SwaggerController {
         './src/1-interfaces/http/dtos/**/*.dto.js',
       ],     // micromatch 规则
     };
-    ctx.body = jsdoc(options)
+    let jsonDoc = jsdoc(options);
+
+    ctx.body = isSafeHttpCode ? JSON.stringify(jsonDoc).replaceAll(`"600"`, `"default"`) : jsonDoc;
   }
 
   async getScalar(ctx) {
@@ -179,19 +181,24 @@ export class SwaggerController {
 </html>`;
   }
 
-  async getTest(ctx) {
+  async getReDoc(ctx) {
+    //ReDoc 不支持非标准的Http代码，如600，会导致文档解释报错。
     const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
     ctx.set('Content-Type', 'text/html');
     ctx.state.skipResponseWrapper = true;
-    ctx.body = `<!doctype html>
+    ctx.body = `<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
-    <script src="${myCDN}/rapidoc/dist/rapidoc-min.min.js"></script>
+    <title>ReDoc</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body { margin: 0; padding: 0; }
+    </style>
   </head>
   <body>
-    <rapi-doc spec-url="/swagger.json" > </rapi-doc>
+    <redoc spec-url='/swagger.json?safehttp=1'></redoc>
+    <script src="${myCDN}/redoc/bundles/redoc.standalone.js"> </script>
   </body>
 </html>`;
   }

@@ -72,13 +72,93 @@ export class BookController {
     ctx.body = await this.#bookQueryService.getBookList(tagid, nottag);
   }
 
+  /**
+   * @swagger
+   * /library/book:
+   *   get:
+   *     summary: 获取图书详情
+   *     description: 根据图书 ID 返回完整图书信息，包含目录和分卷（统一包装格式）
+   *     tags:
+   *       - Library —— 图书馆
+   *       - Book
+   *     parameters:
+   *       - $ref: '#/components/parameters/BookIdQuery'
+   *     responses:
+   *       200:
+   *         description: 成功返回图书详情
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/BookDetailResponse'
+   *             examples:
+   *               success:
+   *                 $ref: '#/components/examples/BookDetailSuccess'
+   *       600:
+   *         description: 请求参数错误（如 bookid 非数字或小于 1）
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 60000
+   *               msg: "提供的书籍ID不正确。"
+   *               timestamp: "2026-08-14T10:00:00.000Z"
+   *       404:
+   *         description: 图书不存在
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             examples:
+   *               notFound:
+   *                 $ref: '#/components/examples/BookDetailNotFound'
+   *       500:
+   *         description: 服务器内部错误
+   */
   async queryBook(ctx) {
     const bookId = ctx.query.bookid * 1;
+    if (isNaN(bookId)) throw new AppError("提供的书籍ID不正确。", 600);
     ctx.body = await this.#bookDetailQuery.getBookDetail(bookId);
   }
 
+  /**
+   * @swagger
+   * /library/book/metadata:
+   *   get:
+   *     summary: 获取图书元数据（含简介）
+   *     description: 根据图书 ID 返回图书基础信息及简介，用于展示图书摘要（统一包装格式）
+   *     tags:
+   *       - Book
+   *     parameters:
+   *       - $ref: '#/components/parameters/BookIdQuery'
+   *     responses:
+   *       200:
+   *         description: 成功返回图书元数据
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/BookMetadataResponse'
+   *             examples:
+   *               success:
+   *                 $ref: '#/components/examples/BookMetadataSuccess'
+   *       600:
+   *         description: 请求参数错误（如 bookid 非数字或小于 1）
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 60000
+   *               msg: "提供的书籍ID不正确。"
+   *               timestamp: "2026-08-14T10:00:00.000Z"
+   *       404:
+   *         description: 图书不存在
+   *       500:
+   *         description: 服务器内部错误
+   */
   async getMetadata(ctx) {
     const bookId = ctx.query.bookid * 1;
+    if (isNaN(bookId)) throw new AppError("提供的书籍ID不正确。", 600);
     ctx.body = await this.#bookDetailQuery.getMetadata(bookId);
   }
 
