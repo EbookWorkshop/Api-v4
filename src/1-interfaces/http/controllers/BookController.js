@@ -128,6 +128,7 @@ export class BookController {
    *     summary: 获取图书元数据（含简介）
    *     description: 根据图书 ID 返回图书基础信息及简介，用于展示图书摘要（统一包装格式）
    *     tags:
+   *       - Library —— 图书馆
    *       - Book
    *     parameters:
    *       - $ref: '#/components/parameters/BookIdQuery'

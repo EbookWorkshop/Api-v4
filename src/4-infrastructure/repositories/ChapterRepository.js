@@ -26,10 +26,12 @@ export class ChapterRepository {
      * @returns 
      */
     async findByPkWithEbook(chapterId) {
-        return (await this.#ChapterModel.findByPk(chapterId, {
+        const chapter = await this.#ChapterModel.findByPk(chapterId, {
             include: [{ model: this.#EbookModel, as: "Ebook" }],
             attributes: { include: [["id", "IndexId"]], exclude: ["id"] },
-        })).toJSON();
+        });
+        if (!chapter) return null;
+        return chapter.toJSON();
     }
 
     /**

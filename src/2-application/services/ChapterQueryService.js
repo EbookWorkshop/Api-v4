@@ -1,4 +1,5 @@
 
+import { AppError } from "../../5-shared/errors/AppError.js"
 import { ChapterRepository } from '../../4-infrastructure/repositories/ChapterRepository.js';
 
 export class ChapterQueryService {
@@ -19,6 +20,7 @@ export class ChapterQueryService {
      */
     async getChapterById(chapterId) {
         const cpt = await this.#chapterRepository.findByPkWithEbook(chapterId);
+        if (!cpt) throw new AppError('章节不存在', 404);
         const { Ebook: book, ...chapter } = cpt;
         return {
             Book: { "FontFamily": "", ...book },//TODO:修复FontFamily的耦合
