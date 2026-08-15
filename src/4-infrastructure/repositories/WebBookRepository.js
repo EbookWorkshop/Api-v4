@@ -24,8 +24,9 @@ export class WebBookRepository {
       order: orderBy, attributes: { include: [["id", "WebBookId"]] }
     });
     return bl.map(b => {
-      const { Ebook, ...bif } = b.toJSON();
-      return { ...Ebook, ...bif };
+      const { Ebook, ...rest } = b.toJSON();
+      const { id, defaultIndex, isCheckRepeat, ...allNeedInfo } = { ...Ebook, ...rest };
+      return allNeedInfo;
     });
   }
 

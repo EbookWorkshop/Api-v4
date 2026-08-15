@@ -42,15 +42,16 @@ export class SwaggerController {
         { name: 'Library - WebBook —— 网文图书馆' },
         { name: 'Library - Tag —— 图书馆管理' },
         { name: 'Library - Bookmark —— 图书馆书签' },
+        { name: 'Services - Font —— 系统服务：字体管理' },
       ],
       'x-tagGroups': [
         {
           name: '新系统架构',
-          tags: ['Book', 'Tag'],
+          tags: ['Book', 'Tag', 'Font'],
         },
         {
           name: '原风格排版',
-          tags: ['Library —— 图书馆', 'Library - Tag —— 图书馆管理'],
+          tags: ['Library —— 图书馆', 'Library - WebBook —— 网文图书馆', 'Library - Tag —— 图书馆管理', 'Services - Font —— 系统服务：字体管理',],
         },
       ],
     };

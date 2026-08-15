@@ -1,4 +1,5 @@
 import { WebBookRepository } from "../../4-infrastructure/repositories/WebBookRepository.js";
+import { AppError } from "../../5-shared/errors/AppError.js"
 
 export class WebBookDetailQueryService {
     #webBookRepo;
@@ -38,6 +39,7 @@ export class WebBookDetailQueryService {
             this.#chapterRepo.findIntroduction(bookId),
         ]);
 
+        if (!ebook || !webook) throw new AppError('书籍不存在/该书籍非网文类型', 404);
         // 组装成 DTO
         return {
             ...ebook,
