@@ -33,4 +33,13 @@ export class ReviewRuleCommandService {
             throw new AppError(err.message, 500);
         }
     }
+
+    /**
+     * 根据ID删除规则
+     * @param {number} id 
+     * @returns 
+     */
+    async deleteReviewRuleById(id) {
+        return await this.#reviewRuleRepository.deleteReviewRuleById(id);
+    }
 }

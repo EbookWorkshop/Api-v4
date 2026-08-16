@@ -49,4 +49,16 @@ export class ReviewRuleRepository {
         }
         return { ...newRule?.toJSON(), addToBook: addToBook.filter(r => r.isNewRecord).length };
     }
+
+    /**
+     * 根据ID删除规则
+     * @param {number} id 
+     * @returns 
+     */
+    async deleteReviewRuleById(id) {
+        let rules = await this.#ReviewRuleModel.destroy({
+            where: { id: id }
+        });
+        return rules;
+    }
 }

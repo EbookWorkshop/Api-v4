@@ -18,14 +18,14 @@ export class ReviewRuleController {
      * @swagger
      * /review/rule/list:
      *   get:
-     *     summary: 获取审核规则列表
-     *     description: 返回所有审核规则，包含规则详情和引用次数（统一包装格式）
+     *     summary: 获取校阅规则列表
+     *     description: 返回所有校阅规则，包含规则详情和引用次数（统一包装格式）
      *     tags:
      *       - Review - Rule —— 自助校阅 - 规则库
      *       - Review
      *     responses:
      *       200:
-     *         description: 成功返回审核规则列表
+     *         description: 成功返回校阅规则列表
      *         content:
      *           application/json:
      *             schema:
@@ -45,7 +45,7 @@ export class ReviewRuleController {
      * @swagger
      * /review/rule:
      *   post:
-     *     summary: 创建或更新审核规则
+     *     summary: 创建或更新校阅规则
      *     description: |
      *       提交规则信息，若 `id` 为空字符串则创建新规则，若 `id` 为有效数字则更新对应规则。
      *       返回操作后的规则详情（统一包装格式）。
@@ -106,5 +106,63 @@ export class ReviewRuleController {
         if (!name) throw new AppError("规则名为必填项", 600);
         if (!rule) throw new AppError("校阅规则为必填项", 600);
         ctx.body = await this.#reviewRuleCommandService.createOrUpdateReviewRule({ id, name, rule, replace, bookId });
+    }
+
+    /**
+     * @swagger
+     * /review/rule:
+     *   delete:
+     *     summary: 删除校阅规则
+     *     description: 根据规则 ID 删除指定的校阅规则
+     *     tags:
+     *       - Review - Rule —— 自助校阅 - 规则库
+     *       - Review
+     *     parameters:
+     *       - in: query
+     *         name: id
+     *         schema:
+     *           type: integer
+     *           minimum: 1
+     *         required: true
+     *         description: 要删除的规则 ID
+     *         example: 1
+     *     responses:
+     *       200:
+     *         description: 删除成功，返回统一成功信息
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-17T10:00:00.000Z"
+     *       600:
+     *         description: 参数错误（如 id 非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "无效的规则 ID"
+     *               timestamp: "2026-08-17T10:00:00.000Z"
+     *       404:
+     *         description: 规则不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该规则"
+     *               timestamp: "2026-08-17T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async deleteReviewRule(ctx) {
+        const id = ctx.query.id * 1;
+        if (isNaN(id)) throw new AppError("提供的校阅规则ID必须为正整数。", 600);
+        ctx.body = await this.#reviewRuleCommandService.deleteReviewRuleById(id);
     }
 }
