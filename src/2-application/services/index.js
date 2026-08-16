@@ -1,13 +1,16 @@
 import path from 'node:path';
 import { BookQueryService } from './BookQueryService.js';
 import { BookCommandService } from './BookCommandService.js';
+import { BookDetailQueryService } from "./BookDetailQueryService.js";
+import { VolumeQueryService } from './VolumeQueryService.js';
+import { ChapterQueryService } from "./ChapterQueryService.js"
+
+import { WebBookQueryService } from "./WebBookQueryService.js"
+import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
+
 import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
 import { FontService } from './FontService.js';
-import { BookDetailQueryService } from "./BookDetailQueryService.js";
-import { ChapterQueryService } from "./ChapterQueryService.js"
-import { WebBookQueryService } from "./WebBookQueryService.js"
-import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
 
 export function createServices(repositories, config = {}) {
   const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
@@ -34,9 +37,10 @@ export function createServices(repositories, config = {}) {
     bookCommand: new BookCommandService(ebookRepository),
     webBookQuery: new WebBookQueryService(repositories.webBookRepository),
     webBookDetailQuery: new WebBookDetailQueryService(ebookRepository, volumeRepository, indexRepository, chapterRepository, repositories.webBookRepository),
+    volumeQuery: new VolumeQueryService(volumeRepository),
+    chapterQuery: new ChapterQueryService(chapterRepository),
     tagQuery: new TagQueryService(tagRepository),
     systemConfig: systemConfigService,
     font: fontService,
-    chapterQuery: new ChapterQueryService(chapterRepository),
   };
 }

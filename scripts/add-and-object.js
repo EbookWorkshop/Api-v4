@@ -27,6 +27,7 @@ const d4 = path.resolve(__dirname, "src/4-infrastructure/repositories")
 //controller
 const fController = `
 import { ${_ObjName}QueryService } from "../../../2-application/services/${_ObjName}QueryService.js";
+import { AppError } from '../../../5-shared/errors/AppError.js';
 
 export class ${_ObjName}Controller {
     #${_objName}QueryService;
@@ -38,15 +39,21 @@ export class ${_ObjName}Controller {
         this.#${_objName}QueryService = ${_objName}QueryService;
     }
     //TODO: 加入控制器，加入注解
-/*
-TODO: 需要手工加入控制器 // src/1-interfaces/http/controllers/index.js
-import { ${_ObjName}Controller } from "./${_ObjName}Controller.js"
-${_objName}: new ${_ObjName}Controller(services.${_objName}Query),//参考
-*/
+    async get${_ObjName}(ctx) {
+        const ？？？ = ctx.query.？？？ * 1;
+        if (isNaN(？？？)) throw new AppError("提供的【？？参数】不正确。", 600);
+        ctx.body =await this.#${_objName}QueryService.findAll？？？(？？？)
+    }
 }`
 const c1p = path.resolve(d1c, `${_ObjName}Controller.js`);
 try {
   fs.writeFileSync(c1p, fController, { flag: 'wx' });
+  fs.appendFileSync(path.resolve(__dirname, "src/1-interfaces/http/controllers/index.js"), `
+/*
+TODO: 控制器桶文件注册控制器 // src/1-interfaces/http/controllers/index.js
+import { ${_ObjName}Controller } from "./${_ObjName}Controller.js"
+${_objName}: new ${_ObjName}Controller(services.${_objName}Query),//参考
+*/`);
 } catch (err) {
   if (err.code === 'EEXIST') {
     console.log('文件已存在，跳过写入:', c1p);
@@ -74,14 +81,19 @@ try {
 //route
 const routeFile = path.resolve(d1r, `${_objName}.routes.js`);
 try {
-  fs.writeFileSync(routeFile, `import Router from '@koa/router';
-
-export function create${_objName}Routes(${_objName}Controller) {
-    const router = new Router({ prefix: '/${_objName}' });//TODO: 需要修改
-    router.get('/all', (ctx) => {});// TODO：添加实际路由
-
-    return router;
-}`, { flag: 'wx' });
+  fs.writeFileSync(routeFile, `import { ${_ObjName}Controller } from "../controllers/${_ObjName}Controller.js"
+  import Router from '@koa/router';
+  
+  /**
+   * @param {${_ObjName}Controller} ${_objName}Controller 
+   * @returns 
+   */
+  export function create${_objName}Routes(${_objName}Controller) {
+      const router = new Router({ prefix: '/' });//TODO: 设置路由前缀
+      router.get('/', (ctx) => ${_objName}Controller.query${_ObjName}(ctx));    //设子路由与控制器之间的关联
+  
+      return router;
+  }`, { flag: 'wx' });
 } catch (err) {
   if (err.code === 'EEXIST') {
     console.log('文件已存在，跳过写入:', routeFile);
@@ -90,11 +102,10 @@ export function create${_objName}Routes(${_objName}Controller) {
   }
 }
 
-//service
+//2/service
 const serviceFille = path.resolve(d2, `${_ObjName}QueryService.js`);
 try {
   fs.writeFileSync(serviceFille, `import { ${_ObjName}Repository } from '../../4-infrastructure/repositories/${_ObjName}Repository.js';
-
 import { AppError } from "../../5-shared/errors/AppError.js"
 
 export class ${_ObjName}QueryService {
@@ -107,7 +118,21 @@ export class ${_ObjName}QueryService {
     constructor(${_objName}Repository) {
         this.#${_objName}Repository = ${_objName}Repository;
     }
+
+    async getXXX(???) {
+        const XXX = await this.#${_objName}Repository.findAll((???));
+        if(!XXX)  throw new AppError('XXX不存在', 404);
+        return XXX;
+    }
 }`, { flag: 'wx' });
+
+fs.appendFileSync(path.resolve(__dirname,"src/2-application/services/index.js"), `
+//TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js
+/*
+import { ${_ObjName}QueryService } from './${_ObjName}QueryService.js';
+${_objName}Query: new ${_ObjName}QueryService(repositories.${_objName}Repository),
+*/`);
+
 } catch (err) {
   if (err.code === 'EEXIST') {
     console.log('文件已存在，跳过写入:', serviceFille);
@@ -126,13 +151,14 @@ export class ${_ObjName}Repository {
     constructor(sequelize) {
         this.#${_ObjName}Model = sequelize.models.${_ObjName};//TODO：检查对象名与模型的实际区别
     }
+}`, { flag: 'wx' });
 
-    //TODO: 加入到主库中 // src/4-infrastructure/repositories/index.js
+fs.appendFileSync(path.resolve(__dirname,"src/4-infrastructure/repositories/index.js"), `
+    //TODO: 仓储桶文件注册仓储 // src/4-infrastructure/repositories/index.js
     /*
 import { ${_ObjName}Repository } from './${_ObjName}Repository.js';
 ${_objName}Repository: new ${_ObjName}Repository(sequelize),
-    */
-}`, { flag: 'wx' });
+    */`);
 } catch (err) {
   if (err.code === 'EEXIST') {
     console.log('文件已存在，跳过写入:', repoFile);

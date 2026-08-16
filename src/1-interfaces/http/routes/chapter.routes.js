@@ -1,5 +1,5 @@
-import Router from '@koa/router';
 import { ChapterController } from "../controllers/ChapterController.js"
+import Router from '@koa/router';
 /**
  * 
  * @param {ChapterController} chapterController 

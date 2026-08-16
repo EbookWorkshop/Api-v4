@@ -43,7 +43,7 @@ export class SwaggerController {
       'x-tagGroups': [
         {
           name: '新系统架构',
-          tags: ['Book', 'WebBook', 'Tag', 'Font'],
+          tags: ['Book', 'WebBook', "Volume", "Chapter", 'Tag', 'Font'],
         },
         {
           name: '原风格排版',

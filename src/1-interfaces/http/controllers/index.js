@@ -1,5 +1,6 @@
 // src/1-interfaces/http/controllers/index.js
 import { BookController } from './BookController.js';
+import { VolumeController } from "./VolumeController.js"
 import { ChapterController } from './ChapterController.js';
 import { TagController } from './TagController.js';
 import { FontController } from "./FontController.js";
@@ -19,6 +20,7 @@ export function createControllers(services, config) {
   return {
     book: new BookController(bookQuery, bookCommand, bookDetailQuery),
     webBook: new WebBookController(services.webBookQuery, null, services.webBookDetailQuery),
+    volume: new VolumeController(services.volumeQuery),
     chapter: new ChapterController(services.chapterQuery),
     tag: new TagController(tagQuery),
     font: new FontController(services.font, null),

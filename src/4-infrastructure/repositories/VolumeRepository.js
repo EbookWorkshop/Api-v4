@@ -13,8 +13,9 @@ export class VolumeRepository {
             },
             attributes: {
                 include: [["id", "VolumeId"]],
-                exclude: ["id"]
+                exclude: ["id", "createdAt", "updatedAt"]
             }
+            , raw: true
         })
     }
 }
