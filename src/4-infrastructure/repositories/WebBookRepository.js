@@ -36,9 +36,11 @@ export class WebBookRepository {
    * @returns JSON 格式的书籍信息
    */
   async findByBookId(bookId) {
-    return (await this.#WebBookModel.findOne({
+    const book = await this.#WebBookModel.findOne({
       where: { BookId: { [Op.eq]: bookId } }
-    })).toJSON();
+    });
+    if (!book) return null;
+    return book.toJSON();
   }
 
 

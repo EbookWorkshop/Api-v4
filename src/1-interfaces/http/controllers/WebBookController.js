@@ -1,6 +1,8 @@
 import { WebBookQueryService } from "../../../2-application/services/WebBookQueryService.js";
 import { WebBookDetailQueryService } from "../../../2-application/services/WebBookDetailQueryService.js";
 
+import { AppError } from '../../../5-shared/errors/AppError.js';
+
 export class WebBookController {
   #webBookQueryService;
   #webBookCommandService;

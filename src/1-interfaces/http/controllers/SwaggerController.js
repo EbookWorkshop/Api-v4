@@ -32,22 +32,18 @@ export class SwaggerController {
         version: version.split('.').slice(0, 2).join('.'),
         description: 'EBook Workshop 的接口。统一约定：如果返回的结果是json格式的接口，<br/>`{"code":20000}`用于代表成功，`{"code":50000}`代表服务器执行失败，`{"code":60000}`代表用户引起的失败（如输入错误类型等）。',
       },
-      servers: [
-        {
-          "url": `http://localhost:${port}`
-        }
-      ],
+      servers: [{ "url": `http://localhost:${port}`, "description": `环境：${this.#config.env}` }, { "url": `http://localhost:8777`, "description": "正式环境" }],
       tags: [  // 排序控制
-        { name: 'Library —— 图书馆' },
-        { name: 'Library - WebBook —— 网文图书馆' },
-        { name: 'Library - Tag —— 图书馆管理' },
-        { name: 'Library - Bookmark —— 图书馆书签' },
-        { name: 'Services - Font —— 系统服务：字体管理' },
+        { name: 'Library —— 图书馆', "x-tag-expanded": false },
+        { name: 'Library - WebBook —— 网文图书馆', "x-tag-expanded": false },
+        { name: 'Library - Tag —— 图书馆管理', "x-tag-expanded": false },
+        { name: 'Library - Bookmark —— 图书馆书签', "x-tag-expanded": false },
+        { name: 'Services - Font —— 系统服务：字体管理', "x-tag-expanded": false },
       ],
       'x-tagGroups': [
         {
           name: '新系统架构',
-          tags: ['Book', 'Tag', 'Font'],
+          tags: ['Book', 'WebBook', 'Tag', 'Font'],
         },
         {
           name: '原风格排版',
@@ -70,6 +66,7 @@ export class SwaggerController {
 
   async getScalar(ctx) {
     const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
+    const darkMode = ctx.query?.theme === "dark" ? "darkMode: true," : "";
     ctx.set('Content-Type', 'text/html');
     ctx.state.skipResponseWrapper = true;
     ctx.body = `
@@ -81,8 +78,18 @@ export class SwaggerController {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body>
-    <script id="api-reference" data-url="/swagger.json"></script>
+    <div id="app"></div>
     <script src="${myCDN}/@scalar/api-reference@latest/dist/browser/standalone.js">/*${myCDN}/@scalar/api-reference*/</script>
+    <script>
+      Scalar.createApiReference('#app', {
+        // The URL of the OpenAPI/Swagger document
+        url: '/swagger.json',
+        ${darkMode}
+        //theme:'moon',//alternate,default,moon,purple,solarized,bluePlanet,saturn,kepler,mars,deepSpace,laserwave
+        hideModels: true,
+        hideDarkModeToggle: true,
+      })
+    </script>
   </body>
 </html>`;
   }
@@ -93,7 +100,7 @@ export class SwaggerController {
     ctx.state.skipResponseWrapper = true;
     ctx.body = `
 <!doctype html>
-<html lang="en">
+<html lang="zh-cn">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -112,8 +119,9 @@ export class SwaggerController {
 </html>`;
   }
 
-  async getUIDist(ctx) {
+  async getOpenUIDist(ctx) {
     const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
+    const theme = ctx.query.theme ? ctx.query.theme : "light";
     ctx.set('Content-Type', 'text/html');
     ctx.state.skipResponseWrapper = true;
     ctx.body = `
@@ -125,7 +133,7 @@ export class SwaggerController {
     <title>Swagger UI Dist</title>
   </head>
   <body>
-<div id="openapi-ui-container" spec-url="/swagger.json" theme="light"></div>
+<div id="openapi-ui-container" spec-url="/swagger.json" theme="${theme}"></div>
 <script src="${myCDN}/openapi-ui-dist@latest/lib/openapi-ui.umd.js"></script>
   </body>
 </html>`;
@@ -167,6 +175,7 @@ export class SwaggerController {
 
   async getRapiDoc(ctx) {
     const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
+    const theme = ctx.query.theme === "dark" ? `theme="dark"` : `nav-bg-color="#fefefe"`;
     ctx.set('Content-Type', 'text/html');
     ctx.state.skipResponseWrapper = true;
     ctx.body = `<!doctype html>
@@ -177,7 +186,7 @@ export class SwaggerController {
     <script src="${myCDN}/rapidoc/dist/rapidoc-min.min.js"></script>
   </head>
   <body>
-    <rapi-doc spec-url="/swagger.json" > </rapi-doc>
+    <rapi-doc spec-url="/swagger.json" ${theme} show-header="false"> </rapi-doc>
   </body>
 </html>`;
   }

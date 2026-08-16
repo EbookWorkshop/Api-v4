@@ -1,7 +1,7 @@
-import { AppError } from '../../../5-shared/errors/AppError.js';
-
 import { BookQueryService } from "../../../2-application/services/BookQueryService.js";
 import { BookDetailQueryService } from "../../../2-application/services/BookDetailQueryService.js";
+
+import { AppError } from '../../../5-shared/errors/AppError.js';
 
 export class BookController {
   #bookQueryService;
