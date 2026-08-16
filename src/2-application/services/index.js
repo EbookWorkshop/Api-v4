@@ -12,6 +12,9 @@ import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
 import { FontService } from './FontService.js';
 
+import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
+
+
 export function createServices(repositories, config = {}) {
   const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
   const { tagRepository, systemConfigRepository, } = repositories;
@@ -42,5 +45,7 @@ export function createServices(repositories, config = {}) {
     tagQuery: new TagQueryService(tagRepository),
     systemConfig: systemConfigService,
     font: fontService,
+
+    reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
   };
 }

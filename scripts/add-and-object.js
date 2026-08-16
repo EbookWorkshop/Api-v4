@@ -49,8 +49,8 @@ const c1p = path.resolve(d1c, `${_ObjName}Controller.js`);
 try {
   fs.writeFileSync(c1p, fController, { flag: 'wx' });
   fs.appendFileSync(path.resolve(__dirname, "src/1-interfaces/http/controllers/index.js"), `
+console.warn("TODO: 控制器桶文件注册控制器 // src/1-interfaces/http/controllers/index.js")  
 /*
-TODO: 控制器桶文件注册控制器 // src/1-interfaces/http/controllers/index.js
 import { ${_ObjName}Controller } from "./${_ObjName}Controller.js"
 ${_objName}: new ${_ObjName}Controller(services.${_objName}Query),//参考
 */`);
@@ -127,7 +127,7 @@ export class ${_ObjName}QueryService {
 }`, { flag: 'wx' });
 
 fs.appendFileSync(path.resolve(__dirname,"src/2-application/services/index.js"), `
-//TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js
+console.warn("TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js");
 /*
 import { ${_ObjName}QueryService } from './${_ObjName}QueryService.js';
 ${_objName}Query: new ${_ObjName}QueryService(repositories.${_objName}Repository),
@@ -154,7 +154,7 @@ export class ${_ObjName}Repository {
 }`, { flag: 'wx' });
 
 fs.appendFileSync(path.resolve(__dirname,"src/4-infrastructure/repositories/index.js"), `
-    //TODO: 仓储桶文件注册仓储 // src/4-infrastructure/repositories/index.js
+console.warn("TODO: 仓储桶文件注册仓储 // src/4-infrastructure/repositories/index.js")
     /*
 import { ${_ObjName}Repository } from './${_ObjName}Repository.js';
 ${_objName}Repository: new ${_ObjName}Repository(sequelize),

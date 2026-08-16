@@ -6,6 +6,7 @@ import { TagController } from './TagController.js';
 import { FontController } from "./FontController.js";
 import { WebBookController } from "./WebBookController.js"
 import { SwaggerController } from "./SwaggerController.js"
+import { ReviewRuleController } from "./ReviewRuleController.js"
 
 /**
  * 
@@ -24,6 +25,9 @@ export function createControllers(services, config) {
     chapter: new ChapterController(services.chapterQuery),
     tag: new TagController(tagQuery),
     font: new FontController(services.font, null),
+    reviewRule: new ReviewRuleController(services.reviewRuleQuery),
+
+
     swagger: new SwaggerController(config),
   };
 }
