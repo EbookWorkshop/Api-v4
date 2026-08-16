@@ -2,7 +2,7 @@
  * @swagger
  * components:
  *   schemas:
- *     ReviewRuleItem:
+ *     ReviewRuleBase:
  *       type: object
  *       description: 校阅规则条目
  *       properties:
@@ -22,17 +22,22 @@
  *           type: string
  *           description: 替换内容
  *           example: "***"
- *         Count:
- *           type: integer
- *           description: 被引用次数（例如在校阅任务中使用次数）
- *           example: 71
  *       required:
  *         - id
  *         - Name
  *         - Rule
  *         - Replace
- *         - Count
- *
+ * 
+ *     ReviewRuleItem:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ReviewRuleBase'
+ *         - type: object
+ *           properties:
+ *             Count:
+ *               type: integer
+ *               description: 被引用次数（例如当前被多少本书引用中）
+ *               example: 71
+ * 
  *     ReviewRuleListResponse:
  *       allOf:
  *         - $ref: '#/components/schemas/ApiResponse'
@@ -71,4 +76,17 @@
  *         msg: "success"
  *         timestamp: "2026-08-16T12:00:00.000Z"
  *         data: []
+ *
+ *     ReviewRuleCreateResponse:
+ *       summary: 创建/更新规则成功响应示例
+ *       value:
+ *         code: 20000
+ *         msg: "success"
+ *         timestamp: "2026-08-16T14:00:00.000Z"
+ *         data:
+ *           id: 10
+ *           Name: "test"
+ *           Rule: "1"
+ *           Replace: "2"
+ *           addToBook: 2
  */

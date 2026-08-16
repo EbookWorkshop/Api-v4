@@ -8,6 +8,7 @@ import { ReviewRuleController } from "../controllers/ReviewRuleController.js"
   export function createreviewRuleRoutes(reviewRuleController) {
       const router = new Router({ prefix: '/review/rule' });
       router.get('/list', (ctx) => reviewRuleController.listReviewRule(ctx));
-  
+      
+      router.post('/', (ctx) => reviewRuleController.createOrUpdateReviewRule(ctx));
       return router;
   }

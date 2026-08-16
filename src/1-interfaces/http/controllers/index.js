@@ -25,7 +25,7 @@ export function createControllers(services, config) {
     chapter: new ChapterController(services.chapterQuery),
     tag: new TagController(tagQuery),
     font: new FontController(services.font, null),
-    reviewRule: new ReviewRuleController(services.reviewRuleQuery),
+    reviewRule: new ReviewRuleController(services.reviewRuleQuery,services.reviewRuleCommand),
 
 
     swagger: new SwaggerController(config),

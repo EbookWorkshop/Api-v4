@@ -13,6 +13,7 @@ import { TagQueryService } from './TagQueryService.js';
 import { FontService } from './FontService.js';
 
 import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
+import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
 
 
 export function createServices(repositories, config = {}) {
@@ -47,5 +48,6 @@ export function createServices(repositories, config = {}) {
     font: fontService,
 
     reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
+    reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository),
   };
 }

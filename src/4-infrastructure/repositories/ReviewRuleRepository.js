@@ -1,11 +1,11 @@
 import { Op, literal } from "sequelize";
 export class ReviewRuleRepository {
     #ReviewRuleModel;
-    // #ReviewRuleUsingModel;
+    #ReviewRuleUsingModel;
 
     constructor(sequelize) {
         this.#ReviewRuleModel = sequelize.models.ReviewRule;
-        // this.#ReviewRuleUsingModel = sequelize.models.ReviewRuleUsing;
+        this.#ReviewRuleUsingModel = sequelize.models.ReviewRuleUsing;
     }
 
     /**
@@ -30,5 +30,23 @@ export class ReviewRuleRepository {
             order,
             raw: true,
         });
+    }
+
+    /**
+     * 新增或创建一条规则（如需要关联书本，并同时关联）
+     * @param {*} rule 
+     * @returns 
+     */
+    async createOrUpdateReviewRule(rule) {
+        const { bookId, ...rest } = rule;
+        const [newRule] = await this.#ReviewRuleModel.upsert(rest);
+        let addToBook = [];
+        if (bookId && newRule) {
+            const newData = bookId.map(id => ({ BookId: id, RuleId: newRule.id }));
+            addToBook = await this.#ReviewRuleUsingModel.bulkCreate(newData, {
+                ignoreDuplicates: true,     //通过唯一约束忽略已存在的组合
+            });
+        }
+        return { ...newRule?.toJSON(), addToBook: addToBook.filter(r => r.isNewRecord).length };
     }
 }
