@@ -1,4 +1,3 @@
-
 import Koa from 'koa';
 import { koaBody } from 'koa-body';
 import { EventEmitter } from 'node:events';
@@ -9,9 +8,9 @@ import { entityDefinitions } from './3-domain/entities/index.js';
 import { setupAssociations } from './3-domain/associations/index.js';
 import { createRepositories } from './4-infrastructure/repositories/index.js';
 import { createServices } from './2-application/services/index.js';
-import { setupHttpServer } from './1-interfaces/http/index.js';
 import { createControllers } from './1-interfaces/http/controllers/index.js';
-
+import { setupHttpServer } from './1-interfaces/http/index.js';
+import { setupWebsocket } from './1-interfaces/websocket/index.js';
 
 // ============================================================
 // 1. 加载配置
@@ -25,7 +24,6 @@ const sequelize = createDatabaseConnection(
   config.database.path,
   config.database.logging
 );
-
 // 注册实体与关联
 entityDefinitions.forEach(defineFn => defineFn(sequelize));
 setupAssociations(sequelize.models);
@@ -48,12 +46,13 @@ const controllers = createControllers(services, config);
 // 4. 组装接口层（HTTP 适配）
 // ============================================================
 const app = new Koa();
-
 // 解析请求体（必须在路由前）
 app.use(koaBody({ multipart: true }));
+// 4.2 装配 HTTP 层（返回原生 Server）
+const httpServer = setupHttpServer(app, config, controllers);
+// 4.3 装配 WebSocket 层（挂载到同一个原生 Server）
+const io = setupWebsocket(httpServer, services, config);
 
-// 4.2 生成路由（依赖 Controllers）
-setupHttpServer(app, config, controllers);
 
 // ============================================================
 // 5. 数据库同步与启动（开发环境）
@@ -65,4 +64,4 @@ async function initializeDatabase() {
   }
 }
 
-export { app, config, initializeDatabase };
+export { app, httpServer, io, config, initializeDatabase };

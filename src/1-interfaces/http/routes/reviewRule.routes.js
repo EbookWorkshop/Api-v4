@@ -12,5 +12,6 @@ export function createreviewRuleRoutes(reviewRuleController) {
     router.post('/', (ctx) => reviewRuleController.createOrUpdateReviewRule(ctx));
     router.delete('/', (ctx) => reviewRuleController.deleteReviewRule(ctx));
 
+    router.post('/test', (ctx) => { ctx.body="todo"});
     return router;
 }
