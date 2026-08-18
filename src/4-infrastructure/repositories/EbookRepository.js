@@ -111,6 +111,23 @@ export class EbookRepository {
     return await this.#EbookModel.findByPk(bookId, { raw: true });
   }
 
+  /**
+   * 为指定字段加1
+   * 原子性地增加数值（能避免并发导致数据覆盖丢失问题）
+   * @param {*} bookId 
+   * @param {String|Array|Object} [fields='Hotness'] 字符串：'age'，默认增加 1。
+   * 数组：['age', 'score']，所有字段默认增加 1。
+   * 对象：{ age: 2, score: 5 }，为不同字段指定不同的增加量。
+   * @param {Number} [delta=1] 步长
+   * @returns 是否更新成功（更新行数大于1）
+   */
+  async increment(bookId, fields = 'Hotness', delta = 1) {
+    const affectedRows = await this.#EbookModel.increment(fields, {
+      by: delta,
+      where: { id: bookId },
+    });//返回所有涉及的行数，以及是否更新成功（可以用于分辨部分失败的情况）
+    return affectedRows.length > 0;
+  }
 
   // async create(data) {
   //   return await this.#EbookModel.create(data);

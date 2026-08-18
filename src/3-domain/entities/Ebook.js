@@ -17,7 +17,7 @@ export default function (sqlConnect) {
             type: DataTypes.STRING(50),
             allowNull: true
         },
-        Hotness: {
+        Hotness: {//Heat（热度/关注度）。Hotness（辣度/性感度/物理上的温度）。Readership（读者量/阅读人次）更精确。
             type: DataTypes.INTEGER,
             defaultValue: 0
         },

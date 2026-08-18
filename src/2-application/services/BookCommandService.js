@@ -1,12 +1,18 @@
+import { EbookRepository } from "../../4-infrastructure/repositories/EbookRepository.js"
 import { AppError } from '../../5-shared/errors/AppError.js';
 
 export class BookCommandService {
   #ebookRepository;
-  #eventManager; // 可选，用于发送领域事件
+  // #eventManager; // 可选，用于发送领域事件
 
+  /**
+   * 
+   * @param {EbookRepository} ebookRepository 
+   * @param {*} eventManager 
+   */
   constructor(ebookRepository, eventManager = null) {
     this.#ebookRepository = ebookRepository;
-    this.#eventManager = eventManager;
+    // this.#eventManager = eventManager;
   }
 
   /**
@@ -26,10 +32,10 @@ export class BookCommandService {
     };
     const newEntity = await this.#ebookRepository.create(rawData);
 
-    // 3. 发送领域事件（异步解耦）
-    if (this.#eventManager) {
-      this.#eventManager.emit('book.created', { id: newEntity.id });
-    }
+    // // 3. 发送领域事件（异步解耦）
+    // if (this.#eventManager) {
+    //   this.#eventManager.emit('book.created', { id: newEntity.id });
+    // }
 
     // 4. 返回 DTO
     return {
@@ -42,23 +48,10 @@ export class BookCommandService {
   /**
    * 更新书籍热度（命令）
    */
-  async updateHotness(bookId, newHotness) {
-    const entity = await this.#ebookRepository.findById(bookId);
-    if (!entity) {
-      throw new AppError('书籍不存在', 404);
-    }
-
-    // 业务规则：热度不能为负数
-    if (newHotness < 0) newHotness = 0;
-
-    entity.Hotness = newHotness;
-    await entity.save(); // Repository 里可以封装 save 方法
-
-    if (this.#eventManager) {
-      this.#eventManager.emit('book.hotness.updated', { id: bookId, hotness: newHotness });
-    }
-
-    return { id: bookId, hotness: newHotness };
+  async updateBookHeat(bookId) {
+    let result = await this.#ebookRepository.increment(bookId);
+    if (!result) throw new AppError('书籍不存在', 404);
+    return true;
   }
 
   /**

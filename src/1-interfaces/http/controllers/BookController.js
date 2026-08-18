@@ -170,10 +170,63 @@ export class BookController {
     ctx.body = newBook;
   }
 
-  async updateHotness(ctx) {
-    const { id } = ctx.params;
-    const { hotness } = ctx.request.body;
-    const result = await this.#bookCommandService.updateHotness(parseInt(id, 10), hotness);
+  /**
+   * @swagger
+   * /library/book/heat:
+   *   post:
+   *     summary: 更新图书热度
+   *     description: 根据图书 ID 更新该图书的热度值（通常由阅读行为触发），成功返回统一状态。
+   *     tags:
+   *       - Library —— 图书馆
+   *       - Book
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/BookHeatRequest'
+   *           examples:
+   *             default:
+   *               $ref: '#/components/examples/BookHeatRequestExample'
+   *     responses:
+   *       200:
+   *         description: 热度更新成功，返回统一成功信息
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *             examples:
+   *               success:
+   *                 $ref: '#/components/examples/BookHeatSuccess'
+   *       600:
+   *         description: 请求参数错误（如 bookId 缺失或非数字）
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 60000
+   *               msg: "bookId 必须为有效整数"
+   *               timestamp: "2026-08-19T12:00:00.000Z"
+   *       404:
+   *         description: 图书不存在
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 40400
+   *               msg: "未找到该图书"
+   *               timestamp: "2026-08-19T12:00:00.000Z"
+   *       500:
+   *         description: 服务器内部错误
+   */
+  async updateBookHeat(ctx) {
+    const { bookId } = ctx.request.body;
+
+    if (isNaN(bookId)) throw new AppError("bookId 必须为有效整数", 600);
+
+    const result = await this.#bookCommandService.updateBookHeat(bookId);
     ctx.body = result;
   }
 }
