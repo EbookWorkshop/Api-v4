@@ -31,3 +31,47 @@ export async function findFileByBasename(dirPath, basename) {
   }
   return null;
 }
+
+/**
+ * 按后缀类型，列出指定目录下符合要求的文件
+ * @param {*} sourcePath 指定的路径
+ * @param {*} options 
+ * @returns 
+ */
+export async function listFiles(sourcePath, options = { filetype: null, detail: false }) {
+  let result = [];
+  try {
+    await fs.access(sourcePath);
+
+    const dir = await fs.opendir(sourcePath);
+    for await (const dirent of dir) {
+      if (!dirent.isFile()) continue;
+      let { ext, name } = path.parse(dirent.name);
+      ext = ext.replace(/^\./, "").toLowerCase();
+      let item = {
+        file: dirent.name,
+        path: dirent.parentPath,
+        name: name,
+        ext: ext,
+      }
+      if (!options?.filetype) {
+        result.push(item);
+      } else {
+        if (options?.filetype.includes(ext)) result.push(item);
+      }
+    }
+
+    if (!options?.detail) return result.map(item => item.name);
+
+    return await Promise.all( //注意：如果单文件读取错误将导致整个Promise.alls失败
+      result.map(async (item) => {
+        const fileStat = await fs.stat(path.join(item.path, item.file));
+        item.size = fileStat.size;
+        item.createTime = fileStat.birthtime.toLocaleString();
+        return item;
+      })
+    );
+  } catch (err) {
+    return result.length > 0 ? result : null;
+  }
+}

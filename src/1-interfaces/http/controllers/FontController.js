@@ -31,4 +31,31 @@ export class FontController {
         ctx.body = await this.#fontService.getUIFont();
     }
 
+    /**
+     * @swagger
+     * /services/font:
+     *   get:
+     *     summary: 获取字体列表
+     *     description: 返回所有可用的字体文件信息（统一包装格式）
+     *     tags:
+     *       - Services - Font —— 系统服务：字体管理
+     *       - Font
+     *     responses:
+     *       200:
+     *         description: 成功返回字体列表
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/FontListResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/FontListSuccess'
+     *               empty:
+     *                 $ref: '#/components/examples/FontListEmpty'
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async getFontList(ctx) {
+        ctx.body = await this.#fontService.getFontList();
+    }
 }

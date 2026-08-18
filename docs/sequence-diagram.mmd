@@ -1,27 +1,61 @@
 sequenceDiagram
-    participant Client as 浏览器
-    participant MW as 前置中间件
-    participant Static as 静态文件
+    participant Client as 浏览器/客户端
+    participant PreMW as 前置中间件<br>(ErrorHandler/CORS/Logger)
+    participant Static as 静态文件/Swagger
     participant Wrapper as ResponseWrapper
     participant Router as Router
     participant Controller as Controller
     participant Service as Service
     participant Repo as Repository
     participant DB as SQLite
+    participant WS as WebSocket<br>(Socket.IO)
 
-    Client->>MW: GET /api/books
-    MW->>MW: 错误处理/CORS/日志/解析
-    MW->>Static: 非静态文件，继续
+    Note over Client,DB: ─── HTTP 请求流程 ───
+
+    Client->>PreMW: GET /api/books
+    activate PreMW
+    PreMW->>PreMW: 错误捕获/CORS/日志记录
+    PreMW->>Static: 非静态文件，继续
+    activate Static
     Static->>Wrapper: 继续
+    deactivate Static
+    activate Wrapper
     Wrapper->>Router: 路由匹配
+    deactivate Wrapper
+    activate Router
     Router->>Controller: listBooks(ctx)
+    deactivate Router
+    activate Controller
     Controller->>Service: getBookList()
+    deactivate Controller
+    activate Service
     Service->>Repo: findAll()
+    deactivate Service
+    activate Repo
     Repo->>DB: SELECT * FROM ebooks
-    DB-->>Repo: 数据
-    Repo-->>Service: [Ebook模型]
-    Service->>Service: 转换为DTO
+    deactivate Repo
+    DB-->>Repo: 原始数据
+    activate Repo
+    Repo-->>Service: [Ebook 模型]
+    deactivate Repo
+    activate Service
+    Service->>Service: 映射为 DTO
     Service-->>Controller: [BookDTO]
+    deactivate Service
+    activate Controller
     Controller-->>Wrapper: ctx.body = data
-    Wrapper->>Wrapper: 包装为 {code,data,msg}
+    deactivate Controller
+    activate Wrapper
+    Wrapper->>Wrapper: 包装为 {code, data, msg}
     Wrapper-->>Client: 200 JSON
+    deactivate Wrapper
+    deactivate PreMW
+
+    Note over Client,WS: ─── WebSocket 流程（独立通道） ───
+
+    Client->>WS: 连接 / (Socket.IO)
+    WS-->>Client: 连接成功
+    Client->>WS: emit('book:list')
+    WS->>Service: 调用 bookQuery.getBookList()
+    Service-->>WS: 返回数据
+    WS-->>Client: callback({ success, data })

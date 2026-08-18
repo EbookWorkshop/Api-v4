@@ -1,6 +1,8 @@
 // src/2-application/services/FontService.js
 import { SYSTEM_DEFAULT_FONT } from '../../3-domain/constants/SystemConfigGroup.js';
-import { findFileByBasename } from '../../4-infrastructure/server/fileSystemUtils.js';
+import { findFileByBasename, listFiles } from '../../4-infrastructure/server/fileSystemUtils.js';
+
+import path from "node:path";
 
 export class FontService {
   #systemConfigService;
@@ -41,5 +43,19 @@ export class FontService {
       name: fontName,
       url: url,
     };
+  }
+
+  /**
+   * 列出字体目录下所有字体文件
+   */
+  async getFontList() {
+    const fontFileType = ["ttf", "fon", "otf", "woff", "woff2", "ttc", "dfont"];
+    const fontList = await listFiles(this.#fontDirPath, { filetype: fontFileType, detail: true });
+    if (!fontList) return [];
+    return fontList.map(({ name, size, ...fon }) => ({
+      url: path.join(this.#staticUrlPrefix, fon.file),
+      size,
+      name
+    }));
   }
 }

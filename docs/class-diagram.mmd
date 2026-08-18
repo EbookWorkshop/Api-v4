@@ -9,30 +9,67 @@ classDiagram
     class BookQueryService {
         -EbookRepository ebookRepository
         +getBookList() List~BookDTO~
+        +getBookDetail(id) BookDTO
     }
 
     class BookCommandService {
         -EbookRepository ebookRepository
-        +createBook(bookDTO)
+        +createBook(bookDTO) BookDTO
+        +updateBook(id, data) BookDTO
     }
 
     class EbookRepository {
         -SequelizeModel EbookModel
         +findAll() List~Ebook~
-        +findById(id)
-        +create(data)
-        +bulkCreate(data)
+        +findById(id) Ebook
+        +create(data) Ebook
+        +update(id, data) Ebook
+        +delete(id) void
+    }
+
+    class EbookEntity {
+        +id
+        +BookName
+        +Author
+        +Hotness
+        +createdAt
+        +updatedAt
+    }
+
+    class ConfigLoader {
+        -env
+        -configDir
+        +load() Config
+    }
+
+    class DatabaseConnection {
+        +createDatabaseConnection(dbPath) Sequelize
     }
 
     class SystemCompositionRoot {
-        +assemble() App
+        +assemble()
     }
 
-    SystemCompositionRoot --> BookController : injects
-    SystemCompositionRoot --> BookQueryService : injects
-    SystemCompositionRoot --> BookCommandService : injects
-    SystemCompositionRoot --> EbookRepository : injects
-    BookController --> BookQueryService : depends
-    BookController --> BookCommandService : depends
-    BookQueryService --> EbookRepository : depends
-    BookCommandService --> EbookRepository : depends
+    class HttpSetup {
+        +setupHttpServer(app, config, controllers) http.Server
+    }
+
+    class WebsocketSetup {
+        +setupWebsocket(server, services, config) SocketIO.Server
+    }
+
+    SystemCompositionRoot --> HttpSetup : 调用
+    SystemCompositionRoot --> WebsocketSetup : 调用
+    HttpSetup --> BookController : 挂载路由
+    WebsocketSetup --> BookQueryService : 注入事件
+    WebsocketSetup --> BookCommandService : 注入事件
+
+    BookController --> BookQueryService : 依赖
+    BookController --> BookCommandService : 依赖
+    BookQueryService --> EbookRepository : 依赖
+    BookCommandService --> EbookRepository : 依赖
+    EbookRepository --> EbookEntity : 映射
+    EbookRepository --> DatabaseConnection : 使用
+
+    SystemCompositionRoot --> ConfigLoader : 加载配置
+    SystemCompositionRoot --> DatabaseConnection : 初始化
