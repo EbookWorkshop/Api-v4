@@ -58,4 +58,13 @@ export class FontService {
       name
     }));
   }
+
+  /**
+   * 获得阅读字体
+   * @returns 字体名（文件名）
+   */
+  async getFontReading() {
+    const fontName = await this.#systemConfigService.getConfig(SYSTEM_DEFAULT_FONT, 'defaultReadingFont');
+    return fontName;
+  }
 }

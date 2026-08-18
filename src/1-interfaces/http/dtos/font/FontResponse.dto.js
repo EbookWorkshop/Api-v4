@@ -100,3 +100,29 @@
  *         timestamp: "2026-08-19T10:00:00.000Z"
  *         data: []
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     FontReadingResponse:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ApiResponse'
+ *         - type: object
+ *           properties:
+ *             data:
+ *               type: string
+ *               description: 阅读字体名称
+ *               example: "宋体"
+ *           required:
+ *             - data
+ *
+ *   examples:
+ *     FontReadingSuccess:
+ *       summary: 阅读字体成功响应示例
+ *       value:
+ *         code: 20000
+ *         msg: "success"
+ *         timestamp: "2026-08-18T16:25:12.189Z"
+ *         data: "宋体"
+ */
