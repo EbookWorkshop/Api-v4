@@ -46,4 +46,27 @@ export class ChapterQueryService {
         }
     }
 
+    /**
+     * 搜索章节内容
+     * @param {String} keyword 查询关键字
+     * @param {Object} [option] - 可选参数（允许为空）
+     * @param {("title"|"content")} [option.type] - 搜索类型，`title` 或 `content`
+     * @param {number[]} [option.bookId] - 仅查询范围的书籍 ID 数组，允许为空
+     * @param {number[]} [option.notFind] - 排除的书籍 ID 数组，允许为空
+     * @returns 
+     */
+    async searchChapters(keyword, option) {
+        const result = await this.#chapterRepository.searchChapters(keyword, option);
+        return result.map((rsl) => {
+            let HitCount = 0;
+            if (option?.type == "title") HitCount = rsl.Title.match(new RegExp(keyword, "g"))?.length;
+            else if (option?.type == "title") HitCount = rsl.Content.match(new RegExp(keyword, "g"))?.length;
+            else HitCount = (rsl.Title + rsl.Content).match(new RegExp(keyword, "g"))?.length;
+            return {
+                ...rsl,
+                HitCount
+            }
+        }).sort((a, b) => b.HitCount - a.HitCount);
+    }
+
 }

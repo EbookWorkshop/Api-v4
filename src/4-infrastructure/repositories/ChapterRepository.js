@@ -3,10 +3,12 @@ import { IntroductionName } from '../../3-domain/constants/BookConstants.js';
 export class ChapterRepository {
     #ChapterModel;
     #EbookModel;
+    #VolumeModel;
 
     constructor(sequelize) {
         this.#ChapterModel = sequelize.models.EbookChapter;
         this.#EbookModel = sequelize.models.Ebook;
+        this.#VolumeModel = sequelize.models.Volume;
     }
 
     /**
@@ -80,4 +82,46 @@ export class ChapterRepository {
         });
     }
 
+
+    /**
+     * 搜索章节内容
+     * @param {String} keyword 查询关键字
+     * @param {Object} [option] - 可选参数（允许为空）
+     * @param {("title"|"content")} [option.type] - 搜索类型，`title` 或 `content`
+     * @param {number[]} [option.bookId] - 仅查询范围的书籍 ID 数组，允许为空
+     * @param {number[]} [option.notFind] - 排除的书籍 ID 数组，允许为空
+     * @returns 
+     */
+    async searchChapters(keyword, option = {}) {
+        const condition = [];
+        if (option?.type === "title") condition.push({ Title: { [Op.like]: `%${keyword}%` } })
+        else if (option?.type === "content") condition.push({ Content: { [Op.like]: `%${keyword}%` } })
+        else condition.push({
+            [Op.or]: [{ Title: { [Op.like]: `%${keyword}%` } }, { Content: { [Op.like]: `%${keyword}%` } }]
+        });
+
+        if (option.bookId?.length > 0) condition.push({ [Op.and]: { BookId: { [Op.in]: option.bookId } } });
+        if (option.notFind?.length > 0) condition.push({ [Op.and]: { BookId: { [Op.notIn]: option.notFind } } });
+
+        const result = await this.#ChapterModel.findAll({
+            where: condition,
+            include: [{
+                model: this.#EbookModel, as: "Ebook",
+                attributes: ["BookName"]
+            }, {
+                model: this.#VolumeModel, as: "Volume",
+                attributes: ["Title"],
+            }],
+            attributes: ["id", "Title", "BookId", "Content"]
+        });
+        if (!result) return [];
+        return result.map((chapModel) => {
+            const { Ebook, Volume, ...rest } = chapModel.toJSON();
+            return {
+                BookName: Ebook?.BookName,
+                VolumeTitle: Volume?.Title,
+                ...rest
+            }
+        });
+    }
 }

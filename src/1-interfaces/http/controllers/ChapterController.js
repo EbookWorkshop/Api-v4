@@ -113,4 +113,56 @@ export class ChapterController {
         ctx.body = await this.#chapterQueryService.getAdjacentChapter(chapterId);
     }
 
+
+    /**
+     * @swagger
+     * /library/book/search:
+     *   post:
+     *     summary: 搜索图书章节
+     *     description: 根据关键词和选项搜索章节内容或标题，返回匹配的章节列表（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/BookSearchRequest'
+     *           examples:
+     *             withOptions:
+     *               $ref: '#/components/examples/BookSearchRequestExample'
+     *             minimal:
+     *               $ref: '#/components/examples/BookSearchRequestMinimal'
+     *     responses:
+     *       200:
+     *         description: 搜索成功，返回结果列表
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BookSearchResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/BookSearchSuccess'
+     *               empty:
+     *                 $ref: '#/components/examples/BookSearchEmpty'
+     *       600:
+     *         description: 请求参数错误（如 keyword 缺失、option 格式错误）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40000
+     *               msg: "必须输入查询关键字"
+     *               timestamp: "2026-08-19T15:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async searchBook(ctx) {
+        const { keyword, option } = ctx.request.body;
+        if (!keyword) throw new AppError("必须输入查询关键字", 600);
+        // 实际业务逻辑...
+        ctx.body = await this.#chapterQueryService.searchChapters(keyword, option);
+    }
 }

@@ -6,9 +6,11 @@ import Router from '@koa/router';
  * @returns 
  */
 export function createChapterRoutes(chapterController) {
-  const router = new Router({ prefix: '/library/book/chapter' });
-  router.get('/', (ctx) => chapterController.getChapterById(ctx));
-  router.get('/adjacent', (ctx) => chapterController.getAdjacentChapter(ctx));
+  const router = new Router({ prefix: '/library/book' });
+  router.get('/chapter', (ctx) => chapterController.getChapterById(ctx));
+  router.get('/chapter/adjacent', (ctx) => chapterController.getAdjacentChapter(ctx));
+
+  router.post('/search', (ctx) => chapterController.searchBook(ctx));
 
   return router;
 }
