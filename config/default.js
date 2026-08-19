@@ -1,8 +1,9 @@
 // 默认配置（所有环境继承）
 export default {
-  repository‌: {
+  repository: {
     path: "../MyLibrary"
   },
+  archive: { path: "/Books" },
   font: {
     path: "/font"
   },

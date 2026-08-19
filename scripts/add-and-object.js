@@ -91,7 +91,7 @@ try {
    * @param {${_ObjName}Controller} ${_objName}Controller 
    * @returns 
    */
-  export function create${_objName}Routes(${_objName}Controller) {
+  export function create${_ObjName}Routes(${_objName}Controller) {
       const router = new Router({ prefix: '/' });//TODO: 设置路由前缀
       router.get('/', (ctx) => ${_objName}Controller.query${_ObjName}(ctx));    //设子路由与控制器之间的关联
   

@@ -20,6 +20,7 @@ export async function listFilesInDirectory(dirPath) {
 
 /**
  * 在目录中查找匹配指定基名的文件，返回完整文件名
+ * # 即可以通过文件名确认后缀
  */
 export async function findFileByBasename(dirPath, basename) {
   const files = await listFilesInDirectory(dirPath);

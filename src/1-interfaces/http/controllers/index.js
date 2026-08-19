@@ -7,6 +7,7 @@ import { FontController } from "./FontController.js";
 import { WebBookController } from "./WebBookController.js"
 import { SwaggerController } from "./SwaggerController.js"
 import { ReviewRuleController } from "./ReviewRuleController.js"
+import { AssetsController } from "./AssetsController.js"
 
 /**
  * 
@@ -27,6 +28,7 @@ export function createControllers(services, config) {
     font: new FontController(services.font, null),
     reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
 
+    assets: new AssetsController(services.assetsQuery, services.assetsCommand),
 
     swagger: new SwaggerController(config),
   };

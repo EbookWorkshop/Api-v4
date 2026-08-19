@@ -1,6 +1,6 @@
 // src/2-application/services/FontService.js
 import { SYSTEM_DEFAULT_FONT } from '../../3-domain/constants/SystemConfigGroup.js';
-import { findFileByBasename, listFiles } from '../../4-infrastructure/server/fileSystemUtils.js';
+import { IFileScanner } from '../ports/IFileScanner.js';
 
 import path from "node:path";
 
@@ -8,11 +8,20 @@ export class FontService {
   #systemConfigService;
   #fontDirPath;          // 字体目录的绝对路径
   #staticUrlPrefix;      // 静态资源 URL 前缀（如 '/static'）
+  #fileScanner;
 
-  constructor(systemConfigService, fontDirPath, staticUrlPrefix = '/font') {
+  /**
+   * 
+   * @param {*} systemConfigService 
+   * @param {*} fontDirPath 字体目录与资源目录的相对路径
+   * @param {*} staticUrlPrefix 
+   * @param {IFileScanner} fileScanner 
+   */
+  constructor(systemConfigService, fontDirPath, staticUrlPrefix = '/font', fileScanner) {
     this.#systemConfigService = systemConfigService;
     this.#fontDirPath = fontDirPath;
     this.#staticUrlPrefix = staticUrlPrefix;
+    this.#fileScanner = fileScanner;
   }
 
   /**
@@ -29,7 +38,7 @@ export class FontService {
     }
 
     // 2. 在字体目录中查找匹配的文件（带扩展名）
-    const matchedFile = await findFileByBasename(this.#fontDirPath, fontName);
+    const matchedFile = await this.#fileScanner.findFileByBasename(this.#fontDirPath, fontName);
     if (!matchedFile) {
       // 如果文件不存在，可以记录警告并返回 null
       console.warn(`Font file not found for: ${fontName}`);
@@ -50,7 +59,7 @@ export class FontService {
    */
   async getFontList() {
     const fontFileType = ["ttf", "fon", "otf", "woff", "woff2", "ttc", "dfont"];
-    const fontList = await listFiles(this.#fontDirPath, { filetype: fontFileType, detail: true });
+    const fontList = await this.#fileScanner.listFiles(this.#fontDirPath, { filetype: fontFileType, detail: true });
     if (!fontList) return [];
     return fontList.map(({ name, size, ...fon }) => ({
       url: path.join(this.#staticUrlPrefix, fon.file),
