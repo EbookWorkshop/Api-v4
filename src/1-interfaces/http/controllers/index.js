@@ -21,11 +21,11 @@ export function createControllers(services, config) {
   return {
     book: new BookController(bookQuery, bookCommand, bookDetailQuery),
     webBook: new WebBookController(services.webBookQuery, null, services.webBookDetailQuery),
-    volume: new VolumeController(services.volumeQuery),
+    volume: new VolumeController(services.volumeQuery, services.volumeCommand),
     chapter: new ChapterController(services.chapterQuery),
     tag: new TagController(tagQuery),
     font: new FontController(services.font, null),
-    reviewRule: new ReviewRuleController(services.reviewRuleQuery,services.reviewRuleCommand),
+    reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
 
 
     swagger: new SwaggerController(config),

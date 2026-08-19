@@ -1,15 +1,19 @@
 
 import { VolumeQueryService } from "../../../2-application/services/VolumeQueryService.js";
+import { VolumeCommandService } from "../../../2-application/services/VolumeCommandService.js";
 import { AppError } from '../../../5-shared/errors/AppError.js';
 
 export class VolumeController {
     #volumeQueryService;
+    #volumeCommandService;
 
     /**
      * @param {VolumeQueryService} volumeQueryService 
+     * @param {VolumeCommandService} volumeCommandService 
      */
-    constructor(volumeQueryService) {
+    constructor(volumeQueryService, volumeCommandService) {
         this.#volumeQueryService = volumeQueryService;
+        this.#volumeCommandService = volumeCommandService;
     }
     /**
      * @swagger
@@ -51,5 +55,62 @@ export class VolumeController {
         const bookId = ctx.query.bookId * 1;
         if (isNaN(bookId)) throw new AppError("提供的书籍ID不正确。", 600);
         ctx.body = await this.#volumeQueryService.findByBookId(bookId)
+    }
+
+    /**
+     * @swagger
+     * /library/book/volume:
+     *   post:
+     *     summary: 【卷】创建图书分卷
+     *     description: 为指定图书创建新的分卷（卷），成功返回统一状态信息。
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Volume
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/VolumeCreateRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/VolumeCreateRequestExample'
+     *     responses:
+     *       200:
+     *         description: 分卷创建成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-20T10:00:00.000Z"
+     *       600:
+     *         description: 请求参数错误（如 bookId 非数字、缺少必填字段）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookId 必须为有效整数"
+     *               timestamp: "2026-08-20T10:00:00.000Z"
+     *       404:
+     *         description: 指定的图书不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该图书"
+     *               timestamp: "2026-08-20T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async createVolume(ctx) {
+        const { bookId, title, introduction } = ctx.request.body;
+        ctx.body = await this.#volumeCommandService.createVolume(bookId, title, introduction);
     }
 }

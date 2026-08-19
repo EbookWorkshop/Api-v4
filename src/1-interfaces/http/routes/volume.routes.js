@@ -9,5 +9,9 @@ import { VolumeController } from "../controllers/VolumeController.js"
       const router = new Router({ prefix: '/library/book/volume' });
       router.get('/all', (ctx) => volumeController.getAllVolumes(ctx));
   
+
+      router.post('/', (ctx) => volumeController.createVolume(ctx));
+
+
       return router;
   }

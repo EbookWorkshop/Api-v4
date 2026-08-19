@@ -27,16 +27,19 @@ const d4 = path.resolve(__dirname, "src/4-infrastructure/repositories")
 //controller
 const fController = `
 import { ${_ObjName}QueryService } from "../../../2-application/services/${_ObjName}QueryService.js";
+import { ${_ObjName}CommandService } from "../../../2-application/services/${_ObjName}CommandService.js";
 import { AppError } from '../../../5-shared/errors/AppError.js';
 
 export class ${_ObjName}Controller {
     #${_objName}QueryService;
-
+    #${_objName}CommandService;
     /**
      * @param {${_ObjName}QueryService} ${_objName}QueryService 
+     * @param {${_ObjName}CommandService} ${_objName}CommandService 
      */
-    constructor(${_objName}QueryService) {
+    constructor(${_objName}QueryService,${_objName}CommandService) {
         this.#${_objName}QueryService = ${_objName}QueryService;
+        this.#${_objName}CommandService = ${_objName}CommandService;
     }
     //TODO: 加入控制器，加入注解
     async get${_ObjName}(ctx) {
@@ -52,7 +55,7 @@ try {
 console.warn("TODO: 控制器桶文件注册控制器 // src/1-interfaces/http/controllers/index.js")  
 /*
 import { ${_ObjName}Controller } from "./${_ObjName}Controller.js"
-${_objName}: new ${_ObjName}Controller(services.${_objName}Query),//参考
+${_objName}: new ${_ObjName}Controller(services.${_objName}Query,services.${_objName}Command),//参考
 */`);
 } catch (err) {
   if (err.code === 'EEXIST') {
@@ -138,6 +141,39 @@ ${_objName}Query: new ${_ObjName}QueryService(repositories.${_objName}Repository
     console.log('文件已存在，跳过写入:', serviceFille);
   } else {
     console.error('写入发生其他错误:', serviceFille, err);
+  }
+}
+//
+const commandServiceFille = path.resolve(d2, `${_ObjName}CommandService.js`);
+try {
+  fs.writeFileSync(commandServiceFille, `import { ${_ObjName}Repository } from '../../4-infrastructure/repositories/${_ObjName}Repository.js';
+import { AppError } from "../../5-shared/errors/AppError.js"
+
+export class ${_ObjName}CommandService {
+    /** @type {${_ObjName}Repository} */
+    #${_objName}Repository;
+
+    /**
+     * @param {${_ObjName}Repository} ${_objName}Repository 
+     */
+    constructor(${_objName}Repository) {
+        this.#${_objName}Repository = ${_objName}Repository;
+    }
+
+}`, { flag: 'wx' });
+
+fs.appendFileSync(path.resolve(__dirname,"src/2-application/services/index.js"), `
+console.warn("TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js");
+/*
+import { ${_ObjName}CommandService } from './${_ObjName}CommandService.js';
+${_objName}Command: new ${_ObjName}CommandService(repositories.${_objName}Repository),
+*/`);
+
+} catch (err) {
+  if (err.code === 'EEXIST') {
+    console.log('文件已存在，跳过写入:', commandServiceFille);
+  } else {
+    console.error('写入发生其他错误:', commandServiceFille, err);
   }
 }
 
