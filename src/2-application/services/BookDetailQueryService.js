@@ -1,4 +1,4 @@
-import { AppError } from "../../5-shared/errors/AppError.js"
+import { AppError } from "../../5-shared/errors/index.js"
 export class BookDetailQueryService {
     #ebookRepo;
     #indexRepo;

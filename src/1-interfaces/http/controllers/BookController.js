@@ -1,7 +1,7 @@
 import { BookQueryService } from "../../../2-application/services/BookQueryService.js";
 import { BookDetailQueryService } from "../../../2-application/services/BookDetailQueryService.js";
 
-import { AppError } from '../../../5-shared/errors/AppError.js';
+import { AppError, UserInputError } from '../../../5-shared/errors/index.js';
 
 export class BookController {
   #bookQueryService;
@@ -117,7 +117,7 @@ export class BookController {
    */
   async queryBook(ctx) {
     const bookId = ctx.query.bookid * 1;
-    if (isNaN(bookId)) throw new AppError("提供的书籍ID不正确。", 600);
+    if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
     ctx.body = await this.#bookDetailQuery.getBookDetail(bookId);
   }
 
@@ -159,7 +159,7 @@ export class BookController {
    */
   async getMetadata(ctx) {
     const bookId = ctx.query.bookid * 1;
-    if (isNaN(bookId)) throw new AppError("提供的书籍ID不正确。", 600);
+    if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
     ctx.body = await this.#bookDetailQuery.getMetadata(bookId);
   }
 
@@ -224,7 +224,7 @@ export class BookController {
   async updateBookHeat(ctx) {
     const { bookId } = ctx.request.body;
 
-    if (isNaN(bookId)) throw new AppError("bookId 必须为有效整数", 600);
+    if (isNaN(bookId)) throw new UserInputError("bookId 必须为有效整数");
 
     const result = await this.#bookCommandService.updateBookHeat(bookId);
     ctx.body = result;

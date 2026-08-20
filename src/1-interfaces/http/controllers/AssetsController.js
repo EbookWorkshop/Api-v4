@@ -1,7 +1,7 @@
 
 import { AssetsQueryService } from "../../../2-application/services/AssetsQueryService.js";
 // import { AssetsCommandService } from "../../../2-application/services/AssetsCommandService.js";
-import { AppError } from '../../../5-shared/errors/AppError.js';
+import { AppError } from '../../../5-shared/errors/index.js';
 
 export class AssetsController {
     #assetsQueryService;

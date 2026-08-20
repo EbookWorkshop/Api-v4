@@ -1,5 +1,5 @@
 import { EbookRepository } from "../../4-infrastructure/repositories/EbookRepository.js"
-import { AppError } from '../../5-shared/errors/AppError.js';
+import { AppError, UserInputError } from '../../5-shared/errors/index.js';
 
 export class BookCommandService {
   #ebookRepository;
@@ -21,7 +21,7 @@ export class BookCommandService {
   async createBook(bookDTO) {
     // 1. 业务校验（如书名不能为空）
     if (!bookDTO.bookName) {
-      throw new AppError('书名不能为空', 400);
+      throw new UserInputError('书名不能为空');
     }
 
     // 2. 调用 Repository 持久化

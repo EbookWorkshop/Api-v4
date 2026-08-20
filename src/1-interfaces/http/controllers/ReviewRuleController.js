@@ -1,6 +1,6 @@
 
 import { ReviewRuleQueryService } from "../../../2-application/services/ReviewRuleQueryService.js";
-import { AppError } from '../../../5-shared/errors/AppError.js';
+import { UserInputError } from '../../../5-shared/errors/index.js';
 
 export class ReviewRuleController {
     #reviewRuleQueryService;
@@ -102,9 +102,9 @@ export class ReviewRuleController {
      */
     async createOrUpdateReviewRule(ctx) {
         const { id, name, rule, replace, bookId } = ctx.request.body;
-        if (bookId?.length > 0 && bookId.some(i => isNaN(i * 1))) throw new AppError("bookId 必须为整数数组", 600);
-        if (!name) throw new AppError("规则名为必填项", 600);
-        if (!rule) throw new AppError("校阅规则为必填项", 600);
+        if (bookId?.length > 0 && bookId.some(i => isNaN(i * 1))) throw new UserInputError("bookId 必须为整数数组");
+        if (!name) throw new UserInputError("规则名为必填项");
+        if (!rule) throw new UserInputError("校阅规则为必填项");
         ctx.body = await this.#reviewRuleCommandService.createOrUpdateReviewRule({ id, name, rule, replace, bookId });
     }
 
@@ -162,7 +162,7 @@ export class ReviewRuleController {
      */
     async deleteReviewRule(ctx) {
         const id = ctx.query.id * 1;
-        if (isNaN(id)) throw new AppError("提供的校阅规则ID必须为正整数。", 600);
+        if (isNaN(id)) throw new UserInputError("提供的校阅规则ID必须为正整数。");
         ctx.body = await this.#reviewRuleCommandService.deleteReviewRuleById(id);
     }
 }

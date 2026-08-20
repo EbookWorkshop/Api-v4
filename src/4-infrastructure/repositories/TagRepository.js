@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { AppError } from '../../5-shared/errors/AppError.js';
+import { AppError, UserInputError } from '../../5-shared/errors/index.js';
 export class TagRepository {
     #TagModel;
     #EBookTag;
@@ -62,7 +62,7 @@ export class TagRepository {
                     }
                 });
             } catch (error) {
-                if (error.name === "SequelizeForeignKeyConstraintError") throw new AppError("关联的书籍不存在，ID：" + bookId, 600);
+                if (error.name === "SequelizeForeignKeyConstraintError") throw new UserInputError("关联的书籍不存在，ID：" + bookId);
                 else throw error;
             }
         }

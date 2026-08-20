@@ -1,7 +1,7 @@
 
 import { VolumeQueryService } from "../../../2-application/services/VolumeQueryService.js";
 import { VolumeCommandService } from "../../../2-application/services/VolumeCommandService.js";
-import { AppError } from '../../../5-shared/errors/AppError.js';
+import { UserInputError } from '../../../5-shared/errors/index.js';
 
 export class VolumeController {
     #volumeQueryService;
@@ -53,7 +53,7 @@ export class VolumeController {
      */
     async getAllVolumes(ctx) {
         const bookId = ctx.query.bookId * 1;
-        if (isNaN(bookId)) throw new AppError("提供的书籍ID不正确。", 600);
+        if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
         ctx.body = await this.#volumeQueryService.findByBookId(bookId)
     }
 

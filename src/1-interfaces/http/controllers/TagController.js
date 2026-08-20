@@ -1,5 +1,5 @@
 import { TagQueryService } from "../../../2-application/services/TagQueryService.js";
-import { AppError } from "../../../5-shared/errors/AppError.js";
+import { UserInputError } from "../../../5-shared/errors/index.js";
 
 export class TagController {
     #TagQueryService;
@@ -95,7 +95,7 @@ export class TagController {
      */
     async ebookTags(ctx) {
         const bookId = ctx.query.bookid * 1;
-        if (isNaN(bookId)) throw new AppError("提供的书籍ID不正确。", 600);
+        if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
         ctx.body = await this.#TagQueryService.getEbookTags(bookId);
     }
 
@@ -326,7 +326,7 @@ export class TagController {
         const bookId = ctx.query.bookid * 1;
         const tagId = ctx.query.tagid * 1;
         if (isNaN(bookId) || isNaN(tagId)) {
-            throw new AppError("bookid 和 tagid 必须为有效整数", 600);
+            throw new UserInputError("bookid 和 tagid 必须为有效整数");
         }
         ctx.body = await this.#TagCommandService.removeTagFromBook(bookId, tagId);
     }

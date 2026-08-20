@@ -1,4 +1,5 @@
 import { ChapterQueryService } from "../../../2-application/services/ChapterQueryService.js";
+import { UserInputError } from '../../../5-shared/errors/index.js';
 
 export class ChapterController {
     #chapterQueryService;
@@ -56,7 +57,7 @@ export class ChapterController {
      */
     async getChapterById(ctx) {
         const cpId = ctx.query.chapterid * 1;
-        if (isNaN(cpId)) throw new AppError("提供的章节ID不正确。", 600);
+        if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
         ctx.body = await this.#chapterQueryService.getChapterById(cpId);
     }
 
@@ -109,7 +110,7 @@ export class ChapterController {
      */
     async getAdjacentChapter(ctx) {
         const chapterId = ctx.query.chapterid * 1;
-        if (isNaN(chapterId)) throw new AppError("提供的章节ID不正确。", 600);
+        if (isNaN(chapterId)) throw new UserInputError("提供的章节ID不正确。");
         ctx.body = await this.#chapterQueryService.getAdjacentChapter(chapterId);
     }
 
@@ -161,7 +162,7 @@ export class ChapterController {
      */
     async searchBook(ctx) {
         const { keyword, option } = ctx.request.body;
-        if (!keyword) throw new AppError("必须输入查询关键字", 600);
+        if (!keyword) throw new UserInputError("必须输入查询关键字");
         // 实际业务逻辑...
         ctx.body = await this.#chapterQueryService.searchChapters(keyword, option);
     }

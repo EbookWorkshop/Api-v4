@@ -1,4 +1,4 @@
-import { AppError } from "../../../5-shared/errors/AppError.js";
+import { AppError } from "../../../5-shared/errors/index.js";
 
 export class SwaggerController {
   #config;
@@ -232,5 +232,5 @@ function findFastestCDN(urls) {
       // 设置超时（如 3秒）
       setTimeout(() => reject(), 30_000);
     })
-  )).catch(err => { throw new AppError("暂无可用CND，请稍候重试。已尝试CDN：" + urls.toString(), 500) });
+  )).catch(err => { throw new AppError("暂无可用CND，请稍候重试。已尝试CDN：" + urls.toString()) });
 }

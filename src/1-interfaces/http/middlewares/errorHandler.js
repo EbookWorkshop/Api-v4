@@ -1,4 +1,4 @@
-import { AppError } from '../../../5-shared/errors/AppError.js';
+import { AppError } from '../../../5-shared/errors/index.js';
 
 /**
  * 全局异常捕获中间件（必须放在最外层）

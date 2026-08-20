@@ -1,5 +1,5 @@
 import { IFileScanner } from '../ports/IFileScanner.js';
-import { AppError } from "../../5-shared/errors/AppError.js"
+import { AppError } from "../../5-shared/errors/index.js"
 
 export class AssetsQueryService {
     /** @type {IFileScanner} */

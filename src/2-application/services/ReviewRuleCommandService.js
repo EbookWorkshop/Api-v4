@@ -1,5 +1,5 @@
 import { ReviewRuleRepository } from '../../4-infrastructure/repositories/ReviewRuleRepository.js';
-import { AppError } from "../../5-shared/errors/AppError.js"
+import { AppError, UserInputError } from "../../5-shared/errors/index.js"
 
 export class ReviewRuleCommandService {
     /** @type {ReviewRuleRepository} */
@@ -29,8 +29,8 @@ export class ReviewRuleCommandService {
         try {
             return await this.#reviewRuleRepository.createOrUpdateReviewRule(formaxRule);
         } catch (err) {
-            if (err.name == "SequelizeForeignKeyConstraintError") throw new AppError("添加到关联书本失败：指定ID的书籍不存在。", 600);
-            throw new AppError(err.message, 500);
+            if (err.name == "SequelizeForeignKeyConstraintError") throw new UserInputError("添加到关联书本失败：指定ID的书籍不存在。");
+            throw err;
         }
     }
 

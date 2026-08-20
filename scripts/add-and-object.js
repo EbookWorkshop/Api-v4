@@ -28,7 +28,7 @@ const d4 = path.resolve(__dirname, "src/4-infrastructure/repositories")
 const fController = `
 import { ${_ObjName}QueryService } from "../../../2-application/services/${_ObjName}QueryService.js";
 import { ${_ObjName}CommandService } from "../../../2-application/services/${_ObjName}CommandService.js";
-import { AppError } from '../../../5-shared/errors/AppError.js';
+import { AppError, UserInputError } from '../../../5-shared/errors/index.js';
 
 export class ${_ObjName}Controller {
     #${_objName}QueryService;
@@ -109,7 +109,7 @@ try {
 const serviceFille = path.resolve(d2, `${_ObjName}QueryService.js`);
 try {
   fs.writeFileSync(serviceFille, `import { ${_ObjName}Repository } from '../../4-infrastructure/repositories/${_ObjName}Repository.js';
-import { AppError } from "../../5-shared/errors/AppError.js"
+import { AppError, UserInputError } from "../../5-shared/errors/index.js"
 
 export class ${_ObjName}QueryService {
     /** @type {${_ObjName}Repository} */
@@ -147,7 +147,7 @@ ${_objName}Query: new ${_ObjName}QueryService(repositories.${_objName}Repository
 const commandServiceFille = path.resolve(d2, `${_ObjName}CommandService.js`);
 try {
   fs.writeFileSync(commandServiceFille, `import { ${_ObjName}Repository } from '../../4-infrastructure/repositories/${_ObjName}Repository.js';
-import { AppError } from "../../5-shared/errors/AppError.js"
+import { AppError } from "../../5-shared/errors/index.js"
 
 export class ${_ObjName}CommandService {
     /** @type {${_ObjName}Repository} */
