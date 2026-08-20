@@ -7,5 +7,6 @@ export function createBookRoutes(bookController) {
   router.get("/book/metadata", (ctx) => bookController.getMetadata(ctx));
 
   router.post('/book/heat', (ctx) => bookController.updateBookHeat(ctx));
+  router.post('/emptybook', (ctx) => bookController.createEmptyBook(ctx));
   return router;
 }

@@ -1,4 +1,5 @@
 import { BookQueryService } from "../../../2-application/services/BookQueryService.js";
+import { BookCommandService } from "../../../2-application/services/BookCommandService.js";
 import { BookDetailQueryService } from "../../../2-application/services/BookDetailQueryService.js";
 
 import { AppError, UserInputError } from '../../../5-shared/errors/index.js';
@@ -11,7 +12,7 @@ export class BookController {
   /**
    * 
    * @param {BookQueryService} bookQueryService 
-   * @param {*} bookCommandService 
+   * @param {BookCommandService} bookCommandService 
    * @param {BookDetailQueryService} bookDetailQuery 
    */
   constructor(bookQueryService, bookCommandService, bookDetailQuery) {
@@ -163,13 +164,6 @@ export class BookController {
     ctx.body = await this.#bookDetailQuery.getMetadata(bookId);
   }
 
-
-  async createBook(ctx) {
-    const newBook = await this.#bookCommandService.createBook(ctx.request.body);
-    ctx.status = 201;
-    ctx.body = newBook;
-  }
-
   /**
    * @swagger
    * /library/book/heat:
@@ -228,5 +222,65 @@ export class BookController {
 
     const result = await this.#bookCommandService.updateBookHeat(bookId);
     ctx.body = result;
+  }
+
+  /**
+   * @swagger
+   * /library/emptybook:
+   *   post:
+   *     summary: 创建空白图书
+   *     description: 创建一个只有元数据（书名、作者）的空书记录，通常用于占位或后续上传内容（统一包装格式）
+   *     tags:
+   *       - Library —— 图书馆
+   *       - Book
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               bookName:
+   *                 type: string
+   *                 description: 书名
+   *                 example: "我的书籍"
+   *               author:
+   *                 type: string
+   *                 description: 作者
+   *                 example: "测试"
+   *             required:
+   *               - bookName
+   *               - author
+   *           example:
+   *             bookName: "我的书籍"
+   *             author: "测试"
+   *     responses:
+   *       200:
+   *         description: 空白图书创建成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *             example:
+   *               code: 20000
+   *               msg: "success"
+   *               timestamp: "2026-08-21T10:00:00.000Z"
+   *       400:
+   *         description: 请求参数错误（如缺少必填字段）
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 40000
+   *               msg: "bookName、author、type 均为必填字段"
+   *               timestamp: "2026-08-21T10:00:00.000Z"
+   *       500:
+   *         description: 服务器内部错误
+   */
+  async createEmptyBook(ctx) {
+    const { bookName, author } = ctx.request.body;
+    if (!bookName) throw new UserInputError("书名不能为空！");
+    ctx.body = await this.#bookCommandService.createEmptyBook(bookName, author);
   }
 }

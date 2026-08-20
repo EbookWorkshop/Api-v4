@@ -16,6 +16,25 @@ export class BookCommandService {
   }
 
   /**
+   * 创建一本空书
+   * @param {*} bookName 
+   * @param {*} author 
+   * @returns 
+   */
+  async createEmptyBook(bookName, author = "佚名") {
+    if (!bookName) {
+      throw new UserInputError('书名不能为空');
+    }
+    const rawData = {
+      BookName: bookName,
+      Author: author,
+      CoverImg:"#212f30",
+      Hotness: 0,
+    };
+    return await this.#ebookRepository.create(rawData);
+  }
+
+  /**
    * 创建新书（命令）
    */
   async createBook(bookDTO) {

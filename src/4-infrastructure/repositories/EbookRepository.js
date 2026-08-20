@@ -129,15 +129,17 @@ export class EbookRepository {
     return affectedRows.length > 0;
   }
 
-  // async create(data) {
-  //   return await this.#EbookModel.create(data);
-  // }
+  /**
+   * 创建一本书
+   * @param {*} data 
+   * @returns 
+   */
+  async create(data) {
+    return await this.#EbookModel.create(data);
+  }
 
   // async bulkCreate(books) {
   //   return await this.#EbookModel.bulkCreate(books);
   // }
 
-  getModel() {
-    return this.#EbookModel;
-  }
 }
