@@ -33,4 +33,34 @@ export class EmailController {
     async getInboxEmail(ctx) {
         ctx.body = await this.#emailService.getInboxAddress();
     }
+
+    /**
+    * @swagger
+    * /services/email/account:
+    *   get:
+    *     summary: 获取邮箱账号信息
+    *     description: 返回当前配置的邮箱账号和密码（统一包装格式）
+    *     tags:
+    *       - Services - EMail —— 系统服务：邮件
+    *       - Email
+    *     responses:
+    *       200:
+    *         description: 成功返回账号信息
+    *         content:
+    *           application/json:
+    *             schema:
+    *               $ref: '#/components/schemas/EmailAccountResponse'
+    *             example:
+    *               code: 20000
+    *               msg: "success"
+    *               timestamp: "2026-08-20T20:00:00.000Z"
+    *               data:
+    *                 address: "ab@c.com"
+    *                 password: "abcd"
+    *       500:
+    *         description: 服务器内部错误
+    */
+    async getEmailAccount(ctx) {
+        ctx.body = await this.#emailService.getEmailAccount();
+    }
 }

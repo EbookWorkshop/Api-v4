@@ -24,6 +24,23 @@ export class SystemConfigRepository {
   }
 
   /**
+   * 查找配置值
+   * @param {string} group - 功能分组
+   * @param {string} name - 配置名
+   * @param {object} options - 可选项（如 transaction）
+   * @returns {Promise<string|null>}
+   */
+  async findValueGroup(group, options = {}) {
+    const record = await this.#SystemConfigModel.findAll({
+      where: { Group: group },
+      attributes: ["Name", 'Value'],
+      raw: true,
+      transaction: options.transaction,
+    });
+    return record;
+  }
+
+  /**
    * 插入或更新配置（原子操作）
    * @param {string} group
    * @param {string} name

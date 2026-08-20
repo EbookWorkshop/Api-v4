@@ -17,6 +17,16 @@ export class SystemConfigService {
     }
 
     /**
+     * 获取配置组
+     * @param {string} group - 分组常量
+     * @param {object} options - 可选事务
+     * @returns {Promise<string|null>}
+     */
+    async getConfigGroup(group, options = {}) {
+        return await this.#systemConfigRepository.findValueGroup(group, options);
+    }
+
+    /**
      * 设置配置值
      * @param {string} group
      * @param {string} name
