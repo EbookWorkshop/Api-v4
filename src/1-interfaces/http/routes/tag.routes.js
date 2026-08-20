@@ -9,5 +9,7 @@ export function createTagRoutes(TagController) {
 
   router.delete('/tag', (ctx) => TagController.deleteTag(ctx));
 
+  router.put('/tag', (ctx) => TagController.updateTag(ctx));
+
   return router;
 }

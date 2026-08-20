@@ -155,6 +155,7 @@ export class TagController {
      *     summary: 删除标签
      *     description: 根据标签 ID 删除指定的标签（统一包装格式）
      *     tags:
+     *       - Library - Tag —— 图书馆管理
      *       - Tag
      *     parameters:
      *       - in: query
@@ -205,5 +206,66 @@ export class TagController {
         if (isNaN(tagId)) throw new AppError("tagid 必须为有效整数", 400);
         const result = await this.#TagCommandService.deleteTag(tagId);
         ctx.body = result;
+    }
+
+    /**
+     * @swagger
+     * /library/tag:
+     *   put:
+     *     summary: 更新标签
+     *     description: 根据标签 ID 更新标签的文本或颜色（统一包装格式）
+     *     tags:
+     *       - Library - Tag —— 图书馆管理
+     *       - Tag
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UpdateTagRequest'
+     *           examples:
+     *             full:
+     *               $ref: '#/components/examples/UpdateTagRequestExample'
+     *             partial:
+     *               $ref: '#/components/examples/UpdateTagRequestPartial'
+     *     responses:
+     *       200:
+     *         description: 标签更新成功，返回更新行数
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiResponse'
+     *             example:
+     *               code: 20000
+     *               data: 1
+     *               msg: "success"
+     *               timestamp: "2026-08-20T18:00:00.000Z"
+     *       600:
+     *         description: 请求参数错误（如 tagId 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40000
+     *               msg: "tagId 为必填字段且必须为有效整数"
+     *               timestamp: "2026-08-20T18:00:00.000Z"
+     *       404:
+     *         description: 标签不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该标签"
+     *               timestamp: "2026-08-20T18:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async updateTag(ctx) {
+        const { tagId, tagText, color } = ctx.request.body;
+        if (isNaN(tagId)) throw new AppError("tagid 必须为有效整数", 600);
+        ctx.body = await this.#TagCommandService.updateTag(tagId, tagText, color);
     }
 }

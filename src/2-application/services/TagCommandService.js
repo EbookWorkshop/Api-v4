@@ -30,4 +30,15 @@ export class TagCommandService {
     async deleteTag(tagId) {
         return await this.#tagRepository.deleteTag(tagId);
     }
+
+    /**
+     * 修改标签信息
+     * @param {number} tagId 标签ID
+     * @param {*} tagText 标签文本
+     * @param {*} color 标签颜色
+     * @returns 修改行数
+     */
+    async updateTag(tagId, tagText, color){
+        return await this.#tagRepository.updateTag(tagId, tagText, color)
+    }
 }

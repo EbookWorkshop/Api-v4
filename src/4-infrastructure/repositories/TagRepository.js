@@ -77,7 +77,18 @@ export class TagRepository {
         return await this.#TagModel.destroy({ where: { id: tagId } });
     }
 
-    getModel() {
-        return this.#TagModel;
+    /**
+     * 修改标签信息
+     * @param {number} tagId 标签ID
+     * @param {*} tagText 标签文本
+     * @param {*} color 标签颜色
+     * @returns 修改行数
+     */
+    async updateTag(tagId, tagText, color) {
+        const [rows] = await this.#TagModel.update({
+            ...(color ? { Color: color } : {}),
+            ...(tagText ? { Text: tagText } : {}),
+        }, { where: { id: tagId } });
+        return rows;
     }
 }
