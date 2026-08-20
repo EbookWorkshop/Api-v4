@@ -8,6 +8,7 @@ import { WebBookController } from "./WebBookController.js"
 import { SwaggerController } from "./SwaggerController.js"
 import { ReviewRuleController } from "./ReviewRuleController.js"
 import { AssetsController } from "./AssetsController.js"
+import { EmailController } from './EmailController.js';
 
 /**
  * 
@@ -29,6 +30,7 @@ export function createControllers(services, config) {
     reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
 
     assets: new AssetsController(services.assetsQuery, services.assetsCommand),
+    email: new EmailController(services.email),
 
     swagger: new SwaggerController(config),
   };
