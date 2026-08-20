@@ -268,4 +268,66 @@ export class TagController {
         if (isNaN(tagId)) throw new AppError("tagid 必须为有效整数", 600);
         ctx.body = await this.#TagCommandService.updateTag(tagId, tagText, color);
     }
+
+    /**
+     * @swagger
+     * /library/tagonbook:
+     *   delete:
+     *     summary: 从图书移除标签
+     *     description: 解除图书与标签的关联关系（统一包装格式）
+     *     tags:
+     *       - Library - Tag —— 图书馆管理
+     *       - Tag
+     *     parameters:
+     *       - $ref: '#/components/parameters/BookIdQuery'
+     *       - in: query
+     *         name: tagid
+     *         schema:
+     *           type: integer
+     *           minimum: 1
+     *         required: true
+     *         description: 标签 ID
+     *         example: 1
+     *     responses:
+     *       200:
+     *         description: 移除成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-20T19:00:00.000Z"
+     *       400:
+     *         description: 参数错误（如 bookid 或 tagid 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40000
+     *               msg: "bookid 和 tagid 必须为有效整数"
+     *               timestamp: "2026-08-20T19:00:00.000Z"
+     *       404:
+     *         description: 图书或标签不存在，或关联不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该关联关系"
+     *               timestamp: "2026-08-20T19:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async removeTagFromBook(ctx) {
+        const bookId = ctx.query.bookid * 1;
+        const tagId = ctx.query.tagid * 1;
+        if (isNaN(bookId) || isNaN(tagId)) {
+            throw new AppError("bookid 和 tagid 必须为有效整数", 600);
+        }
+        ctx.body = await this.#TagCommandService.removeTagFromBook(bookId, tagId);
+    }
 }

@@ -8,6 +8,7 @@ export function createTagRoutes(TagController) {
   router.post('/tag', (ctx) => TagController.createTag(ctx));
 
   router.delete('/tag', (ctx) => TagController.deleteTag(ctx));
+  router.delete('/tagonbook', (ctx) => TagController.removeTagFromBook(ctx));
 
   router.put('/tag', (ctx) => TagController.updateTag(ctx));
 

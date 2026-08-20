@@ -38,7 +38,17 @@ export class TagCommandService {
      * @param {*} color 标签颜色
      * @returns 修改行数
      */
-    async updateTag(tagId, tagText, color){
+    async updateTag(tagId, tagText, color) {
         return await this.#tagRepository.updateTag(tagId, tagText, color)
+    }
+
+    /**
+     * 删除某书籍的标签
+     * @param {*} bookId 
+     * @param {*} tagId 
+     * @returns 删除行数
+     */
+    async removeTagFromBook(bookId, tagId) {
+        return await this.#tagRepository.removeTagFromBook(bookId, tagId);
     }
 }

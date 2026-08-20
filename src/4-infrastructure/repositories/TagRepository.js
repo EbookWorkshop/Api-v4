@@ -91,4 +91,19 @@ export class TagRepository {
         }, { where: { id: tagId } });
         return rows;
     }
+
+    /**
+     * 删除某书籍的标签
+     * @param {*} bookId 
+     * @param {*} tagId 
+     * @returns 删除行数
+     */
+    async removeTagFromBook(bookId, tagId) {
+        return await this.#EBookTag.destroy({
+            where: {
+                BookId: bookId,
+                TagId: tagId
+            }
+        });
+    }
 }
