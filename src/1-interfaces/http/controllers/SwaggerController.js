@@ -39,6 +39,7 @@ export class SwaggerController {
         { name: 'Library - Tag —— 图书馆管理', "x-tag-expanded": false },
         { name: 'Library - Bookmark —— 图书馆书签', "x-tag-expanded": false },
         { name: 'Review - Rule —— 自助校阅 - 规则库', "x-tag-expanded": false },
+        { name: 'Services - BotRule —— 系统服务：机器人爬网规则', "x-tag-expanded": false },
         { name: 'Services - Font —— 系统服务：字体管理', "x-tag-expanded": false },
         { name: 'Services - EMail —— 系统服务：邮件', "x-tag-expanded": false },
         { name: 'Assets —— 资源管理', "x-tag-expanded": false },
@@ -56,6 +57,7 @@ export class SwaggerController {
             'Library - WebBook —— 网文图书馆',
             'Library - Tag —— 图书馆管理',
             "Review - Rule —— 自助校阅 - 规则库",
+            "Services - BotRule —— 系统服务：机器人爬网规则",
             'Services - Font —— 系统服务：字体管理',
             "Services - EMail —— 系统服务：邮件",
             'Assets —— 资源管理'

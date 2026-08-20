@@ -20,6 +20,9 @@ import { FileSystemScanner } from '../../4-infrastructure/server/adapters/FileSy
 
 import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
 import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
+
+import { RuleForWebQueryService } from './RuleForWebQueryService.js';
+
 import { AssetsQueryService } from './AssetsQueryService.js';
 import { TagController } from '../../1-interfaces/http/controllers/TagController.js';
 
@@ -62,6 +65,8 @@ export function createServices(repositories, config = {}) {
     reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
     reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository),
 
+    ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository),
+
     assetsQuery: new AssetsQueryService(fileScanner, config),
 
   };
@@ -71,3 +76,8 @@ export function createServices(repositories, config = {}) {
 // import { AssetsCommandService } from './AssetsCommandService.js';
 // assetsCommand: new AssetsCommandService(repositories.assetsRepository),
 // */
+
+/*
+import { RuleForWebCommandService } from './RuleForWebCommandService.js';
+ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository),
+*/

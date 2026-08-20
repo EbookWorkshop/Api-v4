@@ -9,6 +9,7 @@ import { SwaggerController } from "./SwaggerController.js"
 import { ReviewRuleController } from "./ReviewRuleController.js"
 import { AssetsController } from "./AssetsController.js"
 import { EmailController } from './EmailController.js';
+import { RuleForWebController } from "./RuleForWebController.js"
 
 /**
  * 
@@ -29,9 +30,12 @@ export function createControllers(services, config) {
     font: new FontController(services.font, null),
     reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
 
+    ruleForWeb: new RuleForWebController(services.ruleForWebQuery, services.ruleForWebCommand),
+
     assets: new AssetsController(services.assetsQuery, services.assetsCommand),
     email: new EmailController(services.email),
 
     swagger: new SwaggerController(config),
   };
 }
+

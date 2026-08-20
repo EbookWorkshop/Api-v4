@@ -8,6 +8,7 @@ import { VolumeRepository } from "./VolumeRepository.js";
 import { WebBookRepository } from './WebBookRepository.js';
 import { ReviewRuleRepository } from './ReviewRuleRepository.js';
 
+import { RuleForWebRepository } from './RuleForWebRepository.js';
 
 export function createRepositories(sequelize) {
   return {
@@ -23,5 +24,6 @@ export function createRepositories(sequelize) {
     webBookRepository: new WebBookRepository(sequelize),
 
     reviewRuleRepository: new ReviewRuleRepository(sequelize),
+    ruleForWebRepository: new RuleForWebRepository(sequelize),
   };
 }
