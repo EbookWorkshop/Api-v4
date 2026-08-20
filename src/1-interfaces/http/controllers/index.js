@@ -16,7 +16,7 @@ import { AssetsController } from "./AssetsController.js"
  */
 export function createControllers(services, config) {
   const { bookQuery, bookCommand, bookDetailQuery } = services;
-  const { tagQuery } = services;
+  const { tagQuery, tagCommand } = services;
 
   //注意：路由聚合器的设计要求了，路由对应的控制器必须是路由模块名字的小骆峰名字。即：abcRouter必须对应的控制器为abc。
   return {
@@ -24,7 +24,7 @@ export function createControllers(services, config) {
     webBook: new WebBookController(services.webBookQuery, null, services.webBookDetailQuery),
     volume: new VolumeController(services.volumeQuery, services.volumeCommand),
     chapter: new ChapterController(services.chapterQuery),
-    tag: new TagController(tagQuery),
+    tag: new TagController(tagQuery, tagCommand),
     font: new FontController(services.font, null),
     reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
 

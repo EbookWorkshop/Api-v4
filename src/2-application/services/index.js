@@ -11,6 +11,7 @@ import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
 
 import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
+import { TagCommandService } from "./TagCommandService.js"
 import { FontService } from './FontService.js';
 import { IFileScanner } from '../ports/IFileScanner.js';
 import { FileSystemScanner } from '../../4-infrastructure/server/adapters/FileSystemScanner.js';
@@ -18,6 +19,7 @@ import { FileSystemScanner } from '../../4-infrastructure/server/adapters/FileSy
 import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
 import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
 import { AssetsQueryService } from './AssetsQueryService.js';
+import { TagController } from '../../1-interfaces/http/controllers/TagController.js';
 
 export function createServices(repositories, config = {}) {
   const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
@@ -49,6 +51,7 @@ export function createServices(repositories, config = {}) {
     volumeCommand: new VolumeCommandService(repositories.volumeRepository),
     chapterQuery: new ChapterQueryService(chapterRepository),
     tagQuery: new TagQueryService(tagRepository),
+    tagCommand: new TagCommandService(tagRepository),
     systemConfig: systemConfigService,
     font: fontService,
 

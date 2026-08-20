@@ -98,4 +98,53 @@ export class TagController {
         if (isNaN(bookId)) throw new AppError("提供的书籍ID不正确。", 600);
         ctx.body = await this.#TagQueryService.getEbookTags(bookId);
     }
+
+    /**
+     * @swagger
+     * /library/tag:
+     *   post:
+     *     summary: 创建新标签
+     *     description: 创建新的图书标签，可选的关联图书或颜色（统一包装格式）
+     *     tags:
+     *       - Library - Tag —— 图书馆管理
+     *       - Tag
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/TagCreateRequest'
+     *           examples:
+     *             full:
+     *               $ref: '#/components/examples/TagCreateRequestExample'
+     *             minimal:
+     *               $ref: '#/components/examples/TagCreateRequestMinimal'
+     *     responses:
+     *       200:
+     *         description: 标签创建成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/CreateTagSuccess'
+     *       400:
+     *         description: 请求参数错误（如 tagText 缺失、bookId 非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40000
+     *               msg: "tagText 为必填字段"
+     *               timestamp: "2026-08-20T16:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async createTag(ctx) {
+        const { bookId, tagText, color } = ctx.request.body;
+        if (!tagText) throw AppError("标签不能为空", 600);
+        ctx.body = await this.#TagCommandService.createTag(tagText.trim(), color, bookId);
+    }
 }
