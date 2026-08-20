@@ -1,9 +1,13 @@
 import { Op } from "sequelize";
 export class VolumeRepository {
     #VolumeModel;
+    #ChapterModel;
+    #sequelize;
 
     constructor(sequelize) {
         this.#VolumeModel = sequelize.models.Volume;
+        this.#ChapterModel = sequelize.models.EbookChapter;
+        this.#sequelize = sequelize;
     }
 
     async findByBookId(bookId) {
@@ -44,5 +48,31 @@ export class VolumeRepository {
             Introduction: introduction,
             // OrderNum: 99999,
         }
+    }
+
+    /**
+     * 删除一个卷
+     * # 并释放卷中所有章节
+     * @param {number} volumeId 
+     * @returns 
+     */
+    async deleteVolume(volumeId) {
+        const trans = await this.#sequelize.transaction();
+        //先移出所有章节
+        await this.#ChapterModel.update({
+            VolumeId: null
+        }, {
+            where: { VolumeId: volumeId },
+            transaction: trans
+        });
+
+        //删除卷本身
+        const result = await this.#VolumeModel.destroy({
+            where: { id: volumeId },
+            transaction: trans
+        });
+
+        await trans.commit();
+        return result;
     }
 }

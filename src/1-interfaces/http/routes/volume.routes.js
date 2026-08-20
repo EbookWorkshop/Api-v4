@@ -12,6 +12,7 @@ import { VolumeController } from "../controllers/VolumeController.js"
 
       router.post('/', (ctx) => volumeController.createVolume(ctx));
 
+      router.delete('/', (ctx) => volumeController.deleteVolume(ctx));
 
       return router;
   }

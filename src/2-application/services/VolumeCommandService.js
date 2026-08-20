@@ -21,4 +21,14 @@ export class VolumeCommandService {
     async createVolume(bookId, title, introduction) {
         return await this.#volumeRepository.createVolume(bookId, title, introduction);
     }
+
+    /**
+     * 删除一个卷
+     * # 并释放卷中所有章节
+     * @param {number} volumeId 
+     * @returns 
+     */
+    async deleteVolume(volumeId) {
+        return await this.#volumeRepository.deleteVolume(volumeId);
+    }
 }

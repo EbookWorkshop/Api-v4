@@ -113,4 +113,62 @@ export class VolumeController {
         const { bookId, title, introduction } = ctx.request.body;
         ctx.body = await this.#volumeCommandService.createVolume(bookId, title, introduction);
     }
+
+    /**
+     * @swagger
+     * /library/book/volume:
+     *   delete:
+     *     summary: 【卷】删除图书分卷
+     *     description: 根据分卷 ID 删除指定的分卷及其关联数据（如章节）（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Volume
+     *     parameters:
+     *       - in: query
+     *         name: volumeId
+     *         schema:
+     *           type: integer
+     *           minimum: 1
+     *         required: true
+     *         description: 要删除的分卷 ID
+     *         example: 52
+     *     responses:
+     *       200:
+     *         description: 删除成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-21T12:00:00.000Z"
+     *       600:
+     *         description: 参数错误（如 volumeId 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "无效的卷ID"
+     *               timestamp: "2026-08-21T12:00:00.000Z"
+     *       404:
+     *         description: 分卷不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该分卷"
+     *               timestamp: "2026-08-21T12:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async deleteVolume(ctx) {
+        const volumeId = ctx.query.volumeId * 1;
+        if (isNaN(volumeId)) throw new UserInputError("无效的卷ID");
+        ctx.body = await this.#volumeCommandService.deleteVolume(volumeId);
+    }
 }
