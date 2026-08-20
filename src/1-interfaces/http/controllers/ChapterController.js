@@ -1,15 +1,18 @@
 import { ChapterQueryService } from "../../../2-application/services/ChapterQueryService.js";
+import { ChapterCommandService } from "../../../2-application/services/ChapterCommandService.js";
 import { UserInputError } from '../../../5-shared/errors/index.js';
 
 export class ChapterController {
     #chapterQueryService;
+    #chapterCommandService;
 
     /**
-     * 
      * @param {ChapterQueryService} chapterQueryService 
+     * @param {ChapterCommandService} chapterCommandService 
      */
-    constructor(chapterQueryService) {
+    constructor(chapterQueryService, chapterCommandService) {
         this.#chapterQueryService = chapterQueryService;
+        this.#chapterCommandService = chapterCommandService;
     }
 
     /**
@@ -163,7 +166,62 @@ export class ChapterController {
     async searchBook(ctx) {
         const { keyword, option } = ctx.request.body;
         if (!keyword) throw new UserInputError("必须输入查询关键字");
-        // 实际业务逻辑...
         ctx.body = await this.#chapterQueryService.searchChapters(keyword, option);
+    }
+
+    /**
+     * @swagger
+     * /library/book/volume/removechapters:
+     *   post:
+     *     summary: 【卷】从卷中删除章节
+     *     description: 根据章节 ID 列表批量从卷中删除章节，返回删除的行数（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/RemoveChaptersRequest'
+     *           example:
+     *             chapterIds: [1, 3, 4]
+     *     responses:
+     *       200:
+     *         description: 删除成功，返回删除的行数
+     *         content:
+     *           application/json:
+     *             schema:
+     *               allOf:
+     *                 - $ref: '#/components/schemas/ApiResponse'
+     *                 - type: object
+     *                   properties:
+     *                     data:
+     *                       type: integer
+     *                       description: 实际从卷中删除的章节行数
+     *                       example: 3
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-21T10:00:00.000Z"
+     *               data: 3
+     *       400:
+     *         description: 请求参数错误（如 chapterIds 缺失或非数字数组）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40000
+     *               msg: "chapterIds 必须为整数数组"
+     *               timestamp: "2026-08-21T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async removeChaptersFromVolume(ctx) {
+        const { chapterIds } = ctx.request.body;
+        if (!Array.isArray(chapterIds)) throw new UserInputError("提供的章节格式不对");
+        ctx.body = await this.#chapterCommandService.removeChaptersFromVolume(chapterIds);
+
     }
 }

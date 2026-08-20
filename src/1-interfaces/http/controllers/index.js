@@ -25,7 +25,7 @@ export function createControllers(services, config) {
     book: new BookController(bookQuery, bookCommand, bookDetailQuery),
     webBook: new WebBookController(services.webBookQuery, null, services.webBookDetailQuery),
     volume: new VolumeController(services.volumeQuery, services.volumeCommand),
-    chapter: new ChapterController(services.chapterQuery),
+    chapter: new ChapterController(services.chapterQuery, services.chapterCommand),
     tag: new TagController(tagQuery, tagCommand),
     font: new FontController(services.font, null),
     reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),

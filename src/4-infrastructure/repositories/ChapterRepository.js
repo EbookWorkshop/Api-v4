@@ -124,4 +124,18 @@ export class ChapterRepository {
             }
         });
     }
+
+    /**
+     * 从卷中移除指定章节
+     * @param {number[]} chapterIds 
+     * @returns 
+     */
+    async removeChaptersFromVolume(chapterIds) {
+        const [result] = await this.#ChapterModel.update(
+            { VolumeId: null },
+            { where: { id: { [Op.in]: chapterIds } } }
+        );
+
+        return result;
+    }
 }

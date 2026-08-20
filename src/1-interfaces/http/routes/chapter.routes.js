@@ -12,5 +12,6 @@ export function createChapterRoutes(chapterController) {
 
   router.post('/search', (ctx) => chapterController.searchBook(ctx));
 
+  router.post("/volume/removechapters", (ctx) => chapterController.removeChaptersFromVolume(ctx));
   return router;
 }

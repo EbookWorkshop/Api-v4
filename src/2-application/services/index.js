@@ -5,6 +5,7 @@ import { BookDetailQueryService } from "./BookDetailQueryService.js";
 import { VolumeQueryService } from './VolumeQueryService.js';
 import { VolumeCommandService } from './VolumeCommandService.js';
 import { ChapterQueryService } from "./ChapterQueryService.js"
+import { ChapterCommandService } from './ChapterCommandService.js';
 
 import { WebBookQueryService } from "./WebBookQueryService.js"
 import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
@@ -56,6 +57,7 @@ export function createServices(repositories, config = {}) {
     volumeQuery: new VolumeQueryService(volumeRepository),
     volumeCommand: new VolumeCommandService(repositories.volumeRepository),
     chapterQuery: new ChapterQueryService(chapterRepository),
+    chapterCommand: new ChapterCommandService(repositories.chapterRepository),
     tagQuery: new TagQueryService(tagRepository),
     tagCommand: new TagCommandService(tagRepository),
     systemConfig: systemConfigService,
