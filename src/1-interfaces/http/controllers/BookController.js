@@ -283,4 +283,55 @@ export class BookController {
     if (!bookName) throw new UserInputError("书名不能为空！");
     ctx.body = await this.#bookCommandService.createEmptyBook(bookName, author);
   }
+
+  /**
+   * @swagger
+   * /library/book:
+   *   delete:
+   *     summary: 删除图书
+   *     description: 根据图书 ID 删除指定的图书及其关联数据（如章节、分卷等）（统一包装格式）
+   *     tags:
+   *       - Library —— 图书馆
+   *       - Book
+   *     parameters:
+   *       - $ref: '#/components/parameters/BookIdQuery'
+   *     responses:
+   *       200:
+   *         description: 删除成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiResponse'
+   *             example:
+   *               code: 20000
+   *               msg: "success"
+   *               timestamp: "2026-08-21T11:00:00.000Z"
+   *       600:
+   *         description: 参数错误（如 bookid 缺失或非数字）
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 60000
+   *               msg: "bookid 必须为有效整数"
+   *               timestamp: "2026-08-21T11:00:00.000Z"
+   *       404:
+   *         description: 图书不存在
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 40400
+   *               msg: "未找到该图书"
+   *               timestamp: "2026-08-21T11:00:00.000Z"
+   *       500:
+   *         description: 服务器内部错误
+   */
+  async deleteBook(ctx) {
+    const bookId = ctx.query.bookid * 1;
+    if (isNaN(bookId)) throw new UserInputError("bookid 必须为有效整数");
+    ctx.body = await this.#bookCommandService.deleteBook(bookId);
+  }
 }

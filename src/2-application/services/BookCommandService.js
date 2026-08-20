@@ -28,7 +28,7 @@ export class BookCommandService {
     const rawData = {
       BookName: bookName,
       Author: author,
-      CoverImg:"#212f30",
+      CoverImg: "#212f30",
       Hotness: 0,
     };
     return await this.#ebookRepository.create(rawData);
@@ -77,11 +77,6 @@ export class BookCommandService {
    * 删除书籍（软删除或硬删除）
    */
   async deleteBook(bookId) {
-    const entity = await this.#ebookRepository.findById(bookId);
-    if (!entity) {
-      throw new AppError('书籍不存在', 404);
-    }
-    await entity.destroy(); // 硬删除
-    // 或者使用软删除: entity.deletedAt = new Date(); await entity.save();
+    return await this.#ebookRepository.delete(bookId);
   }
 }

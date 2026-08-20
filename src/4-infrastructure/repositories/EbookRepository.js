@@ -142,4 +142,15 @@ export class EbookRepository {
   //   return await this.#EbookModel.bulkCreate(books);
   // }
 
+  /**
+   * 删除书本
+   * @param {*} bookId 
+   * @returns 
+   */
+  async delete(bookId) {
+    return await this.#EbookModel.destroy({
+      where: { id: bookId }
+    });
+  }
+
 }

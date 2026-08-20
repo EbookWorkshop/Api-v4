@@ -8,5 +8,7 @@ export function createBookRoutes(bookController) {
 
   router.post('/book/heat', (ctx) => bookController.updateBookHeat(ctx));
   router.post('/emptybook', (ctx) => bookController.createEmptyBook(ctx));
+
+  router.delete("/book", (ctx) => bookController.deleteBook(ctx));
   return router;
 }
