@@ -6,5 +6,8 @@ export function createTagRoutes(TagController) {
   router.get("/ebooktag", ctx => TagController.ebookTags(ctx));
 
   router.post('/tag', (ctx) => TagController.createTag(ctx));
+
+  router.delete('/tag', (ctx) => TagController.deleteTag(ctx));
+
   return router;
 }

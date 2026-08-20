@@ -22,4 +22,12 @@ export class TagCommandService {
     async createTag(tagText, color, bookId) {
         return await this.#tagRepository.createTag(tagText, color, bookId);
     }
+
+    /**
+     * 删除某标签
+     * @param {number} tagId 要删除的标签ID
+     */
+    async deleteTag(tagId) {
+        return await this.#tagRepository.deleteTag(tagId);
+    }
 }

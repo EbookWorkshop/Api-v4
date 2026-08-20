@@ -69,7 +69,13 @@ export class TagRepository {
         return [isCreate, addToBook];
     }
 
-
+    /**
+     * 删除某标签
+     * @param {number} tagId 要删除的标签ID
+     */
+    async deleteTag(tagId) {
+        return await this.#TagModel.destroy({ where: { id: tagId } });
+    }
 
     getModel() {
         return this.#TagModel;
