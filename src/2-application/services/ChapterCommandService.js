@@ -20,4 +20,18 @@ export class ChapterCommandService {
     async removeChaptersFromVolume(chapterIds) {
         return await this.#chapterRepository.removeChaptersFromVolume(chapterIds);
     }
+
+    /**
+     * 插入或更新章节
+     * @param {Object} [chapter] 章节信息
+     * @param {number} [chapter.IndexId] 章节ID
+     * @param {number} [chapter.BookId] 书籍ID
+     * @param {string} [chapter.Title] 章节标题     
+     * @param {string} [chapter.Content] 章节正文
+     * @param {number} [chapter.VolumeId] 卷ID
+     * @param {number} [chapter.OrderNum] 章节排序号
+     */
+    async upsertChapter(chapter) {
+        return await this.#chapterRepository.upsertChapter(chapter);
+    }
 }

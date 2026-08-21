@@ -10,6 +10,8 @@ export function createChapterRoutes(chapterController) {
   router.get('/chapter', (ctx) => chapterController.getChapterById(ctx));
   router.get('/chapter/adjacent', (ctx) => chapterController.getAdjacentChapter(ctx));
 
+  router.post('/chapter', (ctx) => chapterController.upsertChapter(ctx));
+  
   router.post('/search', (ctx) => chapterController.searchBook(ctx));
 
   router.post("/volume/removechapters", (ctx) => chapterController.removeChaptersFromVolume(ctx));

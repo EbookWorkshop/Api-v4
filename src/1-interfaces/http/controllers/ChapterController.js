@@ -224,4 +224,73 @@ export class ChapterController {
         ctx.body = await this.#chapterCommandService.removeChaptersFromVolume(chapterIds);
 
     }
+
+    /**
+     * @swagger
+     * /library/book/chapter:
+     *   post:
+     *     summary: 【卷】新增或修改章节
+     *     description: |
+     *       根据 `IndexId` 判断操作类型：
+     *       - 若 `IndexId` > 0：修改对应章节
+     *       - 若 `IndexId` <= 0 且 `BookId` > 0：新增章节
+     *       - 否则返回参数错误
+     *       要求 `Title` 和 `Content` 至少提供一个。
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UpsertChapterRequest'
+     *           example:
+     *             IndexId: 0
+     *             BookId: 209
+     *             Title: "一、演绎法的研究"
+     *             Content: "<p>福尔摩斯正在研究...</p>"
+     *             VolumeId: 53
+     *             OrderNum: 1
+     *     responses:
+     *       200:
+     *         description: 操作成功，返回200
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-20T20:00:00.000Z"
+     *       600:
+     *         description: 请求参数错误（如缺少 Title 和 Content、IndexId 和 BookId 不匹配等）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "请求参数错误"
+     *               timestamp: "2026-08-21T13:00:00.000Z"
+     *       404:
+     *         description: 修改时指定的章节不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该章节"
+     *               timestamp: "2026-08-21T13:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async upsertChapter(ctx) {
+        let chapter = ctx.request.body;
+        if (!chapter.Content && !chapter.Title) throw new UserInputError("请求参数错误：章节标题和内容不能同时为空。");
+        if (chapter.IndexId <= 0 && !chapter.BookId) throw new UserInputError("新增章节需要指定添加的书籍。");
+
+        ctx.body = await this.#chapterCommandService.upsertChapter(chapter);
+    }
 }
