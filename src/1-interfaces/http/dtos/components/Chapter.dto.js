@@ -89,3 +89,25 @@
  *         timestamp: "2026-08-15T10:00:00.000Z"
  *         data: null
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ChapterIdRequest:
+ *       type: object
+ *       description: 将章节设为引言的请求体
+ *       properties:
+ *         chapterId:
+ *           type: integer
+ *           description: 章节 ID（目录项 ID）
+ *           example: 49017
+ *       required:
+ *         - chapterId
+ *
+ *   examples:
+ *     ChapterIdRequestExample:
+ *       summary: 将章节设为引言的请求示例
+ *       value:
+ *         chapterId: 49017
+ */

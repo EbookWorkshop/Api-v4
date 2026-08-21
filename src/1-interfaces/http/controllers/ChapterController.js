@@ -368,4 +368,56 @@ export class ChapterController {
 
         ctx.body = await this.#chapterCommandService.updateOrder(orderData);
     }
+
+    /**
+     * @swagger
+     * /library/book/chapter/tointroduction:
+     *   post:
+     *     summary: 【章】将章节设为简介
+     *     description: 将指定章节标记为图书的简介章节（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ChapterIdRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/ChapterIdRequestExample'
+     *     responses:
+     *       200:
+     *         description: 操作成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 请求参数错误（如 chapterId 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "章节ID出错：章节ID只能为正整数。"
+     *       404:
+     *         description: 指定的章节不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "待操作的章节不存在。"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async setChapterAsIntroduction(ctx) {
+        const { chapterId } = ctx.request.body;
+        if (!isNaN(chapterId)) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
+        ctx.body = await this.#chapterCommandService.setAsIntroduction(chapterId);
+    }
 }

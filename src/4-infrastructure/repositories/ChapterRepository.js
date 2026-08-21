@@ -197,4 +197,33 @@ export class ChapterRepository {
         });
         return rows;
     }
+
+    /**
+     * 将指定章节设置为简介
+     * 并将已有的简介章节放出
+     * @param {*} chapterId 章节ID
+     * @returns 
+     */
+    async setAsIntroduction(chapterId) {
+        const { sequelize } = this.#ChapterModel;
+        const trans = sequelize.transaction();
+        const chapter = this.#ChapterModel.findByPk(chapterId);
+        if (!chapter) throw new AppError("待操作的章节不存在。", 404);
+
+        await this.#ChapterModel.update({
+            Title: "简介",
+            OrderNum: sequelize.literal('ABS(OrderNum)')
+        }, {
+            where: { Title: IntroductionName, BookId: chapter.BookId },
+            transaction: trans,
+        });
+        await this.#ChapterModel.update({
+            Title: IntroductionName,
+            OrderNum: sequelize.literal('-ABS(OrderNum)')
+        }, {
+            where: { id: chapterId },
+            transaction: trans,
+        });
+        return trans.commit();
+    }
 }

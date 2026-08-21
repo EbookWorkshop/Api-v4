@@ -54,4 +54,14 @@ export class ChapterCommandService {
     async updateOrder(orderData) {
         return await this.#chapterRepository.updateOrder(orderData);
     }
+
+    /**
+     * 将指定章节设置为简介
+     * 并将已有的简介章节放出
+     * @param {*} chapterId 章节ID
+     * @returns 
+     */
+    async setAsIntroduction(chapterId) {
+        return await this.#chapterRepository.setAsIntroduction(chapterId);
+    }
 }
