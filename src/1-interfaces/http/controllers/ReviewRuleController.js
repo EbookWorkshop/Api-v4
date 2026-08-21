@@ -132,11 +132,7 @@ export class ReviewRuleController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiResponse'
-     *             example:
-     *               code: 20000
-     *               msg: "success"
-     *               timestamp: "2026-08-17T10:00:00.000Z"
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *       600:
      *         description: 参数错误（如 id 非数字）
      *         content:

@@ -34,4 +34,13 @@ export class ChapterCommandService {
     async upsertChapter(chapter) {
         return await this.#chapterRepository.upsertChapter(chapter);
     }
+
+    /**
+     * 根据ID删除章节
+     * @param {*} chapterId 需要删除的章节
+     * @returns 
+     */
+    async deleteChapter(chapterId) {
+        return await this.#chapterRepository.deleteChapter(chapterId);
+    }
 }

@@ -159,4 +159,13 @@ export class ChapterRepository {
         const result = await this.#ChapterModel.upsert(chapter);
         return !!result;
     }
+
+    /**
+     * 根据ID删除章节
+     * @param {*} chapterId 需要删除的章节
+     * @returns 
+     */
+    async deleteChapter(chapterId) {
+        return await this.#ChapterModel.destroy({ where: { id: chapterId } });
+    }
 }

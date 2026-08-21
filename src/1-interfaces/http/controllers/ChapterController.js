@@ -173,8 +173,8 @@ export class ChapterController {
      * @swagger
      * /library/book/volume/removechapters:
      *   post:
-     *     summary: 【卷】从卷中删除章节
-     *     description: 根据章节 ID 列表批量从卷中删除章节，返回删除的行数（统一包装格式）
+     *     summary: 【卷】将章节移出卷中
+     *     description: 根据章节 ID 列表批量从卷中移除，返回修改的行数（统一包装格式）
      *     tags:
      *       - Library —— 图书馆
      *       - Chapter
@@ -188,18 +188,11 @@ export class ChapterController {
      *             chapterIds: [1, 3, 4]
      *     responses:
      *       200:
-     *         description: 删除成功，返回删除的行数
+     *         description: 移除成功，返回移除的行数
      *         content:
      *           application/json:
      *             schema:
-     *               allOf:
-     *                 - $ref: '#/components/schemas/ApiResponse'
-     *                 - type: object
-     *                   properties:
-     *                     data:
-     *                       type: integer
-     *                       description: 实际从卷中删除的章节行数
-     *                       example: 3
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *             example:
      *               code: 20000
      *               msg: "success"
@@ -222,14 +215,13 @@ export class ChapterController {
         const { chapterIds } = ctx.request.body;
         if (!Array.isArray(chapterIds)) throw new UserInputError("提供的章节格式不对");
         ctx.body = await this.#chapterCommandService.removeChaptersFromVolume(chapterIds);
-
     }
 
     /**
      * @swagger
      * /library/book/chapter:
      *   post:
-     *     summary: 【卷】新增或修改章节
+     *     summary: 【章】新增或修改章节
      *     description: |
      *       根据 `IndexId` 判断操作类型：
      *       - 若 `IndexId` > 0：修改对应章节
@@ -258,11 +250,12 @@ export class ChapterController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiResponse'
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *             example:
      *               code: 20000
      *               msg: "success"
      *               timestamp: "2026-08-20T20:00:00.000Z"
+     *               data: true
      *       600:
      *         description: 请求参数错误（如缺少 Title 和 Content、IndexId 和 BookId 不匹配等）
      *         content:
@@ -292,5 +285,42 @@ export class ChapterController {
         if (chapter.IndexId <= 0 && !chapter.BookId) throw new UserInputError("新增章节需要指定添加的书籍。");
 
         ctx.body = await this.#chapterCommandService.upsertChapter(chapter);
+    }
+
+    /**
+     * @swagger
+     * /library/book/chapter:
+     *   delete:
+     *     summary: 【章】根据章节ID删除章节
+     *     description: 根据章节 ID（目录项 ID）删除章节
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     parameters:
+     *       - $ref: '#/components/parameters/ChapterIdQuery'
+     *     responses:
+     *       200:
+     *         description: 成功返回删除数量
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       400:
+     *         description: 请求参数错误（如 chapterid 非数字或小于 1）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "提供的章节ID不正确。"
+     *               timestamp: "2026-08-15T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async deleteChapter(ctx) {
+        const cpId = ctx.query.chapterid * 1;
+        if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
+        ctx.body = await this.#chapterCommandService.deleteChapter(cpId);
     }
 }

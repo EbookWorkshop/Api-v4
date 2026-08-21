@@ -125,10 +125,7 @@ export class TagController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiResponse'
-     *             examples:
-     *               success:
-     *                 $ref: '#/components/examples/CreateTagSuccess'
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *       400:
      *         description: 请求参数错误（如 tagText 缺失、bookId 非数字）
      *         content:
@@ -172,12 +169,7 @@ export class TagController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiResponse'
-     *             example:
-     *               code: 20000
-     *               data: 1
-     *               msg: "success"
-     *               timestamp: "2026-08-20T17:00:00.000Z"
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *       600:
      *         description: 参数错误（如 tagid 缺失或非数字）
      *         content:
@@ -234,12 +226,7 @@ export class TagController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiResponse'
-     *             example:
-     *               code: 20000
-     *               data: 1
-     *               msg: "success"
-     *               timestamp: "2026-08-20T18:00:00.000Z"
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *       600:
      *         description: 请求参数错误（如 tagId 缺失或非数字）
      *         content:
@@ -294,11 +281,7 @@ export class TagController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiResponse'
-     *             example:
-     *               code: 20000
-     *               msg: "success"
-     *               timestamp: "2026-08-20T19:00:00.000Z"
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *       400:
      *         description: 参数错误（如 bookid 或 tagid 缺失或非数字）
      *         content:

@@ -188,10 +188,7 @@ export class BookController {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/ApiResponse'
-   *             examples:
-   *               success:
-   *                 $ref: '#/components/examples/BookHeatSuccess'
+   *               $ref: '#/components/schemas/ApiSuccessResponse'
    *       600:
    *         description: 请求参数错误（如 bookId 缺失或非数字）
    *         content:
@@ -260,11 +257,7 @@ export class BookController {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/ApiResponse'
-   *             example:
-   *               code: 20000
-   *               msg: "success"
-   *               timestamp: "2026-08-21T10:00:00.000Z"
+   *               $ref: '#/components/schemas/ApiSuccessResponse'
    *       400:
    *         description: 请求参数错误（如缺少必填字段）
    *         content:
@@ -301,11 +294,7 @@ export class BookController {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/ApiResponse'
-   *             example:
-   *               code: 20000
-   *               msg: "success"
-   *               timestamp: "2026-08-21T11:00:00.000Z"
+   *               $ref: '#/components/schemas/ApiSuccessResponse'
    *       600:
    *         description: 参数错误（如 bookid 缺失或非数字）
    *         content:

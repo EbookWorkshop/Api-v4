@@ -81,11 +81,7 @@ export class VolumeController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiResponse'
-     *             example:
-     *               code: 20000
-     *               msg: "success"
-     *               timestamp: "2026-08-20T10:00:00.000Z"
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *       600:
      *         description: 请求参数错误（如 bookId 非数字、缺少必填字段）
      *         content:
@@ -138,11 +134,7 @@ export class VolumeController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiResponse'
-     *             example:
-     *               code: 20000
-     *               msg: "success"
-     *               timestamp: "2026-08-21T12:00:00.000Z"
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
      *       600:
      *         description: 参数错误（如 volumeId 缺失或非数字）
      *         content:

@@ -34,6 +34,7 @@ export class ChapterQueryService {
      */
     async getAdjacentChapter(chapterid) {
         const currentEntity = await this.#chapterRepository.findByPK(chapterid);
+        if (!currentEntity) throw new AppError("章节并不存在：" + chapterid, 404);
 
         const [prevEntity, nextEntity] = await Promise.all([
             this.#chapterRepository.findPrevious(currentEntity.BookId, currentEntity.OrderNum),
