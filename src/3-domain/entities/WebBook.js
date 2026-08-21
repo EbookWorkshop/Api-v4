@@ -18,5 +18,7 @@ export default function (sqlConnect) {
         //是否检查章节重复
         isCheckRepeat: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
         BookId: { type: DataTypes.INTEGER, allowNull: false },
+    }, {
+        indexes: [{ fields: ['BookId'] }]
     });
 }

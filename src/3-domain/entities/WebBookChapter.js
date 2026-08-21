@@ -16,7 +16,6 @@ export default function (sqlConnect) {
                 // 单列索引，对应 SQL: CREATE INDEX ON WebBookChapters(IndexId)
                 unique: true,
                 fields: ['IndexId'],
-                name: 'idx_webbookchapters_IndexId',
             },
         ],
     });

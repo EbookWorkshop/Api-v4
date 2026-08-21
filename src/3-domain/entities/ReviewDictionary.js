@@ -13,11 +13,6 @@ export default function (sqlConnect) {
         Execute: { type: DataTypes.STRING(50), allowNull: true },           //应用条件：即达到条件，这份对照字典才启用
         Data: { type: DataTypes.STRING(1000), allowNull: false },           //实际存储字典数据
     }, {
-        indexes: [
-            {
-                name: 'review_dictionary_host_index',
-                fields: ['Host']
-            }
-        ]
+        indexes: [{ fields: ['Host'] }]
     });
 }

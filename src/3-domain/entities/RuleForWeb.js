@@ -16,12 +16,7 @@ export default function (sqlConnect) {
         Type: { type: DataTypes.STRING(100), allowNull: false, defaultValue: "Object" },
         CheckSetting: { type: DataTypes.STRING(100), allowNull: true },         //用于进一步校验的配置
     }, {
-        indexes: [
-            {
-                name: 'rule_for_web_host_index',
-                fields: ['Host']
-            }
-        ]
+        indexes: [{ fields: ['Host'] }]
     });
 
 }

@@ -45,6 +45,16 @@ export class ChapterCommandService {
     }
 
     /**
+     * 批量插入章节
+     * @param {number} bookId 将插入的书籍
+     * @param {number|undefined} volumeId 插到指定卷中，-1为不设置卷
+     * @param {Array<{Content:string,OrderNum:number,Title:string}>} chapters 章节列表
+     */
+    async batchInsertChapters(bookId, volumeId, chapters) {
+        return await this.#chapterRepository.batchInsertChapters(bookId, volumeId, chapters);
+    }
+
+    /**
      * 批量更新章节顺序
      * @param {Object} [orderData] 新的排序配置
      * @param {Object} [orderData.indexId] 待更新的章节ID

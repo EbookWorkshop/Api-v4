@@ -185,6 +185,45 @@ export class ChapterRepository {
     }
 
     /**
+     * 批量插入章节
+     * @param {number} bookId 将插入的书籍
+     * @param {number|undefined} volumeId 插到指定卷中，-1为不设置卷
+     * @param {Array<{Content:string,OrderNum:number,Title:string}>} chapters 章节列表
+     */
+    async batchInsertChapters(bookId, volumeId, chapters) {
+        const { sequelize } = this.#ChapterModel;
+        const trans = await sequelize.transaction();
+
+        let maxOrderNum = await this.#ChapterModel.max('OrderNum', {
+            where: { BookId: bookId }
+        }) || 1;
+        if (volumeId == -1) volumeId = null;
+        else if (volumeId) {
+            const volume = await this.#VolumeModel.findByPk(volumeId);
+            if (!volume) throw new UserInputError("待导入的卷并不存在，ID：" + volumeId);
+            if (bookId != volume.BookId) throw new UserInputError("导入数据错误：导入的书本与选定导入的卷不在同一本书中。");
+        }
+
+        let order = maxOrderNum + 1;
+        const processedChapters = chapters.map(({ VolumeId, ...cp }) => ({
+            ...cp,
+            OrderNum: cp.OrderNum ? (cp.OrderNum + order++) : order++,
+            BookId: bookId,
+            VolumeId: (volumeId || VolumeId || null)
+        }));
+
+        //分批插入 避免生成的 SQL 超出 SQLite 的 SQL 长度限制（默认约 1e6 字符）
+        const BATCH_SIZE = 500;
+        for (let i = 0; i < processedChapters.length; i += BATCH_SIZE) {
+            const batch = processedChapters.slice(i, i + BATCH_SIZE);
+            await this.#ChapterModel.bulkCreate(batch, { transaction: trans });
+        }
+
+        await trans.commit();
+        return true;
+    }
+
+    /**
      * 批量更新章节顺序
      * @param {Object} [orderData] 新的排序配置
      * @param {Object} [orderData.indexId] 待更新的章节ID

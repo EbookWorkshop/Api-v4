@@ -18,5 +18,7 @@ export default function (sqlConnect) {
          */
         OrderNum: { type: DataTypes.INTEGER, allowNull: false },
         BookId: { type: DataTypes.INTEGER, allowNull: false },
+    }, {
+        indexes: [{ fields: ['BookId'] }]
     });
 };

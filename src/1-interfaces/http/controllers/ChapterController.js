@@ -362,6 +362,60 @@ export class ChapterController {
 
     /**
      * @swagger
+     * /library/book/chapter:
+     *   patch:
+     *     summary: 【章】批量插入章节
+     *     description: 在指定图书（和可选分卷）下批量插入多个章节，服务端自动计算排序序号（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/BatchInsertChaptersRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/BatchInsertChaptersRequestExample'
+     *     responses:
+     *       200:
+     *         description: 批量插入成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 请求参数错误（如缺少必填字段、chapters 为空等）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookId 和 chapters 为必填字段，且 chapters 不能为空"
+     *               timestamp: "2026-08-21T17:00:00.000Z"
+     *       404:
+     *         description: 指定的图书或分卷不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该图书"
+     *               timestamp: "2026-08-21T17:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async batchInsertChapters(ctx) {
+        const { bookId, volumeId, chapterList: chapters } = ctx.request.body;
+        if (isNaN(bookId) || !Array.isArray(chapters) || chapters.length <= 0) throw new UserInputError("bookId 和 chapters 为必填字段，且 chapters 不能为空");
+        ctx.body = await this.#chapterCommandService.batchInsertChapters(bookId, volumeId, chapters);
+    }
+
+    /**
+     * @swagger
      * /library/book/chapter/order:
      *   patch:
      *     summary: 【章】批量更新章节排序

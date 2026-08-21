@@ -19,12 +19,8 @@ export default function (sqlConnect) {
         OrderNum: { type: DataTypes.INTEGER, allowNull: false },
         //所属卷ID，可为空，表示直接属于书籍
         VolumeId: { type: DataTypes.INTEGER, allowNull: true },
-        // HasContent: {
-        //     type: DataTypes.VIRTUAL,        //虚拟字段
-        //     get() {
-        //         return this.getDataValue("Content")?.length > 0;
-        //     }
-        // },
         BookId: { type: DataTypes.INTEGER, allowNull: false },
+    }, {
+        indexes: [{ fields: ['BookId'] }]
     });
 };
