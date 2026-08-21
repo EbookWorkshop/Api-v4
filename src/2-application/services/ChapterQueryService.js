@@ -58,16 +58,7 @@ export class ChapterQueryService {
      */
     async searchChapters(keyword, option) {
         const result = await this.#chapterRepository.searchChapters(keyword, option);
-        return result.map((rsl) => {
-            let HitCount = 0;
-            if (option?.type == "title") HitCount = rsl.Title.match(new RegExp(keyword, "g"))?.length;
-            else if (option?.type == "title") HitCount = rsl.Content.match(new RegExp(keyword, "g"))?.length;
-            else HitCount = (rsl.Title + rsl.Content).match(new RegExp(keyword, "g"))?.length;
-            return {
-                ...rsl,
-                HitCount
-            }
-        }).sort((a, b) => b.HitCount - a.HitCount);
+        return result;
     }
 
     /**

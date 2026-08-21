@@ -109,6 +109,7 @@ export class ChapterRepository {
      * @returns 
      */
     async searchChapters(keyword, option = {}) {
+        const { sequelize } = this.#ChapterModel;
         const condition = [];
         if (option?.type === "title") condition.push({ Title: { [Op.like]: `%${keyword}%` } })
         else if (option?.type === "content") condition.push({ Content: { [Op.like]: `%${keyword}%` } })
@@ -119,8 +120,16 @@ export class ChapterRepository {
         if (option.bookId?.length > 0) condition.push({ [Op.and]: { BookId: { [Op.in]: option.bookId } } });
         if (option.notFind?.length > 0) condition.push({ [Op.and]: { BookId: { [Op.notIn]: option.notFind } } });
 
-        const result = await this.#ChapterModel.findAll({
+        //构建计算字段 原理：(原字符串长度 - 替换掉所有关键字后的长度) ÷ 关键字的长度
+        const hitCountLiteral = sequelize.literal(` (LENGTH(Content) - LENGTH(REPLACE(Content, ${sequelize.escape(keyword)}, ''))) / LENGTH(${sequelize.escape(keyword)}) `);
+
+        const results = await this.#ChapterModel.findAll({
             where: condition,
+            attributes: {
+                include: ["id", "Title", "BookId", "Content",
+                    [hitCountLiteral, 'HitCount']  // 直接算出 HitCount
+                ],
+            },
             include: [{
                 model: this.#EbookModel, as: "Ebook",
                 attributes: ["BookName"]
@@ -128,10 +137,12 @@ export class ChapterRepository {
                 model: this.#VolumeModel, as: "Volume",
                 attributes: ["Title"],
             }],
-            attributes: ["id", "Title", "BookId", "Content"]
+            order: [[sequelize.literal('HitCount'), 'DESC']], // 按命中次数倒序
+            limit: 500,            // 加上 limit，避免数据量过大
         });
-        if (!result) return [];
-        return result.map((chapModel) => {
+
+        if (!results) return [];
+        return results.map((chapModel) => {
             const { Ebook, Volume, ...rest } = chapModel.toJSON();
             return {
                 BookName: Ebook?.BookName,
@@ -169,7 +180,7 @@ export class ChapterRepository {
         //校验卷需要属于同一本书
         if (chapter.VolumeId) {
             const volume = await this.#VolumeModel.findByPk(chapter.VolumeId);
-            if (volume.BookId != chapter.BookId) throw new UserInputError("设置的卷不属于当前书籍，请选择同一本书内的卷。");
+            if (!volume || volume.BookId != chapter.BookId) throw new UserInputError("设置的卷不存在或不属于当前书籍，请选择同一本书内的卷。");
         }
         const result = await this.#ChapterModel.upsert(chapter);
         return !!result;
@@ -234,21 +245,27 @@ export class ChapterRepository {
         // 构建 CASE WHEN 的 SQL
         // 避免循环执行而产生大量的数据库连接/网络往返消耗
         let caseSql = '';
-        const ids = [];
-        orderData.forEach((chapter, index) => {
-            caseSql += ` WHEN ${chapter.indexId} THEN ${chapter.newOrder}`;
-            ids.push(chapter.indexId);
+        const replacements = [];//参数数组
+        // const ids = [];
+        orderData.forEach(({ indexId, newOrder }) => {
+            caseSql += ` WHEN ? THEN ?`;        //使用占位符
+            replacements.push(indexId, newOrder);
         });
 
-        const sql = `UPDATE "EbookChapters" 
-            SET "OrderNum" = CASE "id" 
-                ${caseSql}
-            END
-            WHERE "id" IN (${ids.join(',')})`;
+        const inPlaceholders = (new Array(orderData.length)).fill("?").join(',');//生成与id数相同的占位符字符串
+        const ids = orderData.map(item => item.indexId);
+        replacements.push(...ids);   // 将 ids 追加到参数数组末尾
 
+        const sql = `UPDATE "EbookChapters"
+        SET "OrderNum" = CASE "id"
+            ${caseSql}
+        END
+        WHERE "id" IN (${inPlaceholders})`;
         const [_, rows] = await this.#ChapterModel.sequelize.query(sql, {
+            replacements,   // 按顺序替换所有占位符的参数
             type: this.#ChapterModel.sequelize.QueryTypes.UPDATE
         });
+
         return rows;
     }
 
@@ -260,8 +277,8 @@ export class ChapterRepository {
      */
     async setAsIntroduction(chapterId) {
         const { sequelize } = this.#ChapterModel;
-        const trans = sequelize.transaction();
-        const chapter = this.#ChapterModel.findByPk(chapterId);
+        const trans = await sequelize.transaction();
+        const chapter = await this.#ChapterModel.findByPk(chapterId);
         if (!chapter) throw new AppError("待操作的章节不存在。", 404);
 
         await this.#ChapterModel.update({

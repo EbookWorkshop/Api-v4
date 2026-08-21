@@ -453,9 +453,13 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async updateChapterOrder(ctx) {
-        const orderData = ctx.request.body;
-        if (!Array.isArray(orderData)) throw new UserInputError("请求体必须为非空数组，且每个元素需包含 indexId 和 newOrder");
-
+        if (!Array.isArray(ctx.request.body)) throw new UserInputError("请求体必须为非空数组，且每个元素需包含 indexId 和 newOrder");
+        const orderData = ctx.request.body.map(item => ({
+            indexId: parseInt(item.indexId, 10),
+            newOrder: parseInt(item.newOrder, 10)
+        }));
+        const errorId = orderData.filter(({ indexId, newOrder }) => isNaN(indexId) || isNaN(newOrder));
+        if (errorId.length > 0) throw new UserInputError(" indexId 或 newOrder 存在非数字，请检查。");
         ctx.body = await this.#chapterCommandService.updateOrder(orderData);
     }
 
@@ -509,7 +513,7 @@ export class ChapterController {
      */
     async setChapterAsIntroduction(ctx) {
         const { chapterId } = ctx.request.body;
-        if (!isNaN(chapterId)) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
+        if (isNaN(chapterId)) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
         ctx.body = await this.#chapterCommandService.setAsIntroduction(chapterId);
     }
 }

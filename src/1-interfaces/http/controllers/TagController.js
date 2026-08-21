@@ -142,7 +142,7 @@ export class TagController {
      */
     async createTag(ctx) {
         const { bookId, tagText, color } = ctx.request.body;
-        if (!tagText) throw AppError("标签不能为空", 600);
+        if (!tagText) throw new UserInputError("标签不能为空");
         ctx.body = await this.#TagCommandService.createTag(tagText.trim(), color, bookId);
     }
 

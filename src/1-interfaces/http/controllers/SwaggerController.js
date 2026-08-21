@@ -234,14 +234,16 @@ export class SwaggerController {
  * @returns 
  */
 function findFastestCDN(urls) {
-  return Promise.any(urls.map(url =>
-    new Promise((resolve, reject) => {
-      const start = performance.now();
-      fetch(url, { method: 'HEAD', mode: 'no-cors' }) // 或加载图片
-        .then(() => resolve({ url, latency: performance.now() - start }))
-        .catch(() => reject());
-      // 设置超时（如 3秒）
-      setTimeout(() => reject(), 30_000);
+  return Promise.any(urls.map(url => {
+    const start = performance.now();
+    return fetch(`${url}/the-best-package/index.js?t=${start}`, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(30_000)
+    }).then(res => {
+      if (!res.ok) throw new Error('Bad status');
+      return { url, latency: performance.now() - start };
     })
-  )).catch(err => { throw new AppError("暂无可用CND，请稍候重试。已尝试CDN：" + urls.toString()) });
+  })).catch(error => {
+    return { url: urls[0] }
+  });
 }

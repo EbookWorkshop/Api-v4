@@ -15,6 +15,6 @@ export class AssetsQueryService {
     }
 
     async getArchiveBook() {
-        return await this.#fileScanner.listFiles(this.#config?.archive?.path, { detail: true })
+        return await this.#fileScanner.listFiles(this.#config?.archive?.path, { detail: true }) || [];
     }
 }

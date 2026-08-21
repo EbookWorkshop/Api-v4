@@ -58,8 +58,13 @@ const io = setupWebsocket(httpServer, services, config);
 // 5. 数据库同步与启动（开发环境）
 // ============================================================
 async function initializeDatabase() {
+  /**
+   * alter: false   默认，同步并创建不存在的表
+   * alter: true	  尝试使用Alter修改表结构以适配
+   * force: true	  无论什么情况都删表重建
+   */
+  await sequelize.sync();//{ alter: true, force: false }
   if (config.env === 'development') {
-    await sequelize.sync();//{ alter: true, force: false }
     console.log('✅ 数据库表结构已同步 (development)');
   }
 }

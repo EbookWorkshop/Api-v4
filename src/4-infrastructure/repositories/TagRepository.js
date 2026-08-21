@@ -43,13 +43,13 @@ export class TagRepository {
      */
     async createTag(tagText, color, bookId) {
         const [myTag, isCreate] = await this.#TagModel.findOrCreate({
-            where: { Text: tagText }
+            where: { Text: tagText },
+            defaults: {//设置Create时的默认值
+                Text: tagText,
+                Color: color
+            }
         });
 
-        if (isCreate) {//因为color允许为空，非新建模式下不修改避免覆盖原有颜色设置
-            myTag.Color = color;
-            myTag.save();
-        }
         let addToBook = false;
 
         if (bookId) {

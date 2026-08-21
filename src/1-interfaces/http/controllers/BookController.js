@@ -275,7 +275,7 @@ export class BookController {
   async createEmptyBook(ctx) {
     const { bookName, author } = ctx.request.body;
     if (!bookName) throw new UserInputError("书名不能为空！");
-    ctx.body = await this.#bookCommandService.createEmptyBook(bookName, author);
+    ctx.body = await this.#bookCommandService.createEmptyBook(bookName, author || "佚名");
   }
 
   /**
