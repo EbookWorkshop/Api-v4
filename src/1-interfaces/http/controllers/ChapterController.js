@@ -36,7 +36,7 @@ export class ChapterController {
      *             examples:
      *               success:
      *                 $ref: '#/components/examples/ChapterDetailSuccess'
-     *       400:
+     *       600:
      *         description: 请求参数错误（如 chapterid 非数字或小于 1）
      *         content:
      *           application/json:
@@ -89,7 +89,7 @@ export class ChapterController {
      *                 $ref: '#/components/examples/ChapterAdjacentOnlyNext'
      *               onlyPre:
      *                 $ref: '#/components/examples/ChapterAdjacentOnlyPre'
-     *       400:
+     *       600:
      *         description: 请求参数错误（如 chapterid 非数字或小于 1）
      *         content:
      *           application/json:
@@ -198,7 +198,7 @@ export class ChapterController {
      *             schema:
      *               $ref: '#/components/schemas/ApiErrorResponse'
      *             example:
-     *               code: 40000
+     *               code: 60000
      *               msg: "必须输入查询关键字"
      *               timestamp: "2026-08-19T15:00:00.000Z"
      *       500:
@@ -239,14 +239,14 @@ export class ChapterController {
      *               msg: "success"
      *               timestamp: "2026-08-21T10:00:00.000Z"
      *               data: 3
-     *       400:
+     *       600:
      *         description: 请求参数错误（如 chapterIds 缺失或非数字数组）
      *         content:
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/ApiErrorResponse'
      *             example:
-     *               code: 40000
+     *               code: 60000
      *               msg: "chapterIds 必须为整数数组"
      *               timestamp: "2026-08-21T10:00:00.000Z"
      *       500:
@@ -292,11 +292,6 @@ export class ChapterController {
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/ApiSuccessResponse'
-     *             example:
-     *               code: 20000
-     *               msg: "success"
-     *               timestamp: "2026-08-20T20:00:00.000Z"
-     *               data: true
      *       600:
      *         description: 请求参数错误（如缺少 Title 和 Content、IndexId 和 BookId 不匹配等）
      *         content:
@@ -346,7 +341,7 @@ export class ChapterController {
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/ApiSuccessResponse'
-     *       400:
+     *       600:
      *         description: 请求参数错误（如 chapterid 非数字或小于 1）
      *         content:
      *           application/json:
@@ -444,6 +439,7 @@ export class ChapterController {
      *             example:
      *               code: 60000
      *               msg: "章节ID出错：章节ID只能为正整数。"
+     *               timestamp: "2026-08-21T14:00:00.000Z"
      *       404:
      *         description: 指定的章节不存在
      *         content:
@@ -453,6 +449,7 @@ export class ChapterController {
      *             example:
      *               code: 40400
      *               msg: "待操作的章节不存在。"
+     *               timestamp: "2026-08-21T14:00:00.000Z"
      *       500:
      *         description: 服务器内部错误
      */

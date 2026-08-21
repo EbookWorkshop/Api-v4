@@ -92,6 +92,7 @@ export class TagController {
      *             example:
      *               code: 60000
      *               msg: "提供的书籍ID不正确。"
+     *               timestamp: "2026-08-20T18:00:00.000Z"
      */
     async ebookTags(ctx) {
         const bookId = ctx.query.bookid * 1;
@@ -126,14 +127,14 @@ export class TagController {
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/ApiSuccessResponse'
-     *       400:
+     *       600:
      *         description: 请求参数错误（如 tagText 缺失、bookId 非数字）
      *         content:
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/ApiErrorResponse'
      *             example:
-     *               code: 40000
+     *               code: 60000
      *               msg: "tagText 为必填字段"
      *               timestamp: "2026-08-20T16:00:00.000Z"
      *       500:
@@ -177,7 +178,7 @@ export class TagController {
      *             schema:
      *               $ref: '#/components/schemas/ApiErrorResponse'
      *             example:
-     *               code: 40000
+     *               code: 60000
      *               msg: "tagid 必须为有效整数"
      *               timestamp: "2026-08-20T17:00:00.000Z"
      *       404:
@@ -234,7 +235,7 @@ export class TagController {
      *             schema:
      *               $ref: '#/components/schemas/ApiErrorResponse'
      *             example:
-     *               code: 40000
+     *               code: 60000
      *               msg: "tagId 为必填字段且必须为有效整数"
      *               timestamp: "2026-08-20T18:00:00.000Z"
      *       404:
@@ -282,14 +283,14 @@ export class TagController {
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/ApiSuccessResponse'
-     *       400:
+     *       600:
      *         description: 参数错误（如 bookid 或 tagid 缺失或非数字）
      *         content:
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/ApiErrorResponse'
      *             example:
-     *               code: 40000
+     *               code: 60000
      *               msg: "bookid 和 tagid 必须为有效整数"
      *               timestamp: "2026-08-20T19:00:00.000Z"
      *       404:

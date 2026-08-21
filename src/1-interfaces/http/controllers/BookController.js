@@ -54,6 +54,7 @@ export class BookController {
    *             example:
    *               code: 60000
    *               msg: "排除标签必须为正整数，多个排除标签可用英文逗号隔开。"
+   *               timestamp: "2026-08-14T10:00:00.000Z"
    *       500:
    *         description: 服务器内部错误
    *         content:
@@ -258,14 +259,14 @@ export class BookController {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ApiSuccessResponse'
-   *       400:
+   *       600:
    *         description: 请求参数错误（如缺少必填字段）
    *         content:
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/ApiErrorResponse'
    *             example:
-   *               code: 40000
+   *               code: 60000
    *               msg: "bookName、author、type 均为必填字段"
    *               timestamp: "2026-08-21T10:00:00.000Z"
    *       500:
