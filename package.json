@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",
-    "swagger": "node scripts/generate-swagger.js"
+    "swagger": "node scripts/generate-swagger.js",
+    "db":"cp -f data/latest.sqlite data/dev.sqlite"
   },
   "dependencies": {
     "@koa/router": "^15.7.0",

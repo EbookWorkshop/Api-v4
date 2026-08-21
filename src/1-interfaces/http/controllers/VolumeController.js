@@ -113,6 +113,66 @@ export class VolumeController {
     /**
      * @swagger
      * /library/book/volume:
+     *   put:
+     *     summary: 【卷】更新分卷信息
+     *     description: 根据分卷 ID 更新标题或简介（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Volume
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UpdateVolumeRequest'
+     *           examples:
+     *             full:
+     *               $ref: '#/components/examples/UpdateVolumeRequestExample'
+     *             partial:
+     *               $ref: '#/components/examples/UpdateVolumeRequestPartial'
+     *     responses:
+     *       200:
+     *         description: 更新成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-22T10:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如 volumeId 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40000
+     *               msg: "volumeId 必须为有效整数"
+     *               timestamp: "2026-08-22T10:00:00.000Z"
+     *       404:
+     *         description: 分卷不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该分卷"
+     *               timestamp: "2026-08-22T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async updateVolume(ctx) {
+        const { volumeId, title, introduction } = ctx.request.body;
+        if (isNaN(volumeId)) throw new UserInputError("volumeId 必须为有效整数");
+        ctx.body = await this.#volumeCommandService.updateVolume(volumeId, title, introduction);
+    }
+
+    /**
+     * @swagger
+     * /library/book/volume:
      *   delete:
      *     summary: 【卷】删除图书分卷
      *     description: 根据分卷 ID 删除指定的分卷及其关联数据（如章节）（统一包装格式）

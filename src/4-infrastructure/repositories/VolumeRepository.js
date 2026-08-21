@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { AppError, UserInputError } from "../../5-shared/errors/index.js";
 export class VolumeRepository {
     #VolumeModel;
     #ChapterModel;
@@ -48,6 +49,22 @@ export class VolumeRepository {
             Introduction: introduction,
             // OrderNum: 99999,
         }
+    }
+
+    /**
+     * 更新一个新卷
+     * @param {Number} volumeId 
+     * @param {String} title 
+     * @param {String?} introduction 
+     */
+    async updateVolume(volumeId, title, introduction) {
+        // return await this.#volumeRepository.updateVolume(volumeId, title, introduction);
+        const volume = await this.#VolumeModel.findByPk(volumeId);
+        if (!volume) throw new AppError("未找到该分卷", 404);
+        if (title) volume.Title = title;
+        if (introduction) volume.Introduction = introduction;
+        await volume.save();
+        return true;
     }
 
     /**

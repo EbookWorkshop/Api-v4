@@ -23,6 +23,16 @@ export class VolumeCommandService {
     }
 
     /**
+     * 更新一个新卷
+     * @param {Number} volumeId 
+     * @param {String} title 
+     * @param {String?} introduction 
+     */
+    async updateVolume(volumeId, title, introduction) {
+        return await this.#volumeRepository.updateVolume(volumeId, title, introduction);
+    }
+
+    /**
      * 删除一个卷
      * # 并释放卷中所有章节
      * @param {number} volumeId 

@@ -10,6 +10,8 @@ import { VolumeController } from "../controllers/VolumeController.js"
       router.get('/all', (ctx) => volumeController.getAllVolumes(ctx));
   
 
+      router.put('/', (ctx) => volumeController.updateVolume(ctx));
+
       router.post('/', (ctx) => volumeController.createVolume(ctx));
 
       router.delete('/', (ctx) => volumeController.deleteVolume(ctx));
