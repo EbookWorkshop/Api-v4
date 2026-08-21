@@ -323,4 +323,49 @@ export class ChapterController {
         if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
         ctx.body = await this.#chapterCommandService.deleteChapter(cpId);
     }
+
+    /**
+     * @swagger
+     * /library/book/chapter/order:
+     *   patch:
+     *     summary: 【章】批量更新章节排序
+     *     description: 接收一个数组，每个元素包含章节 ID（indexId）和新的排序值（newOrder），用于批量调整章节顺序（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ChapterOrderRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/ChapterOrderRequestExample'
+     *     responses:
+     *       200:
+     *         description: 更新成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 请求参数错误（如数组为空、缺少必填字段等）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "请求体必须为非空数组，且每个元素需包含 indexId 和 newOrder"
+     *               timestamp: "2026-08-21T14:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async updateChapterOrder(ctx) {
+        const orderData = ctx.request.body;
+        if (!Array.isArray(orderData)) throw new UserInputError("请求体必须为非空数组，且每个元素需包含 indexId 和 newOrder");
+
+        ctx.body = await this.#chapterCommandService.updateOrder(orderData);
+    }
 }

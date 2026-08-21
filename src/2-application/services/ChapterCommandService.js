@@ -43,4 +43,15 @@ export class ChapterCommandService {
     async deleteChapter(chapterId) {
         return await this.#chapterRepository.deleteChapter(chapterId);
     }
+
+    /**
+     * 批量更新章节顺序
+     * @param {Object} [orderData] 新的排序配置
+     * @param {Object} [orderData.indexId] 待更新的章节ID
+     * @param {Object} [orderData.newOrder] 要更新到的新序号
+     * @returns 
+     */
+    async updateOrder(orderData) {
+        return await this.#chapterRepository.updateOrder(orderData);
+    }
 }

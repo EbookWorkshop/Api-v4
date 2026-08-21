@@ -168,4 +168,33 @@ export class ChapterRepository {
     async deleteChapter(chapterId) {
         return await this.#ChapterModel.destroy({ where: { id: chapterId } });
     }
+
+    /**
+     * 批量更新章节顺序
+     * @param {Object} [orderData] 新的排序配置
+     * @param {Object} [orderData.indexId] 待更新的章节ID
+     * @param {Object} [orderData.newOrder] 要更新到的新序号
+     * @returns 
+     */
+    async updateOrder(orderData) {
+        // 构建 CASE WHEN 的 SQL
+        // 避免循环执行而产生大量的数据库连接/网络往返消耗
+        let caseSql = '';
+        const ids = [];
+        orderData.forEach((chapter, index) => {
+            caseSql += ` WHEN ${chapter.indexId} THEN ${chapter.newOrder}`;
+            ids.push(chapter.indexId);
+        });
+
+        const sql = `UPDATE "EbookChapters" 
+            SET "OrderNum" = CASE "id" 
+                ${caseSql}
+            END
+            WHERE "id" IN (${ids.join(',')})`;
+
+        const [_, rows] = await this.#ChapterModel.sequelize.query(sql, {
+            type: this.#ChapterModel.sequelize.QueryTypes.UPDATE
+        });
+        return rows;
+    }
 }
