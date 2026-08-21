@@ -70,4 +70,11 @@ export class ChapterQueryService {
         }).sort((a, b) => b.HitCount - a.HitCount);
     }
 
+    /**
+     * 列出本书的隐藏章节
+     * @param {*} bookId 
+     */
+    async listHiddenChapters(bookId) {
+        return await this.#chapterRepository.listHiddenChapters(bookId);
+    }
 }

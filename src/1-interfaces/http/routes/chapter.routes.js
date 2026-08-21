@@ -9,6 +9,7 @@ export function createChapterRoutes(chapterController) {
   const router = new Router({ prefix: '/library/book' });
   router.get('/chapter', (ctx) => chapterController.getChapterById(ctx));
   router.get('/chapter/adjacent', (ctx) => chapterController.getAdjacentChapter(ctx));
+  router.get('/chapter/listhidden', (ctx) => chapterController.listHiddenChapters(ctx));
 
   router.post('/chapter', (ctx) => chapterController.upsertChapter(ctx));
   router.post('/chapter/tointroduction', (ctx) => chapterController.setChapterAsIntroduction(ctx));

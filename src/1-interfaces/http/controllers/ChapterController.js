@@ -117,6 +117,47 @@ export class ChapterController {
         ctx.body = await this.#chapterQueryService.getAdjacentChapter(chapterId);
     }
 
+    /**
+     * @swagger
+     * /library/book/chapter/listhidden:
+     *   get:
+     *     summary: 【章】获取图书的隐藏章节列表
+     *     description: 根据图书 ID 返回该图书下所有标记为隐藏的章节摘要（仅包含标题和 ID）（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     parameters:
+     *       - $ref: '#/components/parameters/BookIdQuery'
+     *     responses:
+     *       200:
+     *         description: 成功返回隐藏章节列表
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/HiddenChapterListResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/HiddenChapterListSuccess'
+     *               empty:
+     *                 $ref: '#/components/examples/HiddenChapterListEmpty'
+     *       600:
+     *         description: 参数错误（如 bookid 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookid 必须为有效整数"
+     *               timestamp: "2026-08-21T16:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async listHiddenChapters(ctx) {
+        const bookId = ctx.query.bookid * 1;
+        if (isNaN(bookId)) throw new AppError("bookid 必须为有效整数", 600);
+        ctx.body = await this.#chapterQueryService.listHiddenChapters(bookId);
+    }
 
     /**
      * @swagger

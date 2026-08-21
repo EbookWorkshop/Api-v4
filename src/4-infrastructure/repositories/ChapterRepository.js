@@ -83,6 +83,21 @@ export class ChapterRepository {
         });
     }
 
+    /**
+     * 找到所有隐藏的章节
+     * @param {*} bookId 
+     * @returns 
+     */
+    async listHiddenChapters(bookId) {
+        return await this.#ChapterModel.findAll({
+            where: {
+                BookId: bookId,
+                OrderNum: { [Op.lt]: 0 }
+            },
+            attributes: ["Title", ["id", "IndexId"]],
+            raw: true
+        });
+    }
 
     /**
      * 搜索章节内容
