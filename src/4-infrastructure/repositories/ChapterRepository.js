@@ -270,6 +270,20 @@ export class ChapterRepository {
     }
 
     /**
+     * 切换是否隐藏章节
+     * @param {number} chapterId 章节ID
+     * @returns 
+     */
+    async toggleHide(chapterId) {
+        const { sequelize } = this.#ChapterModel
+        return this.#ChapterModel.update({
+            OrderNum: await sequelize.literal('OrderNum * -1')
+        }, {
+            where: { id: chapterId }
+        });
+    }
+
+    /**
      * 将指定章节设置为简介
      * 并将已有的简介章节放出
      * @param {*} chapterId 章节ID

@@ -208,7 +208,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async searchBook(ctx) {
-        const { keyword, option } = BookSearchRequest.fromBody(ctx.body);
+        const { keyword, option } = BookSearchRequest.fromBody(ctx.request.body);
         ctx.body = await this.#chapterQueryService.searchChapters(keyword, option);
     }
 
@@ -253,7 +253,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async removeChaptersFromVolume(ctx) {
-        const chapterIds = ChapterRequest.fromBodyIds(ctx.body);
+        const chapterIds = ChapterRequest.fromBodyIds(ctx.request.body);
         ctx.body = await this.#chapterCommandService.removeChaptersFromVolume(chapterIds);
     }
 
@@ -315,7 +315,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async upsertChapter(ctx) {
-        const chapter = ChapterUpsertRequest.fromBody(ctx.body);
+        const chapter = ChapterUpsertRequest.fromBody(ctx.request.body);
         ctx.body = await this.#chapterCommandService.upsertChapter(chapter);
     }
 
@@ -404,7 +404,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async batchInsertChapters(ctx) {
-        const chapters = BatchInsertChaptersRequest.fromBody(ctx.body);
+        const chapters = BatchInsertChaptersRequest.fromBody(ctx.request.body);
         ctx.body = await this.#chapterCommandService.batchInsertChapters(chapters);
     }
 
@@ -447,8 +447,61 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async updateChapterOrder(ctx) {
-        const orderData = ChapterOrderRequest.fromBody(ctx.body);
+        const orderData = ChapterOrderRequest.fromBody(ctx.request.body);
         ctx.body = await this.#chapterCommandService.updateOrder(orderData);
+    }
+
+    /**
+     * @swagger
+     * /library/book/chapter/toggleHide:
+     *   patch:
+     *     summary: 【章】切换章节是否隐藏
+     *     description: 切换章节是否隐藏，设置隐藏状态为当前状态的反转
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ChapterIdRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/ChapterIdRequestExample'
+     *     responses:
+     *       200:
+     *         description: 操作成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 请求参数错误（如 chapterId 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "章节ID出错：章节ID只能为正整数。"
+     *               timestamp: "2026-08-21T14:00:00.000Z"
+     *       404:
+     *         description: 指定的章节不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "待操作的章节不存在。"
+     *               timestamp: "2026-08-21T14:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async toggleHide(ctx) {
+        const chapterId = ChapterRequest.fromBodyId(ctx.request.body);
+        ctx.body = await this.#chapterCommandService.toggleHide(chapterId);
     }
 
     /**
@@ -500,7 +553,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async setChapterAsIntroduction(ctx) {
-        const chapterId = ChapterRequest.fromBodyId(ctx.body);
+        const chapterId = ChapterRequest.fromBodyId(ctx.request.body);
         ctx.body = await this.#chapterCommandService.setAsIntroduction(chapterId);
     }
 }

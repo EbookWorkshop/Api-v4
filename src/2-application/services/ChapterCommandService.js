@@ -62,7 +62,16 @@ export class ChapterCommandService {
      * @returns 
      */
     async updateOrder(orderData) {
-        return await this.#chapterRepository.updateOrder(orderData);
+        return this.#chapterRepository.updateOrder(orderData);
+    }
+
+    /**
+     * 切换是否隐藏章节
+     * @param {number} chapterId 章节ID
+     * @returns 
+     */
+    async toggleHide(chapterId) {
+        return this.#chapterRepository.toggleHide(chapterId);
     }
 
     /**
@@ -72,6 +81,6 @@ export class ChapterCommandService {
      * @returns 
      */
     async setAsIntroduction(chapterId) {
-        return await this.#chapterRepository.setAsIntroduction(chapterId);
+        return this.#chapterRepository.setAsIntroduction(chapterId);
     }
 }

@@ -142,7 +142,7 @@ export class TagController {
      *         description: 服务器内部错误
      */
     async createTag(ctx) {
-        const tagInfo = TagCreateRequest.fromBody(ctx.body);
+        const tagInfo = TagCreateRequest.fromBody(ctx.request.body);
         ctx.body = await this.#TagCommandService.createTag(tagInfo);
     }
 
@@ -244,7 +244,7 @@ export class TagController {
      *         description: 服务器内部错误
      */
     async updateTag(ctx) {
-        const tag = UpdateTagRequest.fromBody(ctx.body);
+        const tag = UpdateTagRequest.fromBody(ctx.request.body);
         ctx.body = await this.#TagCommandService.updateTag(tag);
     }
 

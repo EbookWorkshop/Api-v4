@@ -85,7 +85,7 @@ export class ChapterRequest {
     /**
      * @swagger
      * components:
-     *   schemas:
+     *   parameters:
      *     ChapterIdQuery:
      *       in: query
      *       name: chapterid
