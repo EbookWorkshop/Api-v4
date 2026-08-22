@@ -148,7 +148,7 @@ export class EbookRepository {
    * @returns 
    */
   async delete(bookId) {
-    return await this.#EbookModel.destroy({
+    return this.#EbookModel.destroy({
       where: { id: bookId }
     });
   }

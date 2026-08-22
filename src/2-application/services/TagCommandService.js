@@ -19,8 +19,8 @@ export class TagCommandService {
      * @param {number} bookId 直接关联书本
      * @returns [isCreateTag,isAddToBook] 是否创建标签，是否关联书籍
      */
-    async createTag(tagText, color, bookId) {
-        return await this.#tagRepository.createTag(tagText, color, bookId);
+    async createTag({ tagText, color, bookId }) {
+        return await this.#tagRepository.createTag({ tagText, color, bookId });
     }
 
     /**
@@ -38,8 +38,8 @@ export class TagCommandService {
      * @param {*} color 标签颜色
      * @returns 修改行数
      */
-    async updateTag(tagId, tagText, color) {
-        return await this.#tagRepository.updateTag(tagId, tagText, color)
+    async updateTag({ tagId, tagText, color }) {
+        return await this.#tagRepository.updateTag({ tagId, tagText, color })
     }
 
     /**

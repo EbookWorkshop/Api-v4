@@ -53,7 +53,7 @@ export function createServices(repositories, config = {}) {
     bookDetailQuery: bookDetailQueryService,
     bookCommand: new BookCommandService(ebookRepository),
     webBookQuery: new WebBookQueryService(repositories.webBookRepository),
-    webBookDetailQuery: new WebBookDetailQueryService(ebookRepository, volumeRepository, indexRepository, chapterRepository, repositories.webBookRepository),
+    webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
     volumeQuery: new VolumeQueryService(volumeRepository),
     volumeCommand: new VolumeCommandService(repositories.volumeRepository),
     chapterQuery: new ChapterQueryService(chapterRepository),

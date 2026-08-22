@@ -1,3 +1,5 @@
+import { UserInputError } from "../../../../5-shared/errors/index.js";
+
 /**
  * @swagger
  * components:
@@ -52,3 +54,11 @@
  *       value:
  *         keyword: "福尔摩斯"
  */
+export class BookSearchRequest {
+    static fromBody(body) {
+        const { keyword, option } = body;
+        if (!keyword) throw new UserInputError("必须输入查询关键字");
+        if (keyword.length > 50) return { keyword: keyword.substring(0, 50), option };
+        return { keyword, option }
+    }
+}

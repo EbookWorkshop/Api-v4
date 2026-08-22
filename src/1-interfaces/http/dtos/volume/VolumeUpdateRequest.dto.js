@@ -1,3 +1,4 @@
+import { UserInputError } from "../../../../5-shared/errors/index.js";
 /**
  * @swagger
  * components:
@@ -35,3 +36,11 @@
  *         volumeId: 52
  *         title: "血字的研究（修订版）"
  */
+export class UpdateVolumeRequest {
+    static fromBody(body) {
+        const { volumeId, title, introduction } = body;
+        if (isNaN(volumeId)) throw new UserInputError("volumeId 必须为有效整数");
+        if (!title) throw new UserInputError("卷标题必须提供。");
+        return { volumeId, title, introduction };
+    }
+}

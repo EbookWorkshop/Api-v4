@@ -18,8 +18,8 @@ export class VolumeCommandService {
      * @param {String} title 
      * @param {String?} introduction 
      */
-    async createVolume(bookId, title, introduction) {
-        return await this.#volumeRepository.createVolume(bookId, title, introduction);
+    async createVolume({bookId, title, introduction}) {
+        return await this.#volumeRepository.createVolume({bookId, title, introduction});
     }
 
     /**

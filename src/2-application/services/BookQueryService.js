@@ -17,7 +17,7 @@ export class BookQueryService {
    * @param {number[]?} excludeTagIds 排除的tags
    * @returns 
    */
-  async listBooks(tagId, excludeTagIds) {
+  async listBooks({tagId, excludeTagIds}) {
     const bookList = await this.#ebookRepository.findAllWithTagFilter({
       tagId,
       excludeTagIds,

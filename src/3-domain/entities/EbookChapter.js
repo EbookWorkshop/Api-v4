@@ -21,6 +21,6 @@ export default function (sqlConnect) {
         VolumeId: { type: DataTypes.INTEGER, allowNull: true },
         BookId: { type: DataTypes.INTEGER, allowNull: false },
     }, {
-        indexes: [{ fields: ['BookId'] }]
+        indexes: [{ fields: ['BookId'] }, { fields: ["Title"] }]
     });
 };

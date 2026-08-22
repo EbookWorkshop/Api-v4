@@ -1,7 +1,6 @@
 
 import { RuleForWebQueryService } from "../../../2-application/services/RuleForWebQueryService.js";
 import { RuleForWebCommandService } from "../../../2-application/services/RuleForWebCommandService.js";
-import { AppError, UserInputError } from '../../../5-shared/errors/index.js';
 
 export class RuleForWebController {
     #ruleForWebQueryService;
@@ -14,7 +13,7 @@ export class RuleForWebController {
         this.#ruleForWebQueryService = ruleForWebQueryService;
         this.#ruleForWebCommandService = ruleForWebCommandService;
     }
-    
+
     /**
      * @swagger
      * /services/botrule/hostlist:

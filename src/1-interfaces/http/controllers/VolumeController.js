@@ -1,7 +1,12 @@
 
 import { VolumeQueryService } from "../../../2-application/services/VolumeQueryService.js";
 import { VolumeCommandService } from "../../../2-application/services/VolumeCommandService.js";
-import { UserInputError } from '../../../5-shared/errors/index.js';
+import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js";
+import { VolumeCreateRequest } from "../dtos/volume/VolumeCreateRequest.dto.js"
+import { UpdateVolumeRequest } from "../dtos/volume/VolumeUpdateRequest.dto.js";
+import { VolumeIdRequest } from "../dtos/components/VolumeIdRequest.dto.js";
+
+
 
 export class VolumeController {
     #volumeQueryService;
@@ -52,8 +57,7 @@ export class VolumeController {
      *         description: 服务器内部错误
      */
     async listVolumes(ctx) {
-        const bookId = ctx.query.bookId * 1;
-        if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
+        const bookId = BookIdRequest.fromQueryCamelCase(ctx.query);
         ctx.body = await this.#volumeQueryService.findByBookId(bookId)
     }
 
@@ -106,8 +110,8 @@ export class VolumeController {
      *         description: 服务器内部错误
      */
     async createVolume(ctx) {
-        const { bookId, title, introduction } = ctx.request.body;
-        ctx.body = await this.#volumeCommandService.createVolume(bookId, title, introduction);
+        const volume = VolumeCreateRequest.fromBody(ctx.request.body);
+        ctx.body = await this.#volumeCommandService.createVolume(volume);
     }
 
     /**
@@ -165,9 +169,8 @@ export class VolumeController {
      *         description: 服务器内部错误
      */
     async updateVolume(ctx) {
-        const { volumeId, title, introduction } = ctx.request.body;
-        if (isNaN(volumeId)) throw new UserInputError("volumeId 必须为有效整数");
-        ctx.body = await this.#volumeCommandService.updateVolume(volumeId, title, introduction);
+        const volume = UpdateVolumeRequest.fromBody(ctx.request.body);
+        ctx.body = await this.#volumeCommandService.updateVolume(volume);
     }
 
     /**
@@ -180,14 +183,7 @@ export class VolumeController {
      *       - Library —— 图书馆
      *       - Volume
      *     parameters:
-     *       - in: query
-     *         name: volumeId
-     *         schema:
-     *           type: integer
-     *           minimum: 1
-     *         required: true
-     *         description: 要删除的分卷 ID
-     *         example: 52
+     *       - $ref: '#/components/parameters/VolumeIdRequest'
      *     responses:
      *       200:
      *         description: 删除成功
@@ -219,8 +215,7 @@ export class VolumeController {
      *         description: 服务器内部错误
      */
     async deleteVolume(ctx) {
-        const volumeId = ctx.query.volumeId * 1;
-        if (isNaN(volumeId)) throw new UserInputError("无效的卷ID");
+        const volumeId = VolumeIdRequest.fromQuery(ctx.query);
         ctx.body = await this.#volumeCommandService.deleteVolume(volumeId);
     }
 }

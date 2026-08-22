@@ -1,7 +1,7 @@
 import { WebBookQueryService } from "../../../2-application/services/WebBookQueryService.js";
 import { WebBookDetailQueryService } from "../../../2-application/services/WebBookDetailQueryService.js";
+import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
 
-import { UserInputError } from '../../../5-shared/errors/index.js';
 
 export class WebBookController {
   #webBookQueryService;
@@ -92,8 +92,7 @@ export class WebBookController {
    *         description: 服务器内部错误
    */
   async getBookById(ctx) {
-    const bookId = ctx.query.bookid * 1;
-    if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
+    const bookId = BookIdRequest.fromQuery(ctx.query);
     ctx.body = await this.#webBookDetailQuery.getBookDetail(bookId);
   }
 

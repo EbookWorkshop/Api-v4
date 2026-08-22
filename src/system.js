@@ -69,4 +69,8 @@ async function initializeDatabase() {
   }
 }
 
-export { app, httpServer, io, config, initializeDatabase };
+async function closeDatabase() {
+  await sequelize.close();
+}
+
+export { app, httpServer, io, config, initializeDatabase, closeDatabase };

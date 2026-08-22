@@ -1,5 +1,4 @@
-import { httpServer, config, initializeDatabase } from './system.js';
-import { Server as SocketIO } from 'socket.io';
+import { httpServer, config, initializeDatabase, closeDatabase } from './system.js';
 
 const PORT = config.server.port;
 
@@ -12,5 +11,7 @@ httpServer.listen(PORT, () => {
 
 process.on('SIGTERM', () => {
   console.log('🛑 收到终止信号，正在关闭...');
+  httpServer.close();
+  closeDatabase();
   process.exit(0);
 });

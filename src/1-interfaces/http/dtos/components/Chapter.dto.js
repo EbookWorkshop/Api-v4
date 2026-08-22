@@ -1,3 +1,4 @@
+import { UserInputError } from "../../../../5-shared/errors/index.js";
 /**
  * @swagger
  * components:
@@ -47,16 +48,6 @@
  *       required:
  *         - data
  *
- *   parameters:
- *     ChapterIdQuery:
- *       in: query
- *       name: chapterid
- *       schema:
- *         type: integer
- *         minimum: 1
- *       required: true
- *       description: 章节 ID（目录项 ID），必须为正整数
- *       example: 53403
  *
  *   examples:
  *     ChapterDetailSuccess:
@@ -90,24 +81,73 @@
  *         data: null
  */
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     ChapterIdRequest:
- *       type: object
- *       description: 将章节设为引言的请求体
- *       properties:
- *         chapterId:
- *           type: integer
- *           description: 章节 ID（目录项 ID）
- *           example: 49017
- *       required:
- *         - chapterId
- *
- *   examples:
- *     ChapterIdRequestExample:
- *       summary: 将章节设为引言的请求示例
- *       value:
- *         chapterId: 49017
- */
+export class ChapterRequest {
+    /**
+     * @swagger
+     * components:
+     *   schemas:
+     *     ChapterIdQuery:
+     *       in: query
+     *       name: chapterid
+     *       schema:
+     *         type: integer
+     *         minimum: 1
+     *       required: true
+     *       description: 章节 ID（目录项 ID），必须为正整数
+     *       example: 53403
+     */
+    static fromQueryId(query) {
+        const cpId = query.chapterid * 1;
+        if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
+        return cpId;
+    }
+
+    /**
+     * @swagger
+     * components:
+     *   schemas:
+     *     ChapterIdRequest:
+     *       type: object
+     *       description: 将章节设为引言的请求体
+     *       properties:
+     *         chapterId:
+     *           type: integer
+     *           description: 章节 ID（目录项 ID）
+     *           example: 49017
+     *       required:
+     *         - chapterId
+     *
+     *   examples:
+     *     ChapterIdRequestExample:
+     *       summary: 将章节设为引言的请求示例
+     *       value:
+     *         chapterId: 49017
+     */
+    static fromBodyId(body) {
+        const { chapterId } = body;
+        if (isNaN(chapterId)) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
+        return chapterId;
+    }
+    /**
+     * @swagger
+     * components:
+     *   schemas:
+     *     ChaptersIdRequest:
+     *       type: object
+     *       description: 批量操作章节的请求体
+     *       properties:
+     *         chapterIds:
+     *           type: array
+     *           description: 要操作的章节 ID 列表
+     *           items:
+     *             type: integer
+     *           example: [1, 3, 4]
+     *       required:
+     *         - chapterIds
+     */
+    static fromBodyIds(body) {
+        const { chapterIds } = body;
+        if (!Array.isArray(chapterIds)) throw new UserInputError("提供的章节格式不对");
+        return chapterIds;
+    }
+}

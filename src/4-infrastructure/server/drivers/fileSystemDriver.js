@@ -64,7 +64,7 @@ export async function listFiles(sourcePath, options = { filetype: null, detail: 
 
     if (!options?.detail) return result.map(item => item.name);
 
-    return await Promise.all( //注意：如果单文件读取错误将导致整个Promise.alls失败
+    const settledResults = await Promise.allSettled( //Promise.allSettled能避免单文件读取错误导致整个Promise.alls失败
       result.map(async (item) => {
         const fileStat = await fs.stat(path.join(item.path, item.file));
         item.size = fileStat.size;
@@ -72,6 +72,7 @@ export async function listFiles(sourcePath, options = { filetype: null, detail: 
         return item;
       })
     );
+    return settledResults.filter(item => item.status === 'fulfilled').map(item => item.value);
   } catch (err) {
     return result.length > 0 ? result : null;
   }

@@ -2,26 +2,17 @@ import { WebBookRepository } from "../../4-infrastructure/repositories/WebBookRe
 import { AppError } from "../../5-shared/errors/index.js"
 
 export class WebBookDetailQueryService {
+    #bookDetailQueryService;
     #webBookRepo;
-    #ebookRepo;
-    #indexRepo;
-    #volumeRepo;
-    #chapterRepo;
+
 
     /**
-     * 
-     * @param {*} ebookRepo 
-     * @param {*} volumeRepo 
-     * @param {*} indexRepo 
-     * @param {*} chapterRepo 
      * @param {WebBookRepository} webBookRepo 
+     * @param {*} bookDetailQueryService 
      */
-    constructor(ebookRepo, volumeRepo, indexRepo, chapterRepo, webBookRepo) {
-        this.#ebookRepo = ebookRepo;
-        this.#indexRepo = indexRepo;
-        this.#volumeRepo = volumeRepo;
-        this.#chapterRepo = chapterRepo;
+    constructor(webBookRepo, bookDetailQueryService) {
         this.#webBookRepo = webBookRepo;
+        this.#bookDetailQueryService = bookDetailQueryService;
     }
 
     /**
@@ -30,23 +21,18 @@ export class WebBookDetailQueryService {
      * @returns 
      */
     async getBookDetail(bookId) {
-        // 并发查询三个表（充分利用 I/O 并行）
-        const [ebook, webook, Index, Volumes, intro] = await Promise.all([
-            this.#ebookRepo.findById(bookId),
-            this.#webBookRepo.findByBookId(bookId),
-            this.#indexRepo.findByBookId(bookId),
-            this.#volumeRepo.findByBookId(bookId),
-            this.#chapterRepo.findIntroduction(bookId),
-        ]);
+        const webook = await this.#webBookRepo.findByBookId(bookId);
+        if (!webook) {
+            throw new AppError('该书籍非网文类型', 404);
+        }
+        const baseData = await this.#bookDetailQueryService.getBookDetail(bookId);
 
-        if (!ebook || !webook) throw new AppError('书籍不存在/该书籍非网文类型', 404);
-        // 组装成 DTO
+        const { id: webBookId, ...webookWithoutId } = webook;
+
         return {
-            ...ebook,
-            ...webook,
-            Index,
-            Volumes,
-            Introduction: intro?.Content,
+            ...baseData,
+            ...webookWithoutId,
+            WebBookId: webBookId,   // 显式映射为接口约定的 WebBookId
         };
     }
 
@@ -56,11 +42,6 @@ export class WebBookDetailQueryService {
      * @returns 
      */
     async getMetadata(bookId) {
-        const ebook = await this.#ebookRepo.findById(bookId);
-        const intro = await this.#chapterRepo.findIntroduction(bookId);
-        return {
-            ...ebook,
-            Introduction: intro.Content,
-        }
+        return this.#bookDetailQueryService.getMetadata(bookId);
     }
 }

@@ -21,48 +21,40 @@ export class BookCommandService {
    * @param {*} author 
    * @returns 
    */
-  async createEmptyBook(bookName, author = "佚名") {
-    if (!bookName) {
-      throw new UserInputError('书名不能为空');
-    }
+  async createEmptyBook({ bookName, author }) {
     const rawData = {
       BookName: bookName,
       Author: author,
       CoverImg: "#212f30",
       Hotness: 0,
     };
-    return await this.#ebookRepository.create(rawData);
+    return this.#ebookRepository.create(rawData);
   }
 
-  /**
-   * 创建新书（命令）
-   */
-  async createBook(bookDTO) {
-    // 1. 业务校验（如书名不能为空）
-    if (!bookDTO.bookName) {
-      throw new UserInputError('书名不能为空');
-    }
+  // /**
+  //  * 创建新书（命令）
+  //  */
+  // async createBook(bookDTO) {
+  //   // 2. 调用 Repository 持久化
+  //   const rawData = {
+  //     BookName: bookDTO.bookName,
+  //     Author: bookDTO.author,
+  //     Hotness: bookDTO.hotness || 0,
+  //   };
+  //   const newEntity = await this.#ebookRepository.create(rawData);
 
-    // 2. 调用 Repository 持久化
-    const rawData = {
-      BookName: bookDTO.bookName,
-      Author: bookDTO.author,
-      Hotness: bookDTO.hotness || 0,
-    };
-    const newEntity = await this.#ebookRepository.create(rawData);
+  //   // // 3. 发送领域事件（异步解耦）
+  //   // if (this.#eventManager) {
+  //   //   this.#eventManager.emit('book.created', { id: newEntity.id });
+  //   // }
 
-    // // 3. 发送领域事件（异步解耦）
-    // if (this.#eventManager) {
-    //   this.#eventManager.emit('book.created', { id: newEntity.id });
-    // }
-
-    // 4. 返回 DTO
-    return {
-      id: newEntity.id,
-      bookName: newEntity.BookName,
-      author: newEntity.Author,
-    };
-  }
+  //   // 4. 返回 DTO
+  //   return {
+  //     id: newEntity.id,
+  //     bookName: newEntity.BookName,
+  //     author: newEntity.Author,
+  //   };
+  // }
 
   /**
    * 更新书籍热度（命令）
@@ -77,6 +69,6 @@ export class BookCommandService {
    * 删除书籍（软删除或硬删除）
    */
   async deleteBook(bookId) {
-    return await this.#ebookRepository.delete(bookId);
+    return  this.#ebookRepository.delete(bookId);
   }
 }

@@ -201,7 +201,7 @@ export class ChapterRepository {
      * @param {number|undefined} volumeId 插到指定卷中，-1为不设置卷
      * @param {Array<{Content:string,OrderNum:number,Title:string}>} chapters 章节列表
      */
-    async batchInsertChapters(bookId, volumeId, chapters) {
+    async batchInsertChapters({ bookId, volumeId, chapters }) {
         const { sequelize } = this.#ChapterModel;
         const trans = await sequelize.transaction();
 

@@ -32,7 +32,6 @@ export class ChapterCommandService {
      * @param {number} [chapter.OrderNum] 章节排序号
      */
     async upsertChapter(chapter) {
-        if (!chapter.Content && !chapter.Title) throw new UserInputError("请求参数错误：章节标题和内容不能同时为空。");
         return await this.#chapterRepository.upsertChapter(chapter);
     }
 
@@ -51,8 +50,8 @@ export class ChapterCommandService {
      * @param {number|undefined} volumeId 插到指定卷中，-1为不设置卷
      * @param {Array<{Content:string,OrderNum:number,Title:string}>} chapters 章节列表
      */
-    async batchInsertChapters(bookId, volumeId, chapters) {
-        return await this.#chapterRepository.batchInsertChapters(bookId, volumeId, chapters);
+    async batchInsertChapters({ bookId, volumeId, chapters }) {
+        return await this.#chapterRepository.batchInsertChapters({ bookId, volumeId, chapters });
     }
 
     /**

@@ -1,3 +1,4 @@
+import { UserInputError } from "../../../../5-shared/errors/index.js";
 /**
  * @swagger
  * components:
@@ -53,3 +54,12 @@
  *         bookId: [130]
  *
  */
+export class ReviewRuleRequest {
+    static fromBody(body) {
+        const { id, name, rule, replace, bookId } = body;
+        if (bookId?.length > 0 && bookId.some(i => isNaN(i * 1))) throw new UserInputError("bookId 必须为整数数组");
+        if (!name) throw new UserInputError("规则名为必填项");
+        if (!rule) throw new UserInputError("校阅规则为必填项");
+        return { id, name, rule, replace, bookId };
+    }
+}

@@ -1,3 +1,4 @@
+import { UserInputError } from "../../../../5-shared/errors/index.js"
 /**
  * @swagger
  * components:
@@ -37,3 +38,10 @@
  *       # 注意：IndexId 仅在修改时需要，但非必填，在描述中说明
  *       # 实际 required 中不包含 IndexId
  */
+export class ChapterUpsertRequest {
+    static fromBody(chapter) {
+        if (chapter.IndexId <= 0 && !chapter.BookId) throw new UserInputError("新增章节需要指定添加的书籍。");
+        if (!chapter.Content && !chapter.Title) throw new UserInputError("请求参数错误：章节标题和内容不能同时为空。");
+        return chapter;
+    }
+}

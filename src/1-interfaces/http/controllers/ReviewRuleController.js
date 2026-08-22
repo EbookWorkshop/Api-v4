@@ -1,6 +1,7 @@
 
 import { ReviewRuleQueryService } from "../../../2-application/services/ReviewRuleQueryService.js";
-import { UserInputError } from '../../../5-shared/errors/index.js';
+import { ReviewRuleRequest } from "../dtos/reviewRule/ReviewRuleRequest.dto.js";
+import { IdRequest } from "../dtos/components/IdRequest.dto.js";
 
 export class ReviewRuleController {
     #reviewRuleQueryService;
@@ -101,11 +102,8 @@ export class ReviewRuleController {
      *         description: 服务器内部错误
      */
     async createOrUpdateReviewRule(ctx) {
-        const { id, name, rule, replace, bookId } = ctx.request.body;
-        if (bookId?.length > 0 && bookId.some(i => isNaN(i * 1))) throw new UserInputError("bookId 必须为整数数组");
-        if (!name) throw new UserInputError("规则名为必填项");
-        if (!rule) throw new UserInputError("校阅规则为必填项");
-        ctx.body = await this.#reviewRuleCommandService.createOrUpdateReviewRule({ id, name, rule, replace, bookId });
+        const rule = ReviewRuleRequest.fromBody(ctx.request.body);
+        ctx.body = await this.#reviewRuleCommandService.createOrUpdateReviewRule(rule);
     }
 
     /**
@@ -118,14 +116,7 @@ export class ReviewRuleController {
      *       - Review - Rule —— 自助校阅 - 规则库
      *       - Review
      *     parameters:
-     *       - in: query
-     *         name: id
-     *         schema:
-     *           type: integer
-     *           minimum: 1
-     *         required: true
-     *         description: 要删除的规则 ID
-     *         example: 1
+     *       - $ref: '#/components/parameters/IdQuery'
      *     responses:
      *       200:
      *         description: 删除成功，返回统一成功信息
@@ -157,8 +148,7 @@ export class ReviewRuleController {
      *         description: 服务器内部错误
      */
     async deleteReviewRule(ctx) {
-        const id = ctx.query.id * 1;
-        if (isNaN(id)) throw new UserInputError("提供的校阅规则ID必须为正整数。");
+        const id = IdRequest.fromQuery(ctx.query);
         ctx.body = await this.#reviewRuleCommandService.deleteReviewRuleById(id);
     }
 }

@@ -52,7 +52,7 @@ export class TagRepository {
      * @param {number} bookId 直接关联书本
      * @returns [isCreateTag,isAddToBook] 是否创建标签，是否关联书籍
      */
-    async createTag(tagText, color, bookId) {
+    async createTag({ tagText, color, bookId }) {
         const [myTag, isCreate] = await this.#TagModel.findOrCreate({
             where: { Text: tagText },
             defaults: {//设置Create时的默认值
@@ -95,7 +95,7 @@ export class TagRepository {
      * @param {*} color 标签颜色
      * @returns 修改行数
      */
-    async updateTag(tagId, tagText, color) {
+    async updateTag({ tagId, tagText, color }) {
         const [rows] = await this.#TagModel.update({
             ...(color ? { Color: color } : {}),
             ...(tagText ? { Text: tagText } : {}),

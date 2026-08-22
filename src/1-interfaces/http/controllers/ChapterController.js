@@ -1,6 +1,12 @@
 import { ChapterQueryService } from "../../../2-application/services/ChapterQueryService.js";
 import { ChapterCommandService } from "../../../2-application/services/ChapterCommandService.js";
-import { UserInputError } from '../../../5-shared/errors/index.js';
+
+import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
+import { ChapterUpsertRequest } from "../dtos/chapter/ChapterUpsertRequest.dto.js"
+import { ChapterRequest } from "../dtos/components/Chapter.dto.js";
+import { ChapterOrderRequest } from "../dtos/chapter/ChapterOrderRequest.dto.js";
+import { BookSearchRequest } from "../dtos/book/BookSearchRequest.dto.js";
+import { BatchInsertChaptersRequest } from "../dtos/chapter/BatchInsertChaptersRequest.dto.js";
 
 export class ChapterController {
     #chapterQueryService;
@@ -59,8 +65,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async getChapterById(ctx) {
-        const cpId = ctx.query.chapterid * 1;
-        if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
+        const cpId = ChapterRequest.fromQueryId(ctx.query);
         ctx.body = await this.#chapterQueryService.getChapterById(cpId);
     }
 
@@ -112,8 +117,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async getAdjacentChapter(ctx) {
-        const chapterId = ctx.query.chapterid * 1;
-        if (isNaN(chapterId)) throw new UserInputError("提供的章节ID不正确。");
+        const chapterId = ChapterRequest.fromQueryId(ctx.query);
         ctx.body = await this.#chapterQueryService.getAdjacentChapter(chapterId);
     }
 
@@ -154,8 +158,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async listHiddenChapters(ctx) {
-        const bookId = ctx.query.bookid * 1;
-        if (isNaN(bookId)) throw new AppError("bookid 必须为有效整数", 600);
+        const bookId = BookIdRequest.fromQuery(ctx.query);
         ctx.body = await this.#chapterQueryService.listHiddenChapters(bookId);
     }
 
@@ -205,8 +208,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async searchBook(ctx) {
-        const { keyword, option } = ctx.request.body;
-        if (!keyword) throw new UserInputError("必须输入查询关键字");
+        const { keyword, option } = BookSearchRequest.fromBody(ctx.body);
         ctx.body = await this.#chapterQueryService.searchChapters(keyword, option);
     }
 
@@ -224,9 +226,7 @@ export class ChapterController {
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/RemoveChaptersRequest'
-     *           example:
-     *             chapterIds: [1, 3, 4]
+     *             $ref: '#/components/schemas/ChaptersIdRequest'
      *     responses:
      *       200:
      *         description: 移除成功，返回移除的行数
@@ -253,8 +253,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async removeChaptersFromVolume(ctx) {
-        const { chapterIds } = ctx.request.body;
-        if (!Array.isArray(chapterIds)) throw new UserInputError("提供的章节格式不对");
+        const chapterIds = ChapterRequest.fromBodyIds(ctx.body);
         ctx.body = await this.#chapterCommandService.removeChaptersFromVolume(chapterIds);
     }
 
@@ -316,9 +315,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async upsertChapter(ctx) {
-        let chapter = ctx.request.body;
-        if (chapter.IndexId <= 0 && !chapter.BookId) throw new UserInputError("新增章节需要指定添加的书籍。");
-
+        const chapter = ChapterUpsertRequest.fromBody(ctx.body);
         ctx.body = await this.#chapterCommandService.upsertChapter(chapter);
     }
 
@@ -354,8 +351,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async deleteChapter(ctx) {
-        const cpId = ctx.query.chapterid * 1;
-        if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
+        const cpId = ChapterRequest.fromQueryId(ctx.query);
         ctx.body = await this.#chapterCommandService.deleteChapter(cpId);
     }
 
@@ -408,9 +404,8 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async batchInsertChapters(ctx) {
-        const { bookId, volumeId, chapterList: chapters } = ctx.request.body;
-        if (isNaN(bookId) || !Array.isArray(chapters) || chapters.length <= 0) throw new UserInputError("bookId 和 chapters 为必填字段，且 chapters 不能为空");
-        ctx.body = await this.#chapterCommandService.batchInsertChapters(bookId, volumeId, chapters);
+        const chapters = BatchInsertChaptersRequest.fromBody(ctx.body);
+        ctx.body = await this.#chapterCommandService.batchInsertChapters(chapters);
     }
 
     /**
@@ -452,13 +447,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async updateChapterOrder(ctx) {
-        if (!Array.isArray(ctx.request.body)) throw new UserInputError("请求体必须为非空数组，且每个元素需包含 indexId 和 newOrder");
-        const orderData = ctx.request.body.map(item => ({
-            indexId: parseInt(item.indexId, 10),
-            newOrder: parseInt(item.newOrder, 10)
-        }));
-        const errorId = orderData.filter(({ indexId, newOrder }) => isNaN(indexId) || isNaN(newOrder));
-        if (errorId.length > 0) throw new UserInputError(" indexId 或 newOrder 存在非数字，请检查。");
+        const orderData = ChapterOrderRequest.fromBody(ctx.body);
         ctx.body = await this.#chapterCommandService.updateOrder(orderData);
     }
 
@@ -511,8 +500,7 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async setChapterAsIntroduction(ctx) {
-        const { chapterId } = ctx.request.body;
-        if (isNaN(chapterId)) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
+        const chapterId = ChapterRequest.fromBodyId(ctx.body);
         ctx.body = await this.#chapterCommandService.setAsIntroduction(chapterId);
     }
 }

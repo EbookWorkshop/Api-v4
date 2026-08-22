@@ -1,5 +1,7 @@
 import { TagQueryService } from "../../../2-application/services/TagQueryService.js";
-import { UserInputError } from "../../../5-shared/errors/index.js";
+import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
+import { TagCreateRequest } from "../dtos/tag/TagCreateRequest.dto.js";
+import { TagIdQuery } from "../dtos/tag/TagIdRequest.dto.js"
 
 export class TagController {
     #TagQueryService;
@@ -95,8 +97,7 @@ export class TagController {
      *               timestamp: "2026-08-20T18:00:00.000Z"
      */
     async ebookTags(ctx) {
-        const bookId = ctx.query.bookid * 1;
-        if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
+        const bookId = BookIdRequest.fromQuery(ctx.query);
         ctx.body = await this.#TagQueryService.getEbookTags(bookId);
     }
 
@@ -141,9 +142,8 @@ export class TagController {
      *         description: 服务器内部错误
      */
     async createTag(ctx) {
-        const { bookId, tagText, color } = ctx.request.body;
-        if (!tagText) throw new UserInputError("标签不能为空");
-        ctx.body = await this.#TagCommandService.createTag(tagText.trim(), color, bookId);
+        const tagInfo = TagCreateRequest.fromBody(ctx.body);
+        ctx.body = await this.#TagCommandService.createTag(tagInfo);
     }
 
     /**
@@ -156,14 +156,7 @@ export class TagController {
      *       - Library - Tag —— 图书馆管理
      *       - Tag
      *     parameters:
-     *       - in: query
-     *         name: tagid
-     *         schema:
-     *           type: integer
-     *           minimum: 1
-     *         required: true
-     *         description: 要删除的标签 ID
-     *         example: 1
+     *       - $ref: '#/components/parameters/TagIdQuery'
      *     responses:
      *       200:
      *         description: 删除成功，并返回删除数量
@@ -195,8 +188,7 @@ export class TagController {
      *         description: 服务器内部错误
      */
     async deleteTag(ctx) {
-        const tagId = ctx.query.tagid * 1;
-        if (isNaN(tagId)) throw new AppError("tagid 必须为有效整数", 400);
+        const tagId = TagIdQuery.fromQuery(ctx.query);
         const result = await this.#TagCommandService.deleteTag(tagId);
         ctx.body = result;
     }
@@ -252,9 +244,8 @@ export class TagController {
      *         description: 服务器内部错误
      */
     async updateTag(ctx) {
-        const { tagId, tagText, color } = ctx.request.body;
-        if (isNaN(tagId)) throw new AppError("tagid 必须为有效整数", 600);
-        ctx.body = await this.#TagCommandService.updateTag(tagId, tagText, color);
+        const tag = UpdateTagRequest.fromBody(ctx.body);
+        ctx.body = await this.#TagCommandService.updateTag(tag);
     }
 
     /**
@@ -268,14 +259,7 @@ export class TagController {
      *       - Tag
      *     parameters:
      *       - $ref: '#/components/parameters/BookIdQuery'
-     *       - in: query
-     *         name: tagid
-     *         schema:
-     *           type: integer
-     *           minimum: 1
-     *         required: true
-     *         description: 标签 ID
-     *         example: 1
+     *       - $ref: '#/components/parameters/TagIdQuery'
      *     responses:
      *       200:
      *         description: 移除成功
@@ -307,11 +291,9 @@ export class TagController {
      *         description: 服务器内部错误
      */
     async removeTagFromBook(ctx) {
-        const bookId = ctx.query.bookid * 1;
-        const tagId = ctx.query.tagid * 1;
-        if (isNaN(bookId) || isNaN(tagId)) {
-            throw new UserInputError("bookid 和 tagid 必须为有效整数");
-        }
+        const bookId = BookIdRequest.fromQuery(ctx.query);
+        const tagId = TagIdQuery.fromQuery(ctx.query);
+
         ctx.body = await this.#TagCommandService.removeTagFromBook(bookId, tagId);
     }
 }

@@ -17,7 +17,7 @@ export class RuleForWebQueryService {
      * @returns 
      */
     async listHosts() {
-        return await this.#ruleForWebRepository.listHosts();
+        return this.#ruleForWebRepository.listHosts();
     }
 
 }

@@ -2,6 +2,10 @@ import { BookQueryService } from "../../../2-application/services/BookQueryServi
 import { BookCommandService } from "../../../2-application/services/BookCommandService.js";
 import { BookDetailQueryService } from "../../../2-application/services/BookDetailQueryService.js";
 
+import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
+import { BookListRequest } from '../dtos/book/BookListRequest.dto.js';
+import { EmptyBookRequest } from "../dtos/book/EmptyBookRequest.js"
+
 import { AppError, UserInputError } from '../../../5-shared/errors/index.js';
 
 export class BookController {
@@ -65,13 +69,8 @@ export class BookController {
    *               code: 50000
    */
   async listBooks(ctx) {
-    const tagid = ctx.query.tagid * 1;
-    let nottag = ctx.query.nottag;
-    if (nottag) {
-      nottag = nottag.split(",").map(t => parseInt(t));
-      if (nottag.some(t => isNaN(t))) throw new AppError("排除标签必须为正整数，多个排除标签可用英文逗号隔开。", 600);
-    }
-    ctx.body = await this.#bookQueryService.listBooks(tagid, nottag);
+    const queryParams = BookListRequest.fromQuery(ctx.query);
+    ctx.body = await this.#bookQueryService.listBooks(queryParams);
   }
 
   /**
@@ -118,8 +117,7 @@ export class BookController {
    *         description: 服务器内部错误
    */
   async getBookById(ctx) {
-    const bookId = ctx.query.bookid * 1;
-    if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
+    const bookId = BookIdRequest.fromQuery(ctx.query);
     ctx.body = await this.#bookDetailQuery.getBookDetail(bookId);
   }
 
@@ -160,8 +158,7 @@ export class BookController {
    *         description: 服务器内部错误
    */
   async getMetadata(ctx) {
-    const bookId = ctx.query.bookid * 1;
-    if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
+    const bookId = BookIdRequest.fromQuery(ctx.query);
     ctx.body = await this.#bookDetailQuery.getMetadata(bookId);
   }
 
@@ -179,10 +176,10 @@ export class BookController {
    *       content:
    *         application/json:
    *           schema:
-   *             $ref: '#/components/schemas/BookHeatRequest'
+   *             $ref: '#/components/schemas/BookIdRequest'
    *           examples:
    *             default:
-   *               $ref: '#/components/examples/BookHeatRequestExample'
+   *               $ref: '#/components/examples/BookIdRequestExample'
    *     responses:
    *       200:
    *         description: 热度更新成功，返回统一成功信息
@@ -214,10 +211,7 @@ export class BookController {
    *         description: 服务器内部错误
    */
   async updateBookHeat(ctx) {
-    const { bookId } = ctx.request.body;
-
-    if (isNaN(bookId)) throw new UserInputError("bookId 必须为有效整数");
-
+    const bookId = BookIdRequest.fromBody(ctx.request.body);
     const result = await this.#bookCommandService.updateBookHeat(bookId);
     ctx.body = result;
   }
@@ -236,19 +230,7 @@ export class BookController {
    *       content:
    *         application/json:
    *           schema:
-   *             type: object
-   *             properties:
-   *               bookName:
-   *                 type: string
-   *                 description: 书名
-   *                 example: "我的书籍"
-   *               author:
-   *                 type: string
-   *                 description: 作者
-   *                 example: "测试"
-   *             required:
-   *               - bookName
-   *               - author
+   *             $ref: '#/components/schemas/EmptyBookRequest'
    *           example:
    *             bookName: "我的书籍"
    *             author: "测试"
@@ -258,7 +240,25 @@ export class BookController {
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/ApiSuccessResponse'
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       $ref: '#/components/schemas/BookBase'
+   *             example:
+   *               code: 20000
+   *               msg: "success"
+   *               timestamp: "2026-08-22T10:00:00.000Z"
+   *               data:
+   *                 TotalWord: 0
+   *                 id: 208
+   *                 BookName: "我的书籍"
+   *                 Author: "测试"
+   *                 CoverImg: "#212f30"
+   *                 Hotness: 0
+   *                 createdAt: "2026-08-05T14:09:11.695Z"
+   *                 updatedAt: "2026-08-05T14:09:11.695Z"
    *       600:
    *         description: 请求参数错误（如缺少必填字段）
    *         content:
@@ -267,15 +267,14 @@ export class BookController {
    *               $ref: '#/components/schemas/ApiErrorResponse'
    *             example:
    *               code: 60000
-   *               msg: "bookName、author、type 均为必填字段"
-   *               timestamp: "2026-08-21T10:00:00.000Z"
+   *               msg: "bookName为必填字段"
+   *               timestamp: "2026-08-22T10:00:00.000Z"
    *       500:
    *         description: 服务器内部错误
    */
   async createEmptyBook(ctx) {
-    const { bookName, author } = ctx.request.body;
-    if (!bookName) throw new UserInputError("书名不能为空！");
-    ctx.body = await this.#bookCommandService.createEmptyBook(bookName, author || "佚名");
+    const emptyBook = EmptyBookRequest.fromBody(ctx.request.body);
+    ctx.body = await this.#bookCommandService.createEmptyBook(emptyBook);
   }
 
   /**
@@ -320,8 +319,7 @@ export class BookController {
    *         description: 服务器内部错误
    */
   async deleteBook(ctx) {
-    const bookId = ctx.query.bookid * 1;
-    if (isNaN(bookId)) throw new UserInputError("bookid 必须为有效整数");
+    const bookId = BookIdRequest.fromQuery(ctx.query);
     ctx.body = await this.#bookCommandService.deleteBook(bookId);
   }
 }
