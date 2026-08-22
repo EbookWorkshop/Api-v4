@@ -40,7 +40,7 @@ export class AssetsController {
      *         description: 服务器内部错误
      */
     async listArchiveBooks(ctx) {
-        ctx.body = await this.#assetsQueryService.getArchiveBook();
+        ctx.body = await this.#assetsQueryService.listArchiveBooks();
     }
 
 }

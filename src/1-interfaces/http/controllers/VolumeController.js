@@ -51,7 +51,7 @@ export class VolumeController {
      *       500:
      *         description: 服务器内部错误
      */
-    async getAllVolumes(ctx) {
+    async listVolumes(ctx) {
         const bookId = ctx.query.bookId * 1;
         if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
         ctx.body = await this.#volumeQueryService.findByBookId(bookId)

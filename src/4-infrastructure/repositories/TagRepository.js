@@ -15,13 +15,24 @@ export class TagRepository {
      * @param {*} onlyWithBook 是否仅要含书本引用的信息
      * @returns 
      */
-    async findAll(includeEBookTag = false, onlyWithBook = false) {
+    async #findAll(includeEBookTag = false, onlyWithBook = false) {
         const include = includeEBookTag ? [{
             model: this.#EBookTag,
             required: onlyWithBook,  // true → INNER JOIN, false → LEFT JOIN
         }] : [];
         return await this.#TagModel.findAll({ include });
     }
+    /**
+     * 找到所有标签，仅返回tag表的所有信息
+     * @returns 
+     */
+    async findAllTags() { return await this.#findAll(false, false) }
+    /**
+     * 找到所有标签，并关联书本引用信息
+     * @param {boolean} hasBook 标签是否返回至少有一本书引用的
+     * @returns 
+     */
+    async findAllWithBooks(hasBook) { return await this.#findAll(true, hasBook) }
 
     async findTagForBook(bookId) {
         return this.#TagModel.findAll({

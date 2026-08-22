@@ -32,6 +32,7 @@ export class ChapterCommandService {
      * @param {number} [chapter.OrderNum] 章节排序号
      */
     async upsertChapter(chapter) {
+        if (!chapter.Content && !chapter.Title) throw new UserInputError("请求参数错误：章节标题和内容不能同时为空。");
         return await this.#chapterRepository.upsertChapter(chapter);
     }
 

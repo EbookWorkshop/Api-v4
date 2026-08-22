@@ -44,6 +44,14 @@
 - 看到 `BookController.js`（大驼峰） → 立即知道里面是一个 `class BookController {}`。
 - 看到 `logger.js`（小驼峰） → 立即知道里面是一个 `function logger()` 或 `export const createLogger = () => {}`。
 
+### 层级命名规范
+#### Service、Controller
+统一动词用于描述返回类型：
+* 返回列表：listXxx（如 listBooks）
+* 返回单条：getXxx 或 findXxx（如 getBookById）
+* 复杂搜索：searchXxx
+
+
 ## 三、项目目录结构
 ```
 Api-V4/

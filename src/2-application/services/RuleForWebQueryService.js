@@ -16,8 +16,8 @@ export class RuleForWebQueryService {
      * 获取站点列表
      * @returns 
      */
-    async getHostList() {
-        return await this.#ruleForWebRepository.getHostList();
+    async listHosts() {
+        return await this.#ruleForWebRepository.listHosts();
     }
 
 }

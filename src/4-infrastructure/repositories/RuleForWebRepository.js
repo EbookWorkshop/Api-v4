@@ -10,7 +10,7 @@ export class RuleForWebRepository {
      * 获取站点列表
      * @returns 
      */
-    async getHostList() {
+    async listHosts() {
         const hosts = await this.#RuleForWebModel.findAll({
             attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('Host')), 'Host']],
             order: [["updatedAt", "DESC"]],

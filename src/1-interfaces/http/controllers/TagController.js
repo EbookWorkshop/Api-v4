@@ -49,7 +49,7 @@ export class TagController {
      */
     async listTags(ctx) {
         const hasbook = ctx.query.hasbook * 1 > 0
-        ctx.body = await this.#TagQueryService.getTagList(hasbook);
+        ctx.body = await this.#TagQueryService.listTags(hasbook);
     }
 
     /**

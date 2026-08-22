@@ -57,8 +57,7 @@ export class VolumeRepository {
      * @param {String} title 
      * @param {String?} introduction 
      */
-    async updateVolume(volumeId, title, introduction) {
-        // return await this.#volumeRepository.updateVolume(volumeId, title, introduction);
+    async updateVolume({ volumeId, title, introduction }) {
         const volume = await this.#VolumeModel.findByPk(volumeId);
         if (!volume) throw new AppError("未找到该分卷", 404);
         if (title) volume.Title = title;

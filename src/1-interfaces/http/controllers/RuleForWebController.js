@@ -47,6 +47,6 @@ export class RuleForWebController {
      *         description: 服务器内部错误
      */
     async getBotRuleHostList(ctx) {
-        ctx.body = await this.#ruleForWebQueryService.getHostList();
+        ctx.body = await this.#ruleForWebQueryService.listHosts();
     }
 }

@@ -14,7 +14,7 @@ export class AssetsQueryService {
         this.#config = config;
     }
 
-    async getArchiveBook() {
+    async listArchiveBooks() {
         return await this.#fileScanner.listFiles(this.#config?.archive?.path, { detail: true }) || [];
     }
 }

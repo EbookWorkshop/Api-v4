@@ -71,7 +71,7 @@ export class BookController {
       nottag = nottag.split(",").map(t => parseInt(t));
       if (nottag.some(t => isNaN(t))) throw new AppError("排除标签必须为正整数，多个排除标签可用英文逗号隔开。", 600);
     }
-    ctx.body = await this.#bookQueryService.getBookList(tagid, nottag);
+    ctx.body = await this.#bookQueryService.listBooks(tagid, nottag);
   }
 
   /**
@@ -117,7 +117,7 @@ export class BookController {
    *       500:
    *         description: 服务器内部错误
    */
-  async queryBook(ctx) {
+  async getBookById(ctx) {
     const bookId = ctx.query.bookid * 1;
     if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
     ctx.body = await this.#bookDetailQuery.getBookDetail(bookId);

@@ -28,8 +28,8 @@ export class VolumeCommandService {
      * @param {String} title 
      * @param {String?} introduction 
      */
-    async updateVolume(volumeId, title, introduction) {
-        return await this.#volumeRepository.updateVolume(volumeId, title, introduction);
+    async updateVolume({ volumeId, title, introduction }) {
+        return await this.#volumeRepository.updateVolume({ volumeId, title, introduction });
     }
 
     /**

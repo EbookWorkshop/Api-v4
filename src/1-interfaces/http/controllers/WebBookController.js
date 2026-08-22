@@ -91,7 +91,7 @@ export class WebBookController {
    *       500:
    *         description: 服务器内部错误
    */
-  async queryBook(ctx) {
+  async getBookById(ctx) {
     const bookId = ctx.query.bookid * 1;
     if (isNaN(bookId)) throw new UserInputError("提供的书籍ID不正确。");
     ctx.body = await this.#webBookDetailQuery.getBookDetail(bookId);
