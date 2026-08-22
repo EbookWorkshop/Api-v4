@@ -7,10 +7,11 @@
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",
     "swagger": "node scripts/generate-swagger.js",
-    "db":"cp -f data/latest.sqlite data/dev.sqlite"
+    "db": "cp -f data/latest.sqlite data/dev.sqlite"
   },
   "dependencies": {
     "@koa/router": "^15.7.0",
+    "epub-gen": "^0.1.0",
     "koa": "^3.2.1",
     "koa-body": "^8.0.0",
     "koa-static": "^5.0.0",

@@ -28,6 +28,10 @@ import { AssetsQueryService } from './AssetsQueryService.js';
 import { TagController } from '../../1-interfaces/http/controllers/TagController.js';
 
 
+//导出工具
+import { BookExportService } from './BookExportService.js';
+import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
+
 export function createServices(repositories, config = {}) {
   const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
   const { tagRepository, systemConfigRepository, } = repositories;
@@ -38,7 +42,6 @@ export function createServices(repositories, config = {}) {
   const systemConfigService = new SystemConfigService(systemConfigRepository);
 
   // ========== 字体服务（依赖 systemConfigService + 配置路径） ==========
-  //TODO: 从配置中读取路径
   const fontDirPath = config?.font.path;
   const fontUrlPrefix = "/font";
   const fileScanner = new FileSystemScanner(path.join(process.cwd(), config?.repository.path));
@@ -48,6 +51,11 @@ export function createServices(repositories, config = {}) {
     fontUrlPrefix,
     fileScanner
   );
+
+  //创建导出工具
+  const generatorFactory = new GeneratorFactory(config.export?.tempDir);
+  const bookExportService = new BookExportService(ebookRepository, generatorFactory);
+
   return {
     bookQuery: new BookQueryService(ebookRepository),
     bookDetailQuery: bookDetailQueryService,
@@ -71,6 +79,7 @@ export function createServices(repositories, config = {}) {
 
     assetsQuery: new AssetsQueryService(fileScanner, config),
 
+    bookExport: new BookExportService(bookDetailQueryService, generatorFactory),
   };
 }
 // console.warn("TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js");

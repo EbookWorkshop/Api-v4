@@ -5,3 +5,4 @@ config/local.js
 .env.local
 .DS_Store
 */swagger.json
+scripts/*.txt

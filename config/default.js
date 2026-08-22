@@ -7,6 +7,9 @@ export default {
   font: {
     path: "/font"
   },
+  tempDir: {
+    path: "/temp"
+  },
   server: {
     port: 8300,
     host: '0.0.0.0',
