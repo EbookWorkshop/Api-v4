@@ -15,7 +15,7 @@ export class MoveChaptersRequest {
      *           example: 12
      *         chapterIds:
      *           $ref: '#/components/schemas/ChaptersIdRequest'
-     *           description: 要移动的章节 ID 列表（复用已有组件）
+     *           description: 要移动的章节 ID 列表
      *       required:
      *         - volumeId
      *         - chapterIds

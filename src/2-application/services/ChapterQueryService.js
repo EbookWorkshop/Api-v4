@@ -42,8 +42,8 @@ export class ChapterQueryService {
         ]);
 
         return {
-            pre: { id: prevEntity.id },
-            next: { id: nextEntity.id }
+            pre: { id: prevEntity?.id },
+            next: { id: nextEntity?.id }
         }
     }
 

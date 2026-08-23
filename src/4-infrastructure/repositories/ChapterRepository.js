@@ -183,7 +183,7 @@ export class ChapterRepository {
 
 
     /**
-     * 插入或更新章节
+     * 插入或更新一章
      * @param {Object} [chapter] 章节信息
      * @param {number} [chapter.IndexId] 章节ID
      * @param {number} [chapter.BookId] 书籍ID
@@ -216,10 +216,11 @@ export class ChapterRepository {
      * @param {number} bookId 将插入的书籍
      * @param {number|undefined} volumeId 插到指定卷中，-1为不设置卷
      * @param {Array<{Content:string,OrderNum:number,Title:string}>} chapters 章节列表
+     * @param {Object} setting
      */
-    async batchInsertChapters({ bookId, volumeId, chapters }) {
+    async batchInsertChapters({ bookId, volumeId, chapters }, { transaction }) {
         const { sequelize } = this.#ChapterModel;
-        const trans = await sequelize.transaction();
+        const trans = transaction ? transaction : await sequelize.transaction();
 
         let maxOrderNum = await this.#ChapterModel.max('OrderNum', {
             where: { BookId: bookId }
@@ -246,7 +247,7 @@ export class ChapterRepository {
             await this.#ChapterModel.bulkCreate(batch, { transaction: trans });
         }
 
-        await trans.commit();
+        if (!transaction) await trans.commit();
         return true;
     }
 

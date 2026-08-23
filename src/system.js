@@ -7,6 +7,7 @@ import { createDatabaseConnection } from './4-infrastructure/database/databaseCo
 import { entityDefinitions } from './3-domain/entities/index.js';
 import { setupAssociations } from './3-domain/associations/index.js';
 import { createRepositories } from './4-infrastructure/repositories/index.js';
+import { createDatabaseTransaction } from './4-infrastructure/database/DatabaseTransaction.js';
 import { createServices } from './2-application/services/index.js';
 import { createControllers } from './1-interfaces/http/controllers/index.js';
 import { setupHttpServer } from './1-interfaces/http/index.js';
@@ -35,9 +36,9 @@ const eventManager = new EventManager(new EventEmitter());//消息管理模块
 // ============================================================
 // 3.1 仓储层 (Infrastructure)
 const repositories = createRepositories(sequelize);
-
+const dbTransaction = createDatabaseTransaction(sequelize);
 // 3.2 服务层 (Application) - 依赖 Repositories
-const services = createServices(repositories, config);
+const services = createServices(repositories, dbTransaction, config);
 
 // 3.3 控制器层 (Interfaces) - 依赖 Services
 const controllers = createControllers(services, config);

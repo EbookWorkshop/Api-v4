@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { ITransaction } from "../ports/ITransaction.js"
 import { BookQueryService } from './BookQueryService.js';
 import { BookCommandService } from './BookCommandService.js';
 import { BookDetailQueryService } from "./BookDetailQueryService.js";
@@ -27,12 +28,18 @@ import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 import { AssetsQueryService } from './AssetsQueryService.js';
 import { TagController } from '../../1-interfaces/http/controllers/TagController.js';
 
-
 //导出工具
 import { BookExportService } from './BookExportService.js';
 import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
 
-export function createServices(repositories, config = {}) {
+/**
+ * 服务层 组装所有 Service
+ * @param {*} repositories 
+ * @param {ITransaction} databaseTransaction 
+ * @param {Object} config 
+ * @returns 
+ */
+export function createServices(repositories, databaseTransaction, config = {}) {
   const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
   const { tagRepository, systemConfigRepository, } = repositories;
 
@@ -59,15 +66,20 @@ export function createServices(repositories, config = {}) {
   return {
     bookQuery: new BookQueryService(ebookRepository),
     bookDetailQuery: bookDetailQueryService,
-    bookCommand: new BookCommandService(ebookRepository),
+    bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction),
+
     webBookQuery: new WebBookQueryService(repositories.webBookRepository),
     webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
+
     volumeQuery: new VolumeQueryService(volumeRepository),
     volumeCommand: new VolumeCommandService(repositories.volumeRepository),
+
     chapterQuery: new ChapterQueryService(chapterRepository),
-    chapterCommand: new ChapterCommandService(repositories.chapterRepository),
+    chapterCommand: new ChapterCommandService(chapterRepository),
+
     tagQuery: new TagQueryService(tagRepository),
     tagCommand: new TagCommandService(tagRepository),
+
     systemConfig: systemConfigService,
     email: new EmailService(systemConfigService),
     font: fontService,

@@ -4,9 +4,8 @@ import { BookDetailQueryService } from "../../../2-application/services/BookDeta
 
 import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
 import { BookListRequest } from '../dtos/book/BookListRequest.dto.js';
-import { EmptyBookRequest } from "../dtos/book/EmptyBookRequest.js"
-
-import { AppError, UserInputError } from '../../../5-shared/errors/index.js';
+import { EmptyBookRequest } from "../dtos/book/EmptyBookRequest.dto.js"
+import { CreateBookRequest } from "../dtos/book/CreateBookRequest.dto.js"
 
 export class BookController {
   #bookQueryService;
@@ -275,6 +274,53 @@ export class BookController {
   async createEmptyBook(ctx) {
     const emptyBook = EmptyBookRequest.fromBody(ctx.request.body);
     ctx.body = await this.#bookCommandService.createEmptyBook(emptyBook);
+  }
+
+  /**
+   * @swagger
+   * /library/book:
+   *   post:
+   *     summary: 创建完整图书（含章节）
+   *     description: 一次性创建图书及其所有章节内容（统一包装格式）
+   *     tags:
+   *       - Library —— 图书馆
+   *       - Book
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateBookRequest'
+   *           examples:
+   *             default:
+   *               $ref: '#/components/examples/CreateBookRequestExample'
+   *     responses:
+   *       200:
+   *         description: 创建成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiSuccessResponse'
+   *             example:
+   *               code: 20000
+   *               msg: "success"
+   *               timestamp: "2026-08-23T12:00:00.000Z"
+   *       400:
+   *         description: 请求参数错误（如缺少必填字段、章节列表为空等）
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 60000
+   *               msg: "bookName、author、type、chapterList 均为必填字段，且 chapterList 不能为空"
+   *               timestamp: "2026-08-23T12:00:00.000Z"
+   *       500:
+   *         description: 服务器内部错误
+   */
+  async createBook(ctx) {
+    const { bookDTO, chaptersDTO } = CreateBookRequest.fromBody(ctx.request.body);
+    ctx.body = await this.#bookCommandService.createBook(bookDTO, chaptersDTO);//TODO: DTO adapter
   }
 
   /**

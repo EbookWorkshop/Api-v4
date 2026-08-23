@@ -217,7 +217,7 @@ export class ChapterController {
      * @swagger
      * /library/book/volume/removechapters:
      *   post:
-     *     summary: 【章】将章节移出卷中
+     *     summary: 【章】<-【卷】将章节移出卷中
      *     description: 根据章节 ID 列表批量从卷中移除，返回修改的行数（统一包装格式）
      *     tags:
      *       - Library —— 图书馆
@@ -262,7 +262,7 @@ export class ChapterController {
      * @swagger
      * /library/book/volume/movechapters:
      *   post:
-     *     summary: 将章节移入指定分卷
+     *     summary: 【章】->【卷】将章节移入指定分卷
      *     description: 批量将多个章节移动到指定的分卷中（统一包装格式）
      *     tags:
      *       - Library —— 图书馆

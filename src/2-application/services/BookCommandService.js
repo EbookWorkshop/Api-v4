@@ -1,18 +1,23 @@
 import { EbookRepository } from "../../4-infrastructure/repositories/EbookRepository.js"
+import { ChapterRepository } from "../../4-infrastructure/repositories/ChapterRepository.js"
+import { ITransaction } from "../ports/ITransaction.js"
 import { AppError, UserInputError } from '../../5-shared/errors/index.js';
 
 export class BookCommandService {
   #ebookRepository;
-  // #eventManager; // 可选，用于发送领域事件
+  #chapterRepository;
+  #transaction;
 
   /**
    * 
    * @param {EbookRepository} ebookRepository 
-   * @param {*} eventManager 
+   * @param {ChapterRepository} chapterRepository 
+   * @param {ITransaction} transaction 
    */
-  constructor(ebookRepository, eventManager = null) {
+  constructor(ebookRepository, chapterRepository, transaction) {
     this.#ebookRepository = ebookRepository;
-    // this.#eventManager = eventManager;
+    this.#chapterRepository = chapterRepository;
+    this.#transaction = transaction;
   }
 
   /**
@@ -31,30 +36,35 @@ export class BookCommandService {
     return this.#ebookRepository.create(rawData);
   }
 
-  // /**
-  //  * 创建新书（命令）
-  //  */
-  // async createBook(bookDTO) {
-  //   // 2. 调用 Repository 持久化
-  //   const rawData = {
-  //     BookName: bookDTO.bookName,
-  //     Author: bookDTO.author,
-  //     Hotness: bookDTO.hotness || 0,
-  //   };
-  //   const newEntity = await this.#ebookRepository.create(rawData);
+  /**
+   * 添加创建书本
+   * @param {*} bookDTO 书本信息
+   * @param {*} chaptersDTO 章节信息
+   */
+  async createBook(bookDTO, chaptersDTO) {
+    try {
+      const transaction = await this.#transaction.begin();
+      const newBook = await this.#ebookRepository.create({
+        BookName: bookDTO.bookName,
+        Author: bookDTO.author,
+        CoverImg: bookDTO.cover,
+        Hotness: 0,
+      }, { transaction });
 
-  //   // // 3. 发送领域事件（异步解耦）
-  //   // if (this.#eventManager) {
-  //   //   this.#eventManager.emit('book.created', { id: newEntity.id });
-  //   // }
+      const chapters = {
+        bookId: newBook.id,
+        //volumeId:-1,      //TODO：插入时兼容分卷
+        chapters: chaptersDTO,
+      }
 
-  //   // 4. 返回 DTO
-  //   return {
-  //     id: newEntity.id,
-  //     bookName: newEntity.BookName,
-  //     author: newEntity.Author,
-  //   };
-  // }
+      await this.#chapterRepository.batchInsertChapters(chapters, { transaction });
+      await this.#transaction.commit();
+      return newBook.toJSON();
+    } catch (error) {
+      await this.#transaction.rollback();
+      throw error;
+    }
+  }
 
   /**
    * 更新书籍热度（命令）
@@ -69,6 +79,6 @@ export class BookCommandService {
    * 删除书籍（软删除或硬删除）
    */
   async deleteBook(bookId) {
-    return  this.#ebookRepository.delete(bookId);
+    return this.#ebookRepository.delete(bookId);
   }
 }

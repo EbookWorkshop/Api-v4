@@ -132,10 +132,11 @@ export class EbookRepository {
   /**
    * 创建一本书
    * @param {*} data 
+   * @param {Object} setting 
    * @returns 
    */
-  async create(data) {
-    return await this.#EbookModel.create(data);
+  async create(data, { transaction }) {
+    return await this.#EbookModel.create(data, { transaction });
   }
 
   // async bulkCreate(books) {
