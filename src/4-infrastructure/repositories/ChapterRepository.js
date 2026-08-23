@@ -167,6 +167,22 @@ export class ChapterRepository {
     }
 
     /**
+     * 批量移入章节到卷中
+     * @param {*} volumeId 
+     * @param {*} chapterIds 
+     * @returns 
+     */
+    async moveChaptersToVolume(volumeId, chapterIds) {
+        const [result] = await this.#ChapterModel.update(
+            { VolumeId: volumeId },
+            { where: { id: { [Op.in]: chapterIds } } }
+        );
+
+        return result;
+    }
+
+
+    /**
      * 插入或更新章节
      * @param {Object} [chapter] 章节信息
      * @param {number} [chapter.IndexId] 章节ID

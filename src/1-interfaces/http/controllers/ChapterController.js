@@ -7,6 +7,7 @@ import { ChapterRequest } from "../dtos/components/Chapter.dto.js";
 import { ChapterOrderRequest } from "../dtos/chapter/ChapterOrderRequest.dto.js";
 import { BookSearchRequest } from "../dtos/book/BookSearchRequest.dto.js";
 import { BatchInsertChaptersRequest } from "../dtos/chapter/BatchInsertChaptersRequest.dto.js";
+import { MoveChaptersRequest } from "../dtos/chapter/ChaptersMoveRequest.dto.js";
 
 export class ChapterController {
     #chapterQueryService;
@@ -255,6 +256,63 @@ export class ChapterController {
     async removeChaptersFromVolume(ctx) {
         const chapterIds = ChapterRequest.fromBodyIds(ctx.request.body);
         ctx.body = await this.#chapterCommandService.removeChaptersFromVolume(chapterIds);
+    }
+
+    /**
+     * @swagger
+     * /library/book/volume/movechapters:
+     *   post:
+     *     summary: 将章节移入指定分卷
+     *     description: 批量将多个章节移动到指定的分卷中（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/MoveChaptersRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/MoveChaptersRequestExample'
+     *     responses:
+     *       200:
+     *         description: 移动成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-23T10:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如 volumeId 缺失、chapterIds 为空等）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40000
+     *               msg: "volumeId 和 chapterIds 均为必填字段，且 chapterIds 不能为空"
+     *               timestamp: "2026-08-23T10:00:00.000Z"
+     *       404:
+     *         description: 指定的分卷或某些章节不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到目标分卷或部分章节"
+     *               timestamp: "2026-08-23T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async moveChaptersToVolume(ctx) {
+        const { volumeId, chapterIds } = MoveChaptersRequest.fromBody(ctx.request.body);
+        ctx.body = await this.#chapterCommandService.moveChaptersToVolume(volumeId, chapterIds);
     }
 
     /**

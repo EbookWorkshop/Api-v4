@@ -147,7 +147,8 @@ export class ChapterRequest {
      */
     static fromBodyIds(body) {
         const { chapterIds } = body;
-        if (!Array.isArray(chapterIds)) throw new UserInputError("提供的章节格式不对");
+        if (!Array.isArray(chapterIds)) throw new UserInputError("提供的章节格式不对。");
+        if (chapterIds.length == 0) throw new UserInputError("章节 ID 列表不能为空。");
         return chapterIds;
     }
 }

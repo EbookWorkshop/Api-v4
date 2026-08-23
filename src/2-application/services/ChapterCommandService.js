@@ -22,6 +22,17 @@ export class ChapterCommandService {
     }
 
     /**
+     * 批量移入章节到卷中
+     * @param {*} volumeId 
+     * @param {*} chapterIds 
+     * @returns 
+     */
+    async moveChaptersToVolume(volumeId, chapterIds) {
+        return await this.#chapterRepository.moveChaptersToVolume(volumeId, chapterIds);
+    }
+
+
+    /**
      * 插入或更新章节
      * @param {Object} [chapter] 章节信息
      * @param {number} [chapter.IndexId] 章节ID
