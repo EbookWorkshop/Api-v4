@@ -13,4 +13,11 @@ export class ITransaction {
      * 回滚事务
      */
     async rollback() { throw new Error('Not implemented'); }
+
+    /**
+     * 托管事务
+     * @param {function (transaction) {}} work 
+     * @returns 
+     */
+    async runInTransaction(work) { throw new Error('Not implemented'); }
 }

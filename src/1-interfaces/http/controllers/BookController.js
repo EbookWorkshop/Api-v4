@@ -5,7 +5,8 @@ import { BookDetailQueryService } from "../../../2-application/services/BookDeta
 import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
 import { BookListRequest } from '../dtos/book/BookListRequest.dto.js';
 import { EmptyBookRequest } from "../dtos/book/EmptyBookRequest.dto.js"
-import { CreateBookRequest } from "../dtos/book/CreateBookRequest.dto.js"
+import { CreateBookRequest } from "../dtos/book/CreateBookRequest.dto.js";
+import { UpdateBookMetadataRequest } from "../dtos/book/BookUpdateMetadataRequest.dto.js";
 
 export class BookController {
   #bookQueryService;
@@ -367,5 +368,65 @@ export class BookController {
   async deleteBook(ctx) {
     const bookId = BookIdRequest.fromQuery(ctx.query);
     ctx.body = await this.#bookCommandService.deleteBook(bookId);
+  }
+
+  /**
+   * @swagger
+   * /library/book/metadata:
+   *   patch:
+   *     summary: 更新图书元数据
+   *     description: 根据图书 ID 更新元数据（如书名、作者、封面、简介等），仅需传入要修改的字段（统一包装格式）
+   *     tags:
+   *       - Library —— 图书馆
+   *       - Book
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/UpdateBookMetadataRequest'
+   *           examples:
+   *             full:
+   *               $ref: '#/components/examples/UpdateBookMetadataRequestExample'
+   *             partial:
+   *               $ref: '#/components/examples/UpdateBookMetadataRequestPartial'
+   *     responses:
+   *       200:
+   *         description: 更新成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiSuccessResponse'
+   *             example:
+   *               code: 20000
+   *               msg: "success"
+   *               timestamp: "2026-08-24T10:00:00.000Z"
+   *       600:
+   *         description: 请求参数错误（如 id 缺失或非数字）
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 60000
+   *               msg: "id 必须为有效整数"
+   *               timestamp: "2026-08-24T10:00:00.000Z"
+   *       404:
+   *         description: 图书不存在
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ApiErrorResponse'
+   *             example:
+   *               code: 40400
+   *               msg: "未找到该图书"
+   *               timestamp: "2026-08-24T10:00:00.000Z"
+   *       500:
+   *         description: 服务器内部错误
+   */
+  async updateBookMetadata(ctx) {
+    const { id, ...metadata } = UpdateBookMetadataRequest.fromBody(ctx.request.body);
+
+    ctx.body = await this.#bookCommandService.updateMetadata(id, metadata);
   }
 }

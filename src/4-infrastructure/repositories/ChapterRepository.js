@@ -328,4 +328,28 @@ export class ChapterRepository {
         });
         return trans.commit();
     }
+
+    /**
+     * 修改简介
+     * @param {*} content 
+     * @param {Object} setting 
+     */
+    async updateIntroduction({ bookId, content }, { transaction }) {
+        const [ins, isCreate] = await this.#ChapterModel.findOrCreate({
+            where: {
+                BookId: bookId,
+                Title: IntroductionName,
+            },
+            defaults: {
+                OrderNum: -99,
+                Content: content,
+            },
+            transaction
+        });
+        if (!isCreate) {
+            ins.Content = content;
+            await ins.save({ transaction });
+        }
+        return true;
+    }
 }

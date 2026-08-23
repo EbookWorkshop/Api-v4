@@ -23,8 +23,15 @@ export class DatabaseTransaction extends ITransaction {
         if (this.#transaction) await this.#transaction.rollback();
     }
 
-    getTransaction() {
-        return this.#transaction;
+    /**
+     * 托管事务
+     * @param {function (transaction) {}} work 
+     * @returns 
+     */
+    async runInTransaction(work) {
+        return this.#sequelize.transaction((t) => {
+            return work(t);
+        });
     }
 }
 

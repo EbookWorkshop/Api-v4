@@ -139,10 +139,6 @@ export class EbookRepository {
     return await this.#EbookModel.create(data, { transaction });
   }
 
-  // async bulkCreate(books) {
-  //   return await this.#EbookModel.bulkCreate(books);
-  // }
-
   /**
    * 删除书本
    * @param {*} bookId 
@@ -154,4 +150,13 @@ export class EbookRepository {
     });
   }
 
+  /**
+   * 修改元数据
+   * @param {*} id 
+   * @param {*} metadata 
+   * @param {Object} setting 
+   */
+  async updateMetadata(id, metadata, { transaction }) {
+    return this.#EbookModel.update(metadata, { where: { id: id }, transaction });
+  }
 }

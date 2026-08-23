@@ -47,7 +47,7 @@ export class BookDetailQueryService {
         const intro = await this.#chapterRepo.findIntroduction(bookId);
         return {
             ...ebook,
-            Introduction: intro.Content,
+            Introduction: intro?.Content,
         }
     }
 }

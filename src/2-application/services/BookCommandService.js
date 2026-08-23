@@ -42,8 +42,8 @@ export class BookCommandService {
    * @param {*} chaptersDTO 章节信息
    */
   async createBook(bookDTO, chaptersDTO) {
-    try {
-      const transaction = await this.#transaction.begin();
+    let result = null;
+    await this.#transaction.runInTransaction(async (transaction) => {
       const newBook = await this.#ebookRepository.create({
         BookName: bookDTO.bookName,
         Author: bookDTO.author,
@@ -58,12 +58,9 @@ export class BookCommandService {
       }
 
       await this.#chapterRepository.batchInsertChapters(chapters, { transaction });
-      await this.#transaction.commit();
-      return newBook.toJSON();
-    } catch (error) {
-      await this.#transaction.rollback();
-      throw error;
-    }
+      result = newBook.toJSON();
+    });
+    return result;
   }
 
   /**
@@ -80,5 +77,24 @@ export class BookCommandService {
    */
   async deleteBook(bookId) {
     return this.#ebookRepository.delete(bookId);
+  }
+
+  /**
+   * 修改书籍元数据
+   * @param {number} id 修改的书籍ID
+   * @param {*} metadata 
+   */
+  async updateMetadata(id, metadata) {
+    return await this.#transaction.runInTransaction(async (transaction) => {
+      const { Introduction, ...data } = metadata;
+      if (Introduction) await this.#chapterRepository.updateIntroduction({ bookId: id, content: Introduction }, { transaction });
+
+      if (metadata.converFile || typeof (metadata.CoverImg) !== "undefined") {
+        //TODO: 如果是文件，保存到服务器、并设置 data.CoverImg
+        console.warn("TODO: 如果是文件，保存到服务器、并设置 metadata.CoverImg")
+      }
+
+      return this.#ebookRepository.updateMetadata(id, data, { transaction });
+    })
   }
 }
