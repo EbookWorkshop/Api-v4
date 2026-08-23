@@ -23,13 +23,33 @@ export function createLoggerMiddleware(config) {
         try {
             await next();
         } catch (err) {
-            // 即使业务逻辑抛出异常，也要记录错误日志，并确保错误继续向上抛出（由全局错误处理中间件接管）
-            // 但为了不让日志丢失，这里捕获后重新抛出
-            const duration = (performance.now() - startTime).toFixed(2);
-            console.error(
-                `[ERROR] ${new Date().toISOString()} ${method} ${url} - ${ctx.status || 500} - ${duration}ms - ${err.message}`
-            );
-            if (isDebug) console.log(err.stack);
+            if (isDebug) {
+                //处理父级错误
+                if (err.original || err.parent) {
+                    const preErr = err.original || err.parent;//上级错误
+                    const serialized = {
+                        name: preErr.name || '原始错误/父级错误',
+                        message: preErr.message || '',
+                        stack: preErr.stack || '',
+                    };
+
+                    for (const key of Object.keys(preErr)) {
+                        if (key === 'name' || key === 'message' || key === 'stack') {
+                            continue;
+                        }
+                        serialized[key] = preErr[key];
+                    }
+                    console.warn(serialized);
+                }
+
+                // 即使业务逻辑抛出异常，也要记录错误日志，并确保错误继续向上抛出（由全局错误处理中间件接管）
+                // 但为了不让日志丢失，这里捕获后重新抛出
+                const duration = (performance.now() - startTime).toFixed(2);
+                console.error(
+                    `[ERROR] ${new Date().toISOString()} ${method} ${url} - ${ctx.status || 500} - ${duration}ms - ${err.message}`
+                );
+                console.log(err.stack);
+            }
             throw err; // 继续抛出，让上层错误中间件处理
         }
 

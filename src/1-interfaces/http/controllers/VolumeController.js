@@ -5,6 +5,7 @@ import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js";
 import { VolumeCreateRequest } from "../dtos/volume/VolumeCreateRequest.dto.js"
 import { UpdateVolumeRequest } from "../dtos/volume/VolumeUpdateRequest.dto.js";
 import { VolumeIdRequest } from "../dtos/components/VolumeIdRequest.dto.js";
+import { VolumeReorderRequest } from "../dtos/volume/VolumeReorderRequest.dto.js";
 
 
 
@@ -171,6 +172,53 @@ export class VolumeController {
     async updateVolume(ctx) {
         const volume = UpdateVolumeRequest.fromBody(ctx.request.body);
         ctx.body = await this.#volumeCommandService.updateVolume(volume);
+    }
+
+    /**
+     * @swagger
+     * /library/book/volume/reorder:
+     *   post:
+     *     summary: 【卷】重排序分卷
+     *     description: 批量更新多个分卷的排序序号（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Volume
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/VolumeReorderRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/VolumeReorderRequestExample'
+     *     responses:
+     *       200:
+     *         description: 重排序成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-23T10:00:00.000Z"
+     *       600:
+     *         description: 请求参数错误（如缺少 volumeOrders、数组为空等）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "volumeOrders 必须为非空数组，且每个元素需包含 orderNum 和 volumeId"
+     *               timestamp: "2026-08-23T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async reorderVolumes(ctx) {
+        const volumeOrders = VolumeReorderRequest.fromBody(ctx.request.body);
+        ctx.body = await this.#volumeCommandService.reorderVolumes(volumeOrders);
     }
 
     /**

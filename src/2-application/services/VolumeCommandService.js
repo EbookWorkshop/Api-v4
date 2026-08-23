@@ -18,8 +18,8 @@ export class VolumeCommandService {
      * @param {String} title 
      * @param {String?} introduction 
      */
-    async createVolume({bookId, title, introduction}) {
-        return await this.#volumeRepository.createVolume({bookId, title, introduction});
+    async createVolume({ bookId, title, introduction }) {
+        return this.#volumeRepository.createVolume({ bookId, title, introduction });
     }
 
     /**
@@ -29,7 +29,16 @@ export class VolumeCommandService {
      * @param {String?} introduction 
      */
     async updateVolume({ volumeId, title, introduction }) {
-        return await this.#volumeRepository.updateVolume({ volumeId, title, introduction });
+        return this.#volumeRepository.updateVolume({ volumeId, title, introduction });
+    }
+
+    /**
+     * 更新卷排序
+     * @param {*} volumeOrders 
+     * @returns 
+     */
+    async reorderVolumes(volumeOrders) {
+        return this.#volumeRepository.reorderVolumes(volumeOrders);
     }
 
     /**
@@ -39,6 +48,6 @@ export class VolumeCommandService {
      * @returns 
      */
     async deleteVolume(volumeId) {
-        return await this.#volumeRepository.deleteVolume(volumeId);
+        return this.#volumeRepository.deleteVolume(volumeId);
     }
 }

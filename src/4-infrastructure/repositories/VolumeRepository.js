@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 import { AppError, UserInputError } from "../../5-shared/errors/index.js";
 export class VolumeRepository {
     #VolumeModel;
@@ -63,6 +63,19 @@ export class VolumeRepository {
         if (title) volume.Title = title;
         if (introduction) volume.Introduction = introduction;
         await volume.save();
+        return true;
+    }
+
+    /**
+     * 更新卷顺序
+     * @param {*} volumeOrders 
+     */
+    async reorderVolumes(volumeOrders) {
+        const transaction = await this.#sequelize.transaction();
+        await Promise.all(volumeOrders.map(v => {
+            return this.#VolumeModel.update({ OrderNum: v.orderNum }, { where: { id: v.volumeId }, transaction });
+        }));
+        await transaction.commit();
         return true;
     }
 

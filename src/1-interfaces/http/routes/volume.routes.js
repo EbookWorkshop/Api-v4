@@ -13,7 +13,7 @@ import { VolumeController } from "../controllers/VolumeController.js"
       router.put('/', (ctx) => volumeController.updateVolume(ctx));
 
       router.post('/', (ctx) => volumeController.createVolume(ctx));
-    //   router.post('/reorder', (ctx) => volumeController.(ctx));
+      router.post('/reorder', (ctx) => volumeController.reorderVolumes(ctx));
 
       router.delete('/', (ctx) => volumeController.deleteVolume(ctx));
 
