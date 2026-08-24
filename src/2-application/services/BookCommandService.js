@@ -4,12 +4,14 @@ import { ITransaction } from "../ports/ITransaction.js"
 import { AppError, UserInputError } from '../../5-shared/errors/index.js';
 
 export class BookCommandService {
+  /** @type {EbookRepository} */
   #ebookRepository;
+  /** @type {ChapterRepository} */
   #chapterRepository;
+  /** @type {ITransaction} */
   #transaction;
 
   /**
-   * 
    * @param {EbookRepository} ebookRepository 
    * @param {ChapterRepository} chapterRepository 
    * @param {ITransaction} transaction 

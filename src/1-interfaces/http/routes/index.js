@@ -21,7 +21,6 @@ export function createMainRouter(controllers) {
     const moduleName = mf.replace(".routes.js", "");
     if (controllers[moduleName] === undefined) {
       console.warn(`路由【${mf}】没有对应的控制器，请注意修改：[src/1-interfaces/http/controllers/index.js]，并导出一个含【${moduleName}】的控制器。`);
-      continue;
     }
 
     import(`./${mf}`).then(module => {

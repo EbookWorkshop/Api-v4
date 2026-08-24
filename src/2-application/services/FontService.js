@@ -34,7 +34,7 @@ export class FontService {
 
     if (!fontName) {
       // 如果未配置，可以返回默认字体或 null
-      return null;
+      return { name: "楷体" };
     }
 
     // 2. 在字体目录中查找匹配的文件（带扩展名）

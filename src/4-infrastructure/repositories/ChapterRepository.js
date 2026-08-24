@@ -304,11 +304,15 @@ export class ChapterRepository {
      * 将指定章节设置为简介
      * 并将已有的简介章节放出
      * @param {*} chapterId 章节ID
-     * @returns 
+     * @param {object} options - { transaction: Transaction }
+     * @returns {boolean} 成功
      */
-    async setAsIntroduction(chapterId) {
+    async setAsIntroduction(chapterId, options = {}) {
+        const { transaction } = options;
         const { sequelize } = this.#ChapterModel;
-        const trans = await sequelize.transaction();
+        let trans = transaction;
+        if (!trans) trans = await sequelize.transaction();
+
         const chapter = await this.#ChapterModel.findByPk(chapterId);
         if (!chapter) throw new AppError("待操作的章节不存在。", 404);
 
@@ -326,7 +330,9 @@ export class ChapterRepository {
             where: { id: chapterId },
             transaction: trans,
         });
-        return trans.commit();
+
+        if (!transaction) await trans.commit();
+        return true;
     }
 
     /**

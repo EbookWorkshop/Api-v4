@@ -1,15 +1,20 @@
 import { ChapterRepository } from '../../4-infrastructure/repositories/ChapterRepository.js';
-import { AppError } from "../../5-shared/errors/index.js"
+import { ITransaction } from "../ports/ITransaction.js"
+// import { AppError } from "../../5-shared/errors/index.js"
 
 export class ChapterCommandService {
     /** @type {ChapterRepository} */
     #chapterRepository;
+    /** @type {ITransaction} */
+    #transactionManager;
 
     /**
      * @param {ChapterRepository} chapterRepository 
+     * @param {ITransaction} transactionManager 
      */
-    constructor(chapterRepository) {
+    constructor(chapterRepository, transactionManager) {
         this.#chapterRepository = chapterRepository;
+        this.#transactionManager = transactionManager;
     }
 
     /**
@@ -92,6 +97,8 @@ export class ChapterCommandService {
      * @returns 
      */
     async setAsIntroduction(chapterId) {
-        return this.#chapterRepository.setAsIntroduction(chapterId);
+        return this.#transactionManager.runInTransaction((transaction) => {
+            return this.#chapterRepository.setAsIntroduction(chapterId, { transaction });
+        });
     }
 }

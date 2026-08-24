@@ -17,7 +17,6 @@ import { TagCommandService } from "./TagCommandService.js";
 import { EmailService } from "./EmailService.js";
 
 import { FontService } from './FontService.js';
-import { IFileScanner } from '../ports/IFileScanner.js';
 import { FileSystemScanner } from '../../4-infrastructure/server/adapters/FileSystemScanner.js';
 
 import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
@@ -26,7 +25,7 @@ import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
 import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 
 import { AssetsQueryService } from './AssetsQueryService.js';
-import { TagController } from '../../1-interfaces/http/controllers/TagController.js';
+
 
 //导出工具
 import { BookExportService } from './BookExportService.js';
@@ -72,20 +71,20 @@ export function createServices(repositories, databaseTransaction, config = {}) {
     webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
 
     volumeQuery: new VolumeQueryService(volumeRepository),
-    volumeCommand: new VolumeCommandService(repositories.volumeRepository),
+    volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),
 
     chapterQuery: new ChapterQueryService(chapterRepository),
-    chapterCommand: new ChapterCommandService(chapterRepository),
+    chapterCommand: new ChapterCommandService(chapterRepository, databaseTransaction),
 
     tagQuery: new TagQueryService(tagRepository),
-    tagCommand: new TagCommandService(tagRepository),
+    tagCommand: new TagCommandService(tagRepository,databaseTransaction),
 
     systemConfig: systemConfigService,
     email: new EmailService(systemConfigService),
     font: fontService,
 
     reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
-    reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository),
+    reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository,databaseTransaction),
 
     ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository),
 
