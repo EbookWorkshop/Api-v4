@@ -10,6 +10,7 @@ import { ReviewRuleController } from "./ReviewRuleController.js"
 import { AssetsController } from "./AssetsController.js"
 import { EmailController } from './EmailController.js';
 import { RuleForWebController } from "./RuleForWebController.js"
+import { ExportController } from './ExportController.js';
 
 /**
  * 
@@ -35,6 +36,7 @@ export function createControllers(services, config) {
     assets: new AssetsController(services.assetsQuery, services.assetsCommand),
     email: new EmailController(services.email),
 
+    export: new ExportController(),
     swagger: new SwaggerController(config),
   };
 }

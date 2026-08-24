@@ -43,12 +43,13 @@ export class SwaggerController {
         { name: 'Services - Font —— 系统服务：字体管理', "x-tag-expanded": false },
         { name: 'Services - EMail —— 系统服务：邮件', "x-tag-expanded": false },
         { name: 'Assets —— 资源管理', "x-tag-expanded": false },
+        { name: 'Export —— 图书馆产物', "x-tag-expanded": false },
 
       ],
       'x-tagGroups': [
         {
           name: '新系统架构',
-          tags: ['Book', 'WebBook', "Volume", "Chapter", "Review", "BotRule", 'Tag', 'Font', "Assets", "Email"],
+          tags: ['Book', 'WebBook', "Volume", "Chapter", "Review", "BotRule", 'Tag', 'Font', "Assets", "Export", "Email"],
         },
         {
           name: '原风格排版',
@@ -60,7 +61,8 @@ export class SwaggerController {
             "Services - BotRule —— 系统服务：机器人爬网规则",
             'Services - Font —— 系统服务：字体管理',
             "Services - EMail —— 系统服务：邮件",
-            'Assets —— 资源管理'
+            'Assets —— 资源管理',
+            'Export —— 图书馆产物',
           ],
         },
       ],
