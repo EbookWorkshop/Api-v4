@@ -1,16 +1,12 @@
 import { ExportBookRequest } from "../dtos/book/BookExportRequest.dto.js"
+import { TaskSchedulerService } from "../../../2-application/services/TaskSchedulerService.js";
+
 export class ExportController {
-    /**@type ExportService */
-    #exportService;
+    /**@type TaskSchedulerService */
+    #taskSchedulerService;
 
-    constructor(exportService) {
-        this.#exportService = exportService;
-    }
-
-    async todo(ctx) {
-        console.log("TODO::", ctx.method, ctx.request.path)
-        console.log(JSON.stringify(ctx.request.body));
-        ctx.body = `Todo:: ${ctx.method}  ${ctx.request.path}`;
+    constructor(taskSchedulerService) {
+        this.#taskSchedulerService = taskSchedulerService;
     }
 
     /**
@@ -56,10 +52,9 @@ export class ExportController {
      *         description: 服务器内部错误
      */
     async exportEpub(ctx) {
-        this.todo(ctx);
         const setting = ExportBookRequest.fromBody(ctx.request.body);
-        // const params = ctx.request.body;
-        // ctx.body = await this.#exportService.exportEpub(params);
+        setting.format = "epub";
+        ctx.body = await this.#taskSchedulerService.submitExportTask(setting);
     }
 
     /**
@@ -105,10 +100,9 @@ export class ExportController {
      *         description: 服务器内部错误
      */
     async exportPdf(ctx) {
-        this.todo(ctx);
         const setting = ExportBookRequest.fromBody(ctx.request.body);
-        // const params = ctx.request.body;
-        // ctx.body = await this.#exportService.exportPdf(params);
+        setting.format = "pdf";
+        ctx.body = await this.#taskSchedulerService.submitExportTask(setting);
     }
 
     /**
@@ -154,9 +148,8 @@ export class ExportController {
      *         description: 服务器内部错误
      */
     async exportTxt(ctx) {
-        this.todo(ctx);
         const setting = ExportBookRequest.fromBody(ctx.request.body);
-        // const params = ctx.request.body;
-        // ctx.body = await this.#exportService.exportTxt(params);
+        setting.format = "txt";
+        ctx.body = await this.#taskSchedulerService.submitExportTask(setting);
     }
 }

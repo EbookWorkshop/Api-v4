@@ -15,7 +15,7 @@ export class ChapterQueryService {
 
     /**
      * 找到具体章节
-     * @param {*} chapterId 
+     * @param {number} chapterId 
      * @returns 
      */
     async getChapterById(chapterId) {
@@ -67,5 +67,42 @@ export class ChapterQueryService {
      */
     async listHiddenChapters(bookId) {
         return await this.#chapterRepository.listHiddenChapters(bookId);
+    }
+
+    /**
+     * 
+     * @param {number} bookId 
+     * @param {Array<number>} volumeIds 
+     */
+    async listChaptersByVolumes(bookId, volumeIds) {
+        return this.#chapterRepository.findChaptersByVolumes(bookId, volumeIds);
+    }
+
+    /**
+     * 通过ID 查找章节信息
+     * @param {*} bookId 
+     * @param {*} chapterIds 
+     * @returns 
+     */
+    async listChaptersByIds(bookId, chapterIds) {
+        return this.#chapterRepository.findChaptersByIds(bookId, chapterIds);
+    }
+
+    /**
+     * 找到书记所有章节
+     * @param {*} bookId 
+     * @returns 
+     */
+    async listChaptersByBook(bookId) {
+        return this.#chapterRepository.findChaptersByBookId(bookId);
+    }
+
+    /**
+     * 获取简介章节
+     * @param {*} bookId 
+     * @returns 
+     */
+    async getIntroduction(bookId) {
+        return this.#chapterRepository.findIntroduction(bookId);
     }
 }

@@ -36,7 +36,7 @@ export function createControllers(services, config) {
     assets: new AssetsController(services.assetsQuery, services.assetsCommand),
     email: new EmailController(services.email),
 
-    export: new ExportController(),
+    export: new ExportController(services.task),
     swagger: new SwaggerController(config),
   };
 }

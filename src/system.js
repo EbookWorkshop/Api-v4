@@ -2,12 +2,9 @@ import Koa from 'koa';
 import { koaBody } from 'koa-body';
 import { EventEmitter } from 'node:events';
 import { EventManager } from './4-infrastructure/event/EventManager.js';
+import { WorkerPool } from "./4-infrastructure/workers/index.js"
 import { loadConfig } from './4-infrastructure/config/index.js';
-import { createDatabaseConnection } from './4-infrastructure/database/databaseConnection.js';
-import { entityDefinitions } from './3-domain/entities/index.js';
-import { setupAssociations } from './3-domain/associations/index.js';
-import { createRepositories } from './4-infrastructure/repositories/index.js';
-import { createDatabaseTransaction } from './4-infrastructure/database/DatabaseTransaction.js';
+import { createMiniCore } from './4-infrastructure/container/miniCore.js';
 import { createServices } from './2-application/services/index.js';
 import { createControllers } from './1-interfaces/http/controllers/index.js';
 import { setupHttpServer } from './1-interfaces/http/index.js';
@@ -21,24 +18,20 @@ const config = await loadConfig();
 // ============================================================
 // 2. 初始化数据库与领域层（Infrastructure + Domain）
 // ============================================================
-const sequelize = createDatabaseConnection(
-  config.database.path,
-  config.database.logging
-);
-// 注册实体与关联
-entityDefinitions.forEach(defineFn => defineFn(sequelize));
-setupAssociations(sequelize.models);
-
-const eventManager = new EventManager(new EventEmitter());//消息管理模块
+const miniCore = createMiniCore(config);
+const { sequelize } = miniCore;
 
 // ============================================================
 // 3. 组装核心依赖链（依赖倒置：外层注入内层）
 // ============================================================
 // 3.1 仓储层 (Infrastructure)
-const repositories = createRepositories(sequelize);
-const dbTransaction = createDatabaseTransaction(sequelize);
+const eventManager = new EventManager(new EventEmitter());//消息管理模块
+const workerPool = new WorkerPool(config);//线程池
+const { repositories } = miniCore;
+const { transactionManager } = miniCore;
+
 // 3.2 服务层 (Application) - 依赖 Repositories
-const services = createServices(repositories, dbTransaction, config);
+const services = createServices(repositories, transactionManager, workerPool, config);
 
 // 3.3 控制器层 (Interfaces) - 依赖 Services
 const controllers = createControllers(services, config);
@@ -48,7 +41,12 @@ const controllers = createControllers(services, config);
 // ============================================================
 const app = new Koa();
 // 解析请求体（必须在路由前）
-app.use(koaBody({ multipart: true }));
+app.use(koaBody({
+  multipart: true,
+  formLimit: '50mb',
+  jsonLimit: '50mb',
+  textLimit: '50mb',
+}));
 // 4.2 装配 HTTP 层（返回原生 Server）
 const httpServer = setupHttpServer(app, config, controllers);
 // 4.3 装配 WebSocket 层（挂载到同一个原生 Server）
@@ -71,7 +69,7 @@ async function initializeDatabase() {
 }
 
 async function closeDatabase() {
-  await sequelize.close();
+  await miniCore.close();
 }
 
 export { app, httpServer, io, config, initializeDatabase, closeDatabase };

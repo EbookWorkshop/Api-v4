@@ -77,3 +77,28 @@ export async function listFiles(sourcePath, options = { filetype: null, detail: 
     return result.length > 0 ? result : null;
   }
 }
+
+/**
+ * 写入文件
+ * @param {string|Array<string>} filePath 存储路径，若为数组则是路径目录
+ * @param {*} data 写入数据
+ * @param {*} format 传入数据格式，如 base64
+ * @returns 
+ */
+export async function saveFile(filePath, data, format = "") {
+  if (format == "base64") data = Buffer.from(data, 'base64');
+
+  //确保文件夹存在
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  return fs.writeFile(filePath, data);//writeFile的 { recursive: true } 设置不生效，不知为什么
+}
+
+/**
+ * 确保路径存在
+ * @param {*} dir 
+ */
+export async function accessDir(dir) {
+  // const dirName = path.dirname(dir);
+  await fs.mkdir(dir, { recursive: true });
+  return dir;
+}

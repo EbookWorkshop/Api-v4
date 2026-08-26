@@ -23,6 +23,7 @@ export default {
     level: 'info',
     switch: {
       requireLog: false,
+      worker: true,
     }
   },
   collector: {

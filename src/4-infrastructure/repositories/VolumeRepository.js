@@ -31,7 +31,7 @@ export class VolumeRepository {
      * @param {String} title 
      * @param {String?} introduction 
      */
-    async createVolume(bookId, title, introduction) {
+    async createVolume({ bookId, title, introduction }) {
         const [newid, rows] = await this.#VolumeModel.sequelize.query(
             `INSERT INTO Volumes (BookId, Title, Introduction, OrderNum, createdAt, updatedAt) 
                 SELECT :bookId, :title, :introduction, COALESCE(MAX(OrderNum), 0) + 1, datetime('now'), datetime('now')

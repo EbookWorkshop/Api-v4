@@ -18,6 +18,7 @@ import { EmailService } from "./EmailService.js";
 
 import { FontService } from './FontService.js';
 import { FileSystemScanner } from '../../4-infrastructure/server/adapters/FileSystemScanner.js';
+import { FileSystemWriter } from "../../4-infrastructure/server/adapters/FileSystemWriter.js"
 
 import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
 import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
@@ -26,19 +27,18 @@ import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 
 import { AssetsQueryService } from './AssetsQueryService.js';
 
-
-//导出工具
-import { BookExportService } from './BookExportService.js';
-import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
+import { TaskSchedulerService } from "./TaskSchedulerService.js"
+// import { WorkerPool } from '../../4-infrastructure/workers/index.js';//type
 
 /**
  * 服务层 组装所有 Service
  * @param {*} repositories 
  * @param {ITransaction} databaseTransaction 
+ * @param {WorkerPool} workerPool 
  * @param {Object} config 
  * @returns 
  */
-export function createServices(repositories, databaseTransaction, config = {}) {
+export function createServices(repositories, databaseTransaction, workerPool, config = {}) {
   const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
   const { tagRepository, systemConfigRepository, } = repositories;
 
@@ -51,6 +51,7 @@ export function createServices(repositories, databaseTransaction, config = {}) {
   const fontDirPath = config?.font.path;
   const fontUrlPrefix = "/font";
   const fileScanner = new FileSystemScanner(path.join(process.cwd(), config?.repository.path));
+  // const fileWriter = new FileSystemWriter(path.join(process.cwd(), config?.repository.path));
   const fontService = new FontService(
     systemConfigService,
     fontDirPath,
@@ -58,9 +59,6 @@ export function createServices(repositories, databaseTransaction, config = {}) {
     fileScanner
   );
 
-  //创建导出工具
-  const generatorFactory = new GeneratorFactory(config.export?.tempDir);
-  const bookExportService = new BookExportService(ebookRepository, generatorFactory);
 
   return {
     bookQuery: new BookQueryService(ebookRepository),
@@ -77,20 +75,22 @@ export function createServices(repositories, databaseTransaction, config = {}) {
     chapterCommand: new ChapterCommandService(chapterRepository, databaseTransaction),
 
     tagQuery: new TagQueryService(tagRepository),
-    tagCommand: new TagCommandService(tagRepository,databaseTransaction),
+    tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),
 
     systemConfig: systemConfigService,
     email: new EmailService(systemConfigService),
     font: fontService,
 
     reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
-    reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository,databaseTransaction),
+    reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
 
     ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository),
 
     assetsQuery: new AssetsQueryService(fileScanner, config),
 
-    bookExport: new BookExportService(bookDetailQueryService, generatorFactory),
+    task: new TaskSchedulerService(workerPool),
+
+    // bookExport: bookExportService,
   };
 }
 // console.warn("TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js");

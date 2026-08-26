@@ -11,7 +11,7 @@ const ignoreDirs = ['node_modules', '.git', 'dist', 'build', 'coverage', '.next'
 // 要包含的文件扩展名（按需增删）
 const includeExts = [
   '.js', '.ts', '.jsx', '.tsx',
-  '.json', '.md',
+  '.json', //'.md',
   '.html', '.css', '.scss', '.less',
   '.vue', '.svelte', '.cjs', '.mjs'
 ];

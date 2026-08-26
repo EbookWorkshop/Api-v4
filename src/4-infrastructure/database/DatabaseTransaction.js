@@ -38,7 +38,7 @@ export class DatabaseTransaction extends ITransaction {
 /**
  * 创建数据库事务帮助工厂
  * @param {*} sequelize 
- * @returns 
+ * @returns {DatabaseTransaction}
  */
 export function createDatabaseTransaction(sequelize) {
     return new DatabaseTransaction(sequelize);

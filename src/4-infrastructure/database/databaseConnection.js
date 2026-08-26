@@ -1,5 +1,11 @@
 import Sequelize from 'sequelize';
 
+/**
+ * 数据库链接工厂
+ * @param {*} dbPath 数据库地址
+ * @param {*} logging 是否开启日志（控制台
+ * @returns 
+ */
 export function createDatabaseConnection(dbPath, logging = false) {
   return new Sequelize({
     dialect: 'sqlite',

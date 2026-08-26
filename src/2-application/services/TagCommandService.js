@@ -1,5 +1,4 @@
 import { TagRepository } from '../../4-infrastructure/repositories/TagRepository.js';
-import { AppError } from "../../5-shared/errors/index.js"
 
 export class TagCommandService {
     /** @type {TagRepository} */

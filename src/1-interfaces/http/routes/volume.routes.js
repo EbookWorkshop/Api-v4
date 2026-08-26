@@ -14,7 +14,6 @@ import { VolumeController } from "../controllers/VolumeController.js"
 
       router.post('/', (ctx) => volumeController.createVolume(ctx));
       router.post('/reorder', (ctx) => volumeController.reorderVolumes(ctx));
-      router.post('/movechapters', (ctx) => volumeController.movechapters(ctx));
 
       router.delete('/', (ctx) => volumeController.deleteVolume(ctx));
 

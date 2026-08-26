@@ -40,11 +40,11 @@ export class ExportBookRequest {
      *           example: ""
      *         embedTitle:
      *           type: boolean
-     *           description: 是否在导出文件中嵌入标题
+     *           description: 是否在导出书籍中嵌入章节标题
      *           example: true
      *         embedBookName:
      *           type: boolean
-     *           description: 是否在导出文件中嵌入书名
+     *           description: 是否在导出文件中嵌入书名，当嵌入书名为真时，封面图片需要采用 coverImageData 提供的数据
      *           example: false
      *         enableIndent:
      *           type: boolean
@@ -56,7 +56,7 @@ export class ExportBookRequest {
      *           example: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
      *         isCompact:
      *           type: boolean
-     *           description: 是否紧凑排版
+     *           description: 是否紧凑排版——删除空行
      *           example: false
      *       required:
      *         - bookId

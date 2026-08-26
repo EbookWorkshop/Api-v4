@@ -25,7 +25,7 @@ export class ChapterRepository {
 
     /**
      * 找到具体章节信息（含书本信息）
-     * @param {*} chapterId 
+     * @param {number} chapterId 
      * @returns 
      */
     async findByPkWithEbook(chapterId) {
@@ -38,6 +38,54 @@ export class ChapterRepository {
     }
 
     /**
+     * 查找指定卷的章节
+     * @param {number} bookId 
+     * @param {Array<number>} volumeIds 
+     */
+    async findChaptersByVolumes(bookId, volumeIds) {
+        return this.#ChapterModel.findAll({
+            attributes: ["id", "VolumeId", "Title", "Content"],
+            where: {
+                BookId: bookId,
+                VolumeId: { [Op.in]: volumeIds }
+            },
+            raw: true
+        });
+    }
+
+    /**
+     * 查找指定ID的章节内容
+     * @param {number} bookId 
+     * @param {Array<number>} chapterIds 
+     * @returns 
+     */
+    async findChaptersByIds(bookId, chapterIds) {
+        return this.#ChapterModel.findAll({
+            attributes: ["id", "VolumeId", "Title", "Content"],
+            where: {
+                BookId: bookId,
+                id: { [Op.in]: chapterIds }
+            },
+            raw: true
+        });
+    }
+
+    /**
+     * 查找指定书籍的章节
+     * @param {number} bookId 
+     * @param {Array<number>} volumeIds 
+     */
+    async findChaptersByBookId(bookId) {
+        return this.#ChapterModel.findAll({
+            attributes: ["id", "VolumeId", "Title", "Content"],
+            where: {
+                BookId: bookId
+            },
+            raw: true
+        });
+    }
+
+    /**
       * 读取简介章
       * @param {*}bookId 
       */
@@ -47,7 +95,8 @@ export class ChapterRepository {
                 BookId: { [Op.eq]: bookId },
                 Title: { [Op.eq]: IntroductionName }
             },
-            attributes: ["Content"]
+            attributes: ["Content"],
+            raw: true
         });
     }
 

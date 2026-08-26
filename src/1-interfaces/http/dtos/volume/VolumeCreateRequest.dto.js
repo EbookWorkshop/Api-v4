@@ -35,7 +35,6 @@ import { UserInputError } from "../../../../5-shared/errors/index.js";
 export class VolumeCreateRequest {
     static fromBody(body) {
         const { bookId, title, introduction } = body;
-        if (isNaN(volumeId)) throw new UserInputError("bookId必须为正整数。");
         if (!title) throw new UserInputError("卷标题必须提供。");
         return { bookId, title, introduction };
     }

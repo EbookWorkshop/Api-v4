@@ -13,7 +13,7 @@ export class IFileScanner {
      * @param {*} basename 文件名
      */
     async findFileByBasename(dirPath, basename) {
-        throw new Error('Method not implemented');
+        throw new Error('接口方法尚未实现');
     }
 
     /**
@@ -24,6 +24,6 @@ export class IFileScanner {
      * @returns 
      */
     async listFiles(sourcePath, options = {}) {
-        throw new Error('Method not implemented');
+        throw new Error('接口方法尚未实现');
     }
 }

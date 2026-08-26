@@ -10,6 +10,22 @@ import { ReviewRuleRepository } from './ReviewRuleRepository.js';
 
 import { RuleForWebRepository } from './RuleForWebRepository.js';
 
+/**
+ * 仓储层工厂函数
+ * @param {Sequelize} sequelize - Sequelize 实例
+ * @returns {{
+ *    ebookRepository:  EbookRepository,
+ *    systemConfigRepository:  SystemConfigRepository,
+ *    tagRepository:  TagRepository,
+ *    fontRepository:  FontRepository,
+ *    indexRepository:  IndexRepository,
+ *    chapterRepository:  ChapterRepository,
+ *    volumeRepository:  VolumeRepository,
+ *    webBookRepository:  WebBookRepository,
+ *    reviewRuleRepository:  ReviewRuleRepository,
+ *    ruleForWebRepository:  RuleForWebRepository,
+ * }}
+ */
 export function createRepositories(sequelize) {
   return {
     ebookRepository: new EbookRepository(sequelize),
