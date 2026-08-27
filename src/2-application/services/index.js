@@ -15,10 +15,10 @@ import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
 import { TagCommandService } from "./TagCommandService.js";
 import { EmailService } from "./EmailService.js";
+import { NodemailerEmailSender } from '../../4-infrastructure/email/NodemailerEmailSender.js';
 
 import { FontService } from './FontService.js';
 import { FileSystemScanner } from '../../4-infrastructure/server/adapters/FileSystemScanner.js';
-import { FileSystemWriter } from "../../4-infrastructure/server/adapters/FileSystemWriter.js"
 
 import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
 import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
@@ -59,6 +59,7 @@ export function createServices(repositories, databaseTransaction, workerPool, co
     fileScanner
   );
 
+  const emailSender = new NodemailerEmailSender();
 
   return {
     bookQuery: new BookQueryService(ebookRepository),
@@ -78,7 +79,7 @@ export function createServices(repositories, databaseTransaction, workerPool, co
     tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),
 
     systemConfig: systemConfigService,
-    email: new EmailService(systemConfigService),
+    email: new EmailService(emailSender, systemConfigService),
     font: fontService,
 
     reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),

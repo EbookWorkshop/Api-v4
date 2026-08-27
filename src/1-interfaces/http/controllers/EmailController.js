@@ -1,3 +1,8 @@
+import { UserInputError } from '../../../5-shared/errors/index.js';
+// import { SendEmailRequest } from "../dtos/email/SendEmailRequest.dto.js";
+import { SaveAccountRequest } from '../dtos/email/SaveAccountRequest.dto.js';
+import { SaveInboxRequest } from '../dtos/email/SaveInboxRequest.dto.js';
+
 export class EmailController {
     #emailService;
 
@@ -62,5 +67,67 @@ export class EmailController {
     */
     async getEmailAccount(ctx) {
         ctx.body = await this.#emailService.getEmailAccount();
+    }
+
+    /**
+     * @swagger
+     * /services/email/account:
+     *   post:
+     *     summary: 保存发件邮箱账户
+     *     tags:
+     *       - Services - EMail —— 系统服务：邮件
+     *       - Email
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/SaveAccountRequest'
+     *     responses:
+     *       200:
+     *         description: 保存成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 请求参数错误
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async postSaveAccount(ctx) {
+        const { address, password } = SaveAccountRequest.fromBody(ctx.request.body);
+        ctx.body = await this.#emailService.saveEmailAccount(address, password);
+    }
+
+    /**
+     * @swagger
+     * /services/email/inbox:
+     *   post:
+     *     summary: 保存默认收件邮箱
+     *     tags:
+     *       - Services - EMail —— 系统服务：邮件
+     *       - Email
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/SaveInboxRequest'
+     *     responses:
+     *       200:
+     *         description: 保存成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 请求参数错误
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async postSaveInbox(ctx) {
+        const { address } = SaveInboxRequest.fromBody(ctx.request.body);
+        ctx.body = await this.#emailService.saveInboxAddress(address);
     }
 }

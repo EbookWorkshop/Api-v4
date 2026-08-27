@@ -6,7 +6,7 @@ const rootDir = process.argv[2] || '.';
 const outputFile = process.argv[3] || 'combined.txt';
 
 // 需要忽略的目录
-const ignoreDirs = ['node_modules', '.git', 'dist', 'build', 'coverage', '.next', '.nuxt'];
+const ignoreDirs = ['node_modules', '.git', 'dist', 'build', 'coverage', '.next', '.nuxt', ".vscode", "docs", "scripts", "test"];
 
 // 要包含的文件扩展名（按需增删）
 const includeExts = [

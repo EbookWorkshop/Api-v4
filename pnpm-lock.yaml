@@ -23,6 +23,9 @@ importers:
       koa-static:
         specifier: ^5.0.0
         version: 5.0.0
+      nodemailer:
+        specifier: ^9.0.5
+        version: 9.0.5
       sequelize:
         specifier: ^6.32.1
         version: 6.37.8(sqlite3@6.0.1)
@@ -982,6 +985,10 @@ packages:
     resolution: {integrity: sha512-OMcPNvqTCFUnNaBlmdgq+lfNqY7gTiSmNRDjY3uAXRyudeKZEZxu3CLtjMQrx4zZxCX2b/mpNqTtwuCJgXhHkw==}
     engines: {node: ^20.17.0 || >=22.9.0}
     hasBin: true
+
+  nodemailer@9.0.5:
+    resolution: {integrity: sha512-wvjiKvjczmsN7U/8006JOdXubgBk2XFAbioDMbT+sM7cPs0QrhJTa6KBRX7P5REGGkDcLUz/EarWidb8G8C1jQ==}
+    engines: {node: '>=6.0.0'}
 
   nopt@9.0.0:
     resolution: {integrity: sha512-Zhq3a+yFKrYwSBluL4H9XP3m3y5uvQkB/09CwDruCiRmR/UJYnn9W4R48ry0uGC70aeTPKLynBtscP9efFFcPw==}
@@ -2321,6 +2328,8 @@ snapshots:
       undici: 6.28.0
       which: 6.0.1
     optional: true
+
+  nodemailer@9.0.5: {}
 
   nopt@9.0.0:
     dependencies:
