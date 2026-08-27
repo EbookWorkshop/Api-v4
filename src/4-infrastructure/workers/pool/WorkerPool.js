@@ -9,6 +9,7 @@ import { AppError } from "../../../5-shared/errors/index.js"
 import { TASK_MESSAGE_TYPE, TASK_STATUS } from "../../../3-domain/constants/Task.js"
 import { Task } from "../tasks/Task.js";
 import { WorkerQueue } from "./WorkerQueue.js";
+import { EventManager } from "../../event/EventManager.js";
 
 const MAX_THREAD_NUM = 15;
 const kTaskCallback = Symbol('kTaskCallback');
@@ -52,12 +53,16 @@ export class WorkerPool {
      */
     #taskHistory;
 
+    #event;
+
     /**
      * 初始化线程池
      * @param {number} numThreads 最大线程数
+     * @param {EventManager} eventSer 消息
      */
-    constructor(config, { numThreads } = {}) {
+    constructor(config, eventSer, { numThreads } = {}) {
         this.#config = config;
+        this.#event = eventSer;
         if (!numThreads) {
             const cpuNum = os.cpus().length;
             numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
@@ -100,6 +105,12 @@ export class WorkerPool {
         }
     }
 
+    #remoteBroadcastEvent(message, worker) {
+        const { eventName, data } = message;
+        if (!eventName) { console.warn("消息转发失败：已丢失消息名。"); return; }
+        this.#event.emit(eventName, ...data);
+    }
+
     /**
      * 消息处理——线程发回的消息
      * @param {Object} message 
@@ -110,6 +121,7 @@ export class WorkerPool {
      */
     async #messageHandler(message, worker) {
         const { type, error, data } = message;
+        if (type === TASK_MESSAGE_TYPE.TASK_EVENT_ENVELOPE) return this.#remoteBroadcastEvent(message, worker);
         const callback = this.#workerData.get(worker)[kTaskCallback];
         if (callback && typeof (callback) === "function") {
             const aRunner = new AsyncResource(type);

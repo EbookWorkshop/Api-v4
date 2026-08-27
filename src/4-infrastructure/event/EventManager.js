@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
-// import { isMainThread } from 'node:worker_threads';
+import { isMainThread, parentPort } from 'node:worker_threads';
+import { TASK_MESSAGE_TYPE } from "../../3-domain/constants/Task.js"
 
 export class EventManager {
   /** @type {EventEmitter} */
@@ -39,6 +40,23 @@ export class EventManager {
     //   return false;
     // }
     return this.#emitter.emit(eventName, ...args);
+  }
+
+  /**
+   * 向主线程，触发
+   * @param {*} eventName 
+   * @param  {...any} args 
+   * @returns 
+   */
+  emitToMain(eventName, ...args) {
+    //已在主线程中
+    if (isMainThread) return this.emit(eventName, ...args);
+
+    parentPort?.postMessage({
+      type: TASK_MESSAGE_TYPE.TASK_EVENT_ENVELOPE,
+      eventName,
+      data: { ...args },
+    });
   }
 
   /**

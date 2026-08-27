@@ -1,5 +1,7 @@
 import { EventEmitter } from 'node:events';
 
+import { EMT_EXPORT_BOOK_END } from "../../3-domain/constants/Event.js"
+
 import { ITaskExecutor } from "../ports/ITaskExecutor.js";
 import { BookExportExecutor } from "../services/executor/BookExportExecutor.js";
 import { BookExportService } from "../services/BookExportService.js";
@@ -12,7 +14,6 @@ import { FileSystemWriter } from "../../4-infrastructure/server/adapters/FileSys
 import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
 
 
-import { EMT_EXPORT_BOOK_END } from "../../3-domain/constants/Event.js"
 
 /** 
  * 负责组装出导出器

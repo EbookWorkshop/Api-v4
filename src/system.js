@@ -26,7 +26,7 @@ const { sequelize } = miniCore;
 // ============================================================
 // 3.1 仓储层 (Infrastructure)
 const eventManager = new EventManager(new EventEmitter());//消息管理模块
-const workerPool = new WorkerPool(config);//线程池
+const workerPool = new WorkerPool(config, eventManager);//线程池
 const { repositories } = miniCore;
 const { transactionManager } = miniCore;
 

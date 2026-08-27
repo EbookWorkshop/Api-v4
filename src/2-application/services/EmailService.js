@@ -1,19 +1,21 @@
 import { EMAIL_SETTING_GROUP, KINDLE_INBOX } from '../../3-domain/constants/SystemConfigGroup.js';
-import { AppError } from '../../5-shared/errors/index.js';
+import { AppError,UserInputError } from '../../5-shared/errors/index.js';
 import { IEmailSender } from '../ports/IEmailSender.js';
 
 export class EmailService {
     /** @type {IEmailSender} */
     #emailSender;
     #systemConfigService;
+    #transaction;
 
     /**
      * @param {IEmailSender} emailSender - 依赖注入邮件发送适配器
      * @param {*} systemConfigService - 配置服务
      */
-    constructor(emailSender, systemConfigService) {
+    constructor(emailSender, systemConfigService, transaction) {
         this.#emailSender = emailSender;
         this.#systemConfigService = systemConfigService;
+        this.#transaction = transaction;
     }
 
     // ---------- 配置读写 ----------
@@ -36,13 +38,17 @@ export class EmailService {
         return result;
     }
 
+    /**
+     * 保存发件邮箱的 地址、密码
+     * @param {*} address 邮箱地址
+     * @param {*} password 密码
+     */
     async saveEmailAccount(address, password) {
-        // 先清空旧配置
-        await this.#systemConfigService.deleteConfig(EMAIL_SETTING_GROUP, 'address');
-        await this.#systemConfigService.deleteConfig(EMAIL_SETTING_GROUP, 'password');
-        await this.#systemConfigService.setConfig(EMAIL_SETTING_GROUP, 'address', address);
-        await this.#systemConfigService.setConfig(EMAIL_SETTING_GROUP, 'password', password);
-        return { address, password };
+        return this.#transaction.runInTransaction(async (transaction) => {
+            await this.#systemConfigService.setConfig(EMAIL_SETTING_GROUP, 'address', address, { transaction });
+            await this.#systemConfigService.setConfig(EMAIL_SETTING_GROUP, 'password', password, { transaction });
+            return { address, password };
+        });
     }
 
     /**
@@ -72,7 +78,7 @@ export class EmailService {
             if (!sender) missing.push('发件邮箱');
             if (!mailto) missing.push('收件邮箱');
             if (!pass) missing.push('发件邮箱授权密码');
-            throw new AppError(`邮箱配置不完整，请先设置：${missing.join('、')}`, 600);
+            throw new UserInputError(`邮箱配置不完整，请先设置：${missing.join('、')}`);
         }
 
         // 3. 转换附件格式

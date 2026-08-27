@@ -28,7 +28,7 @@ import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 import { AssetsQueryService } from './AssetsQueryService.js';
 
 import { TaskSchedulerService } from "./TaskSchedulerService.js"
-// import { WorkerPool } from '../../4-infrastructure/workers/index.js';//type
+// import { WorkerPool } from '../../4-infrastructure/workers/index.js';
 
 /**
  * 服务层 组装所有 Service
@@ -79,7 +79,7 @@ export function createServices(repositories, databaseTransaction, workerPool, co
     tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),
 
     systemConfig: systemConfigService,
-    email: new EmailService(emailSender, systemConfigService),
+    email: new EmailService(emailSender, systemConfigService, databaseTransaction),
     font: fontService,
 
     reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
