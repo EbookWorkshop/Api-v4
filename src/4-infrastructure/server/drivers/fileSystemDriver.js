@@ -102,3 +102,32 @@ export async function accessDir(dir) {
   await fs.mkdir(dir, { recursive: true });
   return dir;
 }
+
+/**
+ * 用流写
+ * @param {*} stream 
+ * @param {*} chunk 
+ */
+export async function writeOnStream(stream, chunk) {
+  if (chunk == null) return;
+
+  // 尝试写入，检查返回值
+  const canContinue = stream.write(chunk);
+
+  // 如果返回 false，说明缓冲区已满，需要等待 'drain' 事件
+  if (!canContinue) {
+    await new Promise((resolve, reject) => {
+      // 监听 'drain'，同时监听 'error' 防止永久等待
+      const onDrain = () => {
+        stream.removeListener('error', onError);
+        resolve();
+      };
+      const onError = (err) => {
+        stream.removeListener('drain', onDrain);
+        reject(err);
+      };
+      stream.once('drain', onDrain);
+      stream.once('error', onError);
+    });
+  }
+} 

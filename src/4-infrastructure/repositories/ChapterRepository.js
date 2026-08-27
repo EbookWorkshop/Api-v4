@@ -47,7 +47,8 @@ export class ChapterRepository {
             attributes: ["id", "VolumeId", "Title", "Content"],
             where: {
                 BookId: bookId,
-                VolumeId: { [Op.in]: volumeIds }
+                VolumeId: { [Op.in]: volumeIds },
+                OrderNum: { [Op.gt]: 0 },
             },
             raw: true
         });
@@ -64,7 +65,7 @@ export class ChapterRepository {
             attributes: ["id", "VolumeId", "Title", "Content"],
             where: {
                 BookId: bookId,
-                id: { [Op.in]: chapterIds }
+                id: { [Op.in]: chapterIds },
             },
             raw: true
         });
@@ -79,7 +80,8 @@ export class ChapterRepository {
         return this.#ChapterModel.findAll({
             attributes: ["id", "VolumeId", "Title", "Content"],
             where: {
-                BookId: bookId
+                BookId: bookId,
+                OrderNum: { [Op.gt]: 0 },
             },
             raw: true
         });

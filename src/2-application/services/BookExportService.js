@@ -194,7 +194,7 @@ export class BookExportService {
 
         if (coverFilePath.endsWith(".webp") || coverFilePath.endsWith(".jpg")) coverFilePath = await this.#fileWriter.converToPNG(coverFilePath, tempDir);
 
-        if (isUseImageData && coverImageData.length > 0) coverFilePath = await this.#fileWriter.saveFile([tempDir, "cover", `cimg${randomBytes(4).toString('hex')}.png`], coverImageData, "base64");
+        if (isUseImageData && coverImageData.length > 0) coverFilePath = await this.#fileWriter.saveFile([tempDir, "cover", `cimg${randomBytes(3).toString('hex')}.png`], coverImageData, "base64");
         return coverFilePath;
     }
 

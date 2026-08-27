@@ -30,10 +30,11 @@ export class EpubGenerator extends IGenerator {
             cover: ebook.cover, // URL 或文件路径，均可。
             content: [],
             tempDir: outputPath || this.tempFolder,
+            verbose: false,//是否输出控制台日志
         }
 
         option.content = this.#setChapters(ebook, isCompact);
-        const outputFile = `${ebook.title}${randomBytes(4).toString("hex")}.epub`;
+        const outputFile = `${ebook.title}${randomBytes(2).toString("hex")}.epub`;
         option.output = path.join(option.tempDir, "epub", outputFile);
         return new Epub(option).promise.then(
             () => { return { path: option.output, filename: outputFile }; },
