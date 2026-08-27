@@ -1,16 +1,18 @@
 import { EventEmitter } from 'node:events';
-import { EventManager } from "../../event/EventManager.js";
-import { FileSystemWriter } from "../../server/adapters/FileSystemWriter.js";
-import { GeneratorFactory } from '../../server/generators/GeneratorFactory.js';
-import { ITaskExecutor } from "../../../2-application/ports/ITaskExecutor.js";
 
-import { EMT_EXPORT_BOOK_END } from "../../../3-domain/constants/Event.js"
+import { ITaskExecutor } from "../ports/ITaskExecutor.js";
+import { BookExportExecutor } from "../services/executor/BookExportExecutor.js";
+import { BookExportService } from "../services/BookExportService.js";
+import { BookQueryService } from "../services/BookQueryService.js";
+import { VolumeQueryService } from "../services/VolumeQueryService.js"
+import { ChapterQueryService } from "../services/ChapterQueryService.js";
 
-import { BookExportExecutor } from "../../../2-application/services/executor/BookExportExecutor.js";
-import { BookExportService } from "../../../2-application/services/BookExportService.js";
-import { BookQueryService } from "../../../2-application/services/BookQueryService.js";
-import { VolumeQueryService } from "../../../2-application/services/VolumeQueryService.js"
-import { ChapterQueryService } from "../../../2-application/services/ChapterQueryService.js";
+import { EventManager } from "../../4-infrastructure/event/EventManager.js";
+import { FileSystemWriter } from "../../4-infrastructure/server/adapters/FileSystemWriter.js";
+import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
+
+
+import { EMT_EXPORT_BOOK_END } from "../../3-domain/constants/Event.js"
 
 /** 
  * 负责组装出导出器

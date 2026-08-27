@@ -26,9 +26,9 @@ export class TaskSchedulerService {
                 param: setting,
                 taskType: TASK_TYPES.EXPORT_BOOK,
                 useDB: true,
-                callback: async ({ data, error }) => {
-                    console.log("导出完成后的回调函数，返回参数：", data, error);
-                },
+                // callback: async ({ data, error }) => {
+                //     console.log("导出完成后的回调函数，返回参数：", data, error);
+                // },
             })
 
             this.#workerPool.addTask(task);
