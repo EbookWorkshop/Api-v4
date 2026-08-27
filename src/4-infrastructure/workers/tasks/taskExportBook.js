@@ -1,11 +1,16 @@
+import { EventEmitter } from 'node:events';
+import { EventManager } from "../../event/EventManager.js";
+import { FileSystemWriter } from "../../server/adapters/FileSystemWriter.js";
+import { GeneratorFactory } from '../../server/generators/GeneratorFactory.js';
 import { ITaskExecutor } from "../../../2-application/ports/ITaskExecutor.js";
+
+import { EMT_EXPORT_BOOK_END } from "../../../3-domain/constants/Event.js"
+
 import { BookExportExecutor } from "../../../2-application/services/executor/BookExportExecutor.js";
 import { BookExportService } from "../../../2-application/services/BookExportService.js";
 import { BookQueryService } from "../../../2-application/services/BookQueryService.js";
 import { VolumeQueryService } from "../../../2-application/services/VolumeQueryService.js"
 import { ChapterQueryService } from "../../../2-application/services/ChapterQueryService.js";
-import { GeneratorFactory } from '../../../4-infrastructure/server/generators/GeneratorFactory.js';
-import { FileSystemWriter } from "../../../4-infrastructure/server/adapters/FileSystemWriter.js"
 
 /** 
  * 负责组装出导出器
@@ -22,12 +27,16 @@ export async function createExportBookTask(repositories, config) {
     const tempFolder = await fileServ.accessDir(config.tempDir?.path);
     const factory = new GeneratorFactory(tempFolder);
 
+    const eventMgr = new EventManager(new EventEmitter());
+    eventMgr.on(EMT_EXPORT_BOOK_END, (event) => {
+        console.log("收到消息：", EMT_EXPORT_BOOK_END, event);
+    })
 
     const bookExpServ = new BookExportService({
         book: bookServ,
         volume: volumeServ,
         chapter: chapServ,
-    }, factory, fileServ, config);
+    }, factory, fileServ, eventMgr, config);
 
     return new BookExportExecutor(bookExpServ);
 }

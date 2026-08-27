@@ -2,13 +2,13 @@
 import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
-import { Worker } from 'worker_threads';
-import { AsyncResource } from 'async_hooks';
+import { Worker } from 'node:worker_threads';
+import { AsyncResource } from 'node:async_hooks';
 
 import { AppError } from "../../../5-shared/errors/index.js"
-import { WorkerQueue } from "./WorkerQueue.js";
-import { TASK_MESSAGE_TYPE } from "../../../3-domain/constants/Task.js"
+import { TASK_MESSAGE_TYPE, TASK_STATUS } from "../../../3-domain/constants/Task.js"
 import { Task } from "../tasks/Task.js";
+import { WorkerQueue } from "./WorkerQueue.js";
 
 const MAX_THREAD_NUM = 15;
 const kTaskCallback = Symbol('kTaskCallback');
@@ -21,33 +21,36 @@ const kTaskStartTime = Symbol("kTaskStartTime");
 export class WorkerPool {
     #config;
     /**
-     * 最大线程数
-     * @type {number}
+     * @type {number} 最大线程数
      */
     #maxThreadsNum;
 
     /**
-     * 已激活线程池——无数据库
-     * @type {WorkerQueue}
+     * @type {WorkerQueue} 已激活线程池——无数据库
     */
     #workerQueueNoDB;
     /**
-     * 已激活线程池——带数据库
-     * @type {WorkerQueue}
+     * @type {WorkerQueue} 已激活线程池——带数据库
      */
     #workerQueueWithDB;
 
+    /** @type {WeakMap<Worker,Object>} 当前进程附带数据*/
+    #workerData;
+
     /**
-     * 排队中的任务/按进程类型分组
-     * @type {Map<string,Array<Task>>}
+     * @type {Map<string,Array<Task>>} 排队中的任务/按进程类型分组
      */
     #waitingTask;
 
     /**
-     * 需要按类型限制总运行数量的线程运行数统计/按进程类型分组
-     * @type {Map<string,number>}
+     * @type {Map<string,number>} 需要按类型限制总运行数量的线程运行数统计/按进程类型分组
      */
     #runningThreadCountByType;
+
+    /**
+     * @type {Array<Task>} 已完成过的历史任务
+     */
+    #taskHistory;
 
     /**
      * 初始化线程池
@@ -60,12 +63,13 @@ export class WorkerPool {
             numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
         }
         this.#maxThreadsNum = numThreads;
-
+        this.#workerData = new WeakMap();
         this.#workerQueueNoDB = new WorkerQueue();
         this.#workerQueueWithDB = new WorkerQueue();
 
         this.#waitingTask = new Map();
         this.#runningThreadCountByType = new Map();
+        this.#taskHistory = new Array();
     }
 
     /**
@@ -106,7 +110,7 @@ export class WorkerPool {
      */
     async #messageHandler(message, worker) {
         const { type, error, data } = message;
-        const callback = worker[kTaskCallback];
+        const callback = this.#workerData.get(worker)[kTaskCallback];
         if (callback && typeof (callback) === "function") {
             const aRunner = new AsyncResource(type);
             try {
@@ -120,12 +124,10 @@ export class WorkerPool {
         }
         switch (type) {
             case TASK_MESSAGE_TYPE.TASK_ERROR:
-                if (this.workerDebug) console.log("线程执行出错：", error);
-                this.#freeAWorker(worker);
+                this.#freeAWorker(worker, TASK_STATUS.REJECTED);
                 break;
             case TASK_MESSAGE_TYPE.TASK_COMPLETED:
-                if (this.workerDebug) console.log("线程已执行完成，耗时：", performance.now() - worker[kTaskStartTime]);
-                this.#freeAWorker(worker);
+                this.#freeAWorker(worker, TASK_STATUS.FULFILLED);
                 this.#runTask();
                 break;
         }
@@ -141,7 +143,7 @@ export class WorkerPool {
     async #errorHandler(error, worker) {
         try {
             console.warn("线程执行出错：", error);
-            this.#freeAWorker(worker);//释放线程计数
+            this.#freeAWorker(worker, TASK_STATUS.REJECTED);//释放线程计数
         } catch (error) {
 
         } finally {
@@ -206,17 +208,24 @@ export class WorkerPool {
             if (curTask == null) return;//没有可用任务，直接退出
             const worker = this.#getAvailableWorker(curTask.useDB);
             if (worker == null) return; //无可用线程
-
+            /********************* 已确定Task和可用的Worker ***********************/
             tl.shift();
             this.#runningThreadCountByType.set(curTask.taskType, runningTask + 1);
-            const { callback, ...task } = curTask;
-            worker[kTaskCallback] = callback;
-            worker[kTaskData] = task;
-            worker[kTaskStartTime] = performance.now();
-            worker.postMessage(task);//发送到子线程。
+            let { callback, ...taskData } = curTask;//解构出callback，结构化克隆不支持函数。不能发送到线程
+            curTask.status = TASK_STATUS.EXECUTING;
+            this.#workerData.set(worker, {
+                [kTaskCallback]: callback,
+                [kTaskData]: curTask,//注意：要传对象引用，便于跟进更新对象状态（不要传taskData）。
+                [kTaskStartTime]: performance.now(),
+            })
+
+            worker.postMessage(taskData);//发送到子线程。
         } catch (error) {
-            // if (curTask) this.addTask(curTask);//出了问题，重新排队 但可能会死锁，因为任务可能本身有错
-            if (curTask) { console.log("运行出错，任务可能已经丢失：", curTask) }
+            if (curTask) {
+                curTask.status = TASK_STATUS.REJECTED;
+                setTimeout(() => this.restartTask(curTask.taskId), 60_000);//一分钟后重试
+                console.log("运行出错，任务可能已经丢失：", curTask);
+            }
             throw new AppError("线程执行错误：" + error.message);
         }
     }
@@ -224,16 +233,21 @@ export class WorkerPool {
     /**
      * 闲置一个进程
      * @param {Worker} worker 
+     * @param {TASK_STATUS} resule 
      */
-    #freeAWorker(worker) {
-        const { taskType } = worker[kTaskData];
-        worker[kTaskCallback] = null;
-        worker[kTaskData] = null;
+    #freeAWorker(worker, resule) {
+        const data = this.#workerData.get(worker);
+        const task = data[kTaskData];
+        task.status = resule;
+        task.useMS = performance.now() - data[kTaskStartTime];
 
-        const runNum = this.#runningThreadCountByType.get(taskType) || 1;
-        this.#runningThreadCountByType.set(taskType, runNum - 1);
+        const runNum = this.#runningThreadCountByType.get(task.taskType) || 1;
+        this.#runningThreadCountByType.set(task.taskType, runNum - 1);
 
+        this.#workerData.delete(worker);
         this.#workersQueue(worker.withDB).free(worker);
+
+        if (this.workerDebug) console.log(`进程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。`);
     }
 
     /**
@@ -251,6 +265,8 @@ export class WorkerPool {
             if (highPriority) taskQueue.unshift(task);
             else taskQueue.push(task);
 
+            this.#taskHistory.push(task);   //加入历史记录
+
             if (this.hasFeeWorker || this.workerCount < this.#maxThreadsNum) this.#runTask();
         } catch (error) {
             if (this.#config?.debug?.mode) console.error(error);
@@ -258,8 +274,29 @@ export class WorkerPool {
         }
     }
 
+    /**
+     * 重启任务
+     * @param {UUID} tid 
+     */
+    restartTask(tid) {
+        const { taskId, ...taskData } = this.#taskHistory.find(t => t.taskId === tid);
+        if (!taskId) return;
+        this.addTask(new Task(...taskData));
+    }
+
+    /**
+     * 开足马力
+     */
+    run() {
+        let allTaskNum = 0;
+        for (let k of this.#waitingTask.keys()) allTaskNum += this.#waitingTask.get(k).length;
+        if (allTaskNum <= 0) return;
+        let maxTry = 20;
+        while (this.workerCount < this.#maxThreadsNum && --maxTry) this.#runTask();
+    }
+
     get hasFeeWorker() { return this.#workerQueueWithDB.hasFeeWorker || this.#workerQueueNoDB.hasFeeWorker }
     get workerCount() { return this.#workerQueueNoDB.workerNum + this.#workerQueueWithDB.workerNum; }
     get workerDebug() { return this.#config?.debug?.mode && this.#config?.debug?.switch?.worker; }
-    #workersQueue(useDB) { return useDB ? this.#workerQueueWithDB : this.#workerQueueNoDB; }
+    #workersQueue = (useDB) => useDB ? this.#workerQueueWithDB : this.#workerQueueNoDB;
 }

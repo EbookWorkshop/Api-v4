@@ -1,45 +1,77 @@
-flowchart TB
-    subgraph External["🌐 外部请求"]
-        User[浏览器 / 前端]
+graph TD
+    %% 样式定义
+    classDef interface fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef application fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef domain fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef infrastructure fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
+    classDef shared fill:#fafafa,stroke:#616161,stroke-width:1px,stroke-dasharray: 5 5;
+
+    subgraph "1-Interfaces 接口层"
+        direction TB
+        HTTP[HTTP 控制器<br/>BookController, ChapterController, ...]:::interface
+        WS[WebSocket 处理器<br/>实时事件广播]:::interface
+        DTO[DTO 请求/响应<br/>BookListRequest, ExportBookRequest]:::interface
+        MIDDLE[中间件<br/>CORS, 错误处理, 响应包装]:::interface
+        ROUTER[路由<br/>自动装载 .routes.js]:::interface
     end
 
-    subgraph Phase1["阶段1: 前置中间件"]
-        EH[ErrorHandler]
-        CORS[CORS]
-        Logger[Logger]
-        Body[BodyParser]
+    subgraph "2-Application 应用层"
+        direction TB
+        SVC[应用服务<br/>BookQueryService, BookCommandService,<br/>BookExportService, TagQueryService]:::application
+        PORT[端口接口<br/>IFileScanner, ITransaction, IGenerator]:::application
+        EXEC[任务执行器<br/>BookExportExecutor]:::application
     end
 
-    subgraph Phase2["阶段2: 功能端点"]
-        Static[StaticServer]
-        Swagger[SwaggerUI]
+    subgraph "3-Domain 领域层"
+        direction TB
+        ENT[实体定义<br/>Ebook, EbookChapter, Volume, Tag,<br/>WebBook, ReviewRule]:::domain
+        ASSOC[关联关系<br/>setupAssociations]:::domain
+        CONST[常量<br/>SystemConfigGroup, Task]:::domain
     end
 
-    subgraph Phase3["阶段3: 后置中间件"]
-        Wrapper[ResponseWrapper]
+    subgraph "4-Infrastructure 基础设施层"
+        direction TB
+        DB[(SQLite 数据库<br/>Sequelize ORM)]:::infrastructure
+        REPO[仓储实现<br/>EbookRepository, ChapterRepository,<br/>TagRepository, WebBookRepository]:::infrastructure
+        GEN[生成器<br/>EpubGenerator, PdfGenerator]:::infrastructure
+        WORKER[线程池<br/>WorkerPool, WorkerQueue]:::infrastructure
+        FS[文件系统适配器<br/>FileSystemScanner, FileSystemWriter]:::infrastructure
+        CONFIG[配置加载器<br/>ConfigLoader]:::infrastructure
     end
 
-    subgraph Phase4["阶段4: 业务逻辑"]
-        Router[Router]
-        Controller[Controller]
-        Service[Service]
-        Repo[Repository]
-        DB[Database]
+    subgraph "5-Shared 共享层"
+        ERR[自定义错误<br/>AppError, UserInputError]:::shared
     end
 
-    User --> Phase1
-    Phase1 --> Phase2
-    Phase2 --> Phase3
-    Phase3 --> Phase4
-    Phase4 --> DB
+    %% 依赖关系
+    HTTP --> SVC
+    HTTP --> DTO
+    HTTP --> MIDDLE
+    HTTP --> ROUTER
+    WS --> SVC
 
-    classDef default fill:#e8f5e9,stroke:#2e7d32;
-    classDef outer fill:#e1f5fe,stroke:#01579b;
-    classDef inner fill:#f3e5f5,stroke:#4a148c;
-    classDef core fill:#fff3e0,stroke:#e65100;
-    classDef infra fill:#e8f5e9,stroke:#1b5e20;
+    SVC --> PORT
+    SVC --> REPO
+    SVC --> CONST
 
-    class Phase1 outer;
-    class Phase2 outer;
-    class Phase3 outer;
-    class Phase4 inner;
+    EXEC --> SVC
+    EXEC --> GEN
+
+    REPO --> ENT
+    REPO --> DB
+    ASSOC --> ENT
+
+    FS --> PORT
+    WORKER --> EXEC
+
+    CONFIG --> DB
+
+    MIDDLE --> ERR
+    SVC --> ERR
+    REPO --> ERR
+
+    %% 数据流标注
+    HTTP -.->|HTTP 请求/响应| ROUTER
+    SVC -.->|事务管理| DB
+    GEN -.->|导出文件| FS
+    WORKER -.->|异步任务| EXEC

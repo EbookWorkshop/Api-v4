@@ -1,11 +1,13 @@
 
 import { randomBytes } from "node:crypto";
 import { SHOW_BOOKNAME } from "../../3-domain/constants/BookConstants.js";
-import { BookQueryService } from "../../2-application/services/BookQueryService.js"
-import { ChapterQueryService } from "../../2-application/services/ChapterQueryService.js"
-import { GeneratorFactory } from "../../4-infrastructure/server/generators/GeneratorFactory.js"
+import { EMT_EXPORT_BOOK_END } from "../../3-domain/constants/Event.js";
+import { IFileWriter } from "../ports/IFileWriter.js"
 import { BookExportData } from '../dto/BookExportData.dto.js';
-import { IFileWriter } from "../../2-application/ports/IFileWriter.js"
+import { BookQueryService } from "../services/BookQueryService.js"
+import { ChapterQueryService } from "../services/ChapterQueryService.js"
+import { GeneratorFactory } from "../../4-infrastructure/server/generators/GeneratorFactory.js"
+import { EventManager } from "../../4-infrastructure/event/EventManager.js";
 import { AppError } from "../../5-shared/errors/index.js";
 
 /**
@@ -24,15 +26,18 @@ export class BookExportService {
 
     /** @type {GeneratorFactory} */
     #generatorFactory;
+    /** @type {EventManager} */
+    #eventManager;
     #config;
 
     /**
      * @param {{book:BookQueryService,volume:VolumeQueryService,chapter:ChapterQueryService}} bookService 
      * @param {GeneratorFactory} generatorFactory 
      * @param {IFileWriter} fileWriter 
+     * @param {EventManager} eventMgr 
      * @param {Object} config 
      */
-    constructor(bookService, generatorFactory, fileWriter, config) {
+    constructor(bookService, generatorFactory, fileWriter, eventMgr, config) {
         const { book, volume, chapter } = bookService;
         this.#bookQueryService = bookService.book;
         this.#volumeQueryService = bookService.volume;
@@ -42,7 +47,7 @@ export class BookExportService {
 
         this.#generatorFactory = generatorFactory;
         this.#fileWriter = fileWriter;
-
+        this.#eventManager = eventMgr;
         this.#config = config;
     }
 
@@ -71,47 +76,58 @@ export class BookExportService {
      * @returns {{ path, filename }} 导出结果
      */
     async exportBook(bookId, format, setting) {
-        const { volumeIds, chapterIds, embedBookName, coverImageData, ...rest } = setting;
-        let showChapters = chapterIds || [];
+        let result = null;
+        let runErr = null;
+        try {
+            const { volumeIds, chapterIds, embedBookName, coverImageData, ...rest } = setting;
+            let showChapters = chapterIds || [];
 
-        //获取章节——TODO：应用字典校阅功能
-        if (volumeIds && volumeIds.length > 0) {
-            showChapters = await this.#chapterQueryService.listChaptersByVolumes(bookId, volumeIds);
-        } else if (chapterIds && chapterIds.length > 0) {
-            showChapters = await this.#chapterQueryService.listChaptersByIds(bookId, chapterIds);
-        } else {
-            showChapters = await this.#chapterQueryService.listChaptersByBook(bookId);
+            //获取章节——TODO：应用字典校阅功能
+            if (volumeIds && volumeIds.length > 0) {
+                showChapters = await this.#chapterQueryService.listChaptersByVolumes(bookId, volumeIds);
+            } else if (chapterIds && chapterIds.length > 0) {
+                showChapters = await this.#chapterQueryService.listChaptersByIds(bookId, chapterIds);
+            } else {
+                showChapters = await this.#chapterQueryService.listChaptersByBook(bookId);
+            }
+
+            //获取所有卷信息
+            const volumes = await this.#volumeQueryService.findByBookId(bookId);
+            //获取书本基本信息
+            const book = await this.#bookQueryService.getBook(bookId);
+            //获取简介
+            const introduction = await this.#chapterQueryService.getIntroduction(bookId);
+            //设置出版商
+            if (!rest.publisher) rest.publisher = `EBook Workshop v${this.#config.version}`;
+
+            //设置排版
+            const chapterAftTyp = this.#applyTypography(volumes, showChapters);
+
+            let coverPath;
+            if (format != "txt") coverPath = await this.#setCover(book.CoverImg, embedBookName, coverImageData,);
+
+            const exportData = new BookExportData({
+                title: book.BookName,
+                author: book.Author,
+                cover: coverPath,
+                introduction: introduction.Content,
+                chapters: chapterAftTyp,
+                setting: rest,           //TODO：格式、排版、字体等设置
+            });
+
+            // 通过工厂接口，运行时获取对应的生成器实例
+            const generator = this.#generatorFactory.create(format);
+
+            // // 执行生成
+            result = await generator.generate(exportData);
+            return result;
+        } catch (error) {
+            error.stack = `BookExportService::exportBook: ${import.meta.filename}\n${error.stack}`;
+            runErr = error;
+            throw error;
+        } finally {
+            this.#eventManager.emit(EMT_EXPORT_BOOK_END, { bookId, setting, result, error: runErr });
         }
-
-        //获取所有卷信息
-        const volumes = await this.#volumeQueryService.findByBookId(bookId);
-        //获取书本基本信息
-        const book = await this.#bookQueryService.getBook(bookId);
-        //获取简介
-        const introduction = await this.#chapterQueryService.getIntroduction(bookId);
-        //设置出版商
-        if (!rest.publisher) rest.publisher = `EBook Workshop v${this.#config.version}`;
-
-        //设置排版
-        const chapterAftTyp = this.#applyTypography(volumes, showChapters);
-
-        let coverPath;
-        if (format != "txt") coverPath = await this.#setCover(book.CoverImg, embedBookName, coverImageData,);
-
-        const exportData = new BookExportData({
-            title: book.BookName,
-            author: book.Author,
-            cover: coverPath,
-            introduction: introduction.Content,
-            chapters: chapterAftTyp,
-            setting: rest,           //TODO：格式、排版、字体等设置
-        });
-
-        // 通过工厂接口，运行时获取对应的生成器实例
-        const generator = this.#generatorFactory.create(format);
-
-        // // 执行生成
-        return await generator.generate(exportData);
     }
 
     /**
@@ -159,14 +175,14 @@ export class BookExportService {
 
     /**
      * 配置封面
-     * # 封面逻辑较为复杂，考虑提取为 CoverService
+     * # TODO::封面逻辑较为复杂，考虑提取为 CoverService
      * @param {*} coverImg 封面原设置
      * @param {boolean} embedBookName 是否显示嵌入标题的封面
      * @param {string} coverImageData Base64 格式的封面图片
      * @returns {string} filePath 文件的绝对路径
      */
     async #setCover(coverImg, embedBookName, coverImageData) {
-        if (!coverImg) coverImg = "";
+        if (!coverImg) coverImg = "#线装本";
         const tempDir = this.#config?.tempDir?.path;
         let coverFilePath = "";
         if (typeof (embedBookName) === "undefined" || embedBookName === null) embedBookName = coverImg?.includes(SHOW_BOOKNAME);
@@ -178,7 +194,7 @@ export class BookExportService {
 
         if (coverFilePath.endsWith(".webp") || coverFilePath.endsWith(".jpg")) coverFilePath = await this.#fileWriter.converToPNG(coverFilePath, tempDir);
 
-        if (isUseImageData && coverImageData.length > 0) coverFilePath = await this.#fileWriter.saveFile([tempDir, "cover", `cimg${randomBytes(10).toString('hex')}.png`], coverImageData, "base64");
+        if (isUseImageData && coverImageData.length > 0) coverFilePath = await this.#fileWriter.saveFile([tempDir, "cover", `cimg${randomBytes(4).toString('hex')}.png`], coverImageData, "base64");
         return coverFilePath;
     }
 

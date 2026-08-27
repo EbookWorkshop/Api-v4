@@ -1,0 +1,133 @@
+erDiagram
+    Ebook {
+        int id PK
+        string BookName
+        string Author
+        string CoverImg
+        int Hotness
+        int TotalWord
+    }
+    Volume {
+        int id PK
+        string Title
+        text Introduction
+        int OrderNum
+        int BookId FK
+    }
+    EbookChapter {
+        int id PK
+        string Title
+        text Content
+        int OrderNum
+        int VolumeId FK
+        int BookId FK
+    }
+    WebBook {
+        int id PK
+        int defaultIndex
+        string WebBookName
+        bool AutoSyncEnabled
+        bool isCheckRepeat
+        int BookId FK
+    }
+    WebBookIndexSourceURL {
+        int id PK
+        string Path
+        int WebBookId FK
+    }
+    WebBookChapter {
+        int id PK
+        string WebTitle
+        int IndexId FK
+    }
+    WebBookIndexURL {
+        int id PK
+        string Path
+        int WebBookIndexId FK
+    }
+    ReviewRule {
+        int id PK
+        string Name
+        string Rule
+        string Replace
+    }
+    ReviewRuleUsing {
+        int id PK
+        int RuleId FK
+        int BookId FK
+    }
+    Tag {
+        int id PK
+        string Text
+        string Color
+    }
+    EBookTag {
+        int id PK
+        int BookId FK
+        int TagId FK
+    }
+    Bookmark {
+        int id PK
+        int IndexId FK
+    }
+    PDFBook {
+        int id PK
+        string FontFamily
+        int FontSize
+        int PaddingX
+        int PaddingY
+        int PageWidth
+        bool IsShowTitleOnChapter
+        int BookId FK
+    }
+    RuleForWeb {
+        int id PK
+        string Host
+        string RuleName
+        string Selector
+        string RemoveSelector
+        string GetContentAction
+        string GetUrlAction
+        string Type
+        string CheckSetting
+    }
+    ReviewDictionary {
+        int id PK
+        string Host
+        string ExecuteType
+        string Execute
+        string Data
+    }
+    SystemConfig {
+        int id PK
+        string Group
+        string Name
+        string Value
+        string RealDataType
+    }
+
+    %% ========== 关联关系 ==========
+    %% 书籍与卷、章节
+    Ebook ||--o{ Volume : "has"
+    Ebook ||--o{ EbookChapter : "has"
+    Volume ||--o{ EbookChapter : "contains"
+
+    %% 书籍与网文配置
+    Ebook ||--|| WebBook : "has one"
+    WebBook ||--o{ WebBookIndexSourceURL : "has"
+
+    %% 本地章节与网文章节映射
+    EbookChapter ||--|| WebBookChapter : "has one"
+    WebBookChapter ||--o{ WebBookIndexURL : "has"
+
+    %% 替换规则多对多
+    Ebook ||--o{ ReviewRuleUsing : "uses"
+    ReviewRule ||--o{ ReviewRuleUsing : "used by"
+
+    %% 标签多对多
+    Ebook ||--o{ EBookTag : "tagged"
+    Tag ||--o{ EBookTag : "assigned"
+
+    %% 书签一对一
+    EbookChapter ||--|| Bookmark : "has one bookmark"
+

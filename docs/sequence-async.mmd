@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant Client as 客户端
+    participant Controller as ExportController
+    participant Scheduler as TaskSchedulerService
+    participant Pool as WorkerPool
+    participant Worker as 子线程 (Worker)
+    participant ExportSvc as BookExportService
+    participant Gen as EpubGenerator
+
+    Client->>+Controller: POST /export/epub
+    Controller->>+Scheduler: submitExportTask(setting)
+    Scheduler->>Scheduler: 创建 Task 对象 (UUID)
+    Scheduler->>+Pool: addTask(task)
+    Pool-->>-Scheduler: 返回 taskId
+    Scheduler-->>-Controller: 返回 { taskId }
+    Controller-->>-Client: 202 Accepted
+
+    loop 线程调度
+        Pool->>Pool: 获取空闲 Worker
+        Pool->>+Worker: postMessage(task)
+    end
+
+    Worker->>+ExportSvc: exportBook(bookId, format, setting)
+    ExportSvc->>ExportSvc: 查询书籍/章节/卷
+    ExportSvc->>ExportSvc: 应用排版 (Typography)
+    ExportSvc->>+Gen: generate(ebookData)
+    Gen->>Gen: 生成 .epub 文件
+    Gen-->>-ExportSvc: 返回 { path, filename }
+    ExportSvc-->>-Worker: 返回导出结果
+
+    Worker-->>-Pool: 任务完成消息 (TASK_COMPLETED)
+    Pool->>Pool: 执行回调 (callback)

@@ -1,4 +1,5 @@
-import { TASK_TYPES } from "../../../3-domain/constants/Task.js";
+import { randomUUID } from "node:crypto";
+import { TASK_TYPES, TASK_STATUS } from "../../../3-domain/constants/Task.js";
 /**
  * 表示一个可被线程池执行的任务。
  */
@@ -15,8 +16,11 @@ export class Task {
     highPriority;
     /** @type {boolean} 是否需要数据库功能 */
     useDB;
-    /** @type {undefined|function({error: Error, data: Object}): void} */
+    /** @type {undefined|function({error: Error, data: Object}): void} 执行后回调 */
     callback;
+    /** @type {TASK_STATUS}  运行状态*/
+    status;
+
 
     /**
      * 创建一个 Task 实例。
@@ -30,12 +34,15 @@ export class Task {
      * @param {undefined|function({error: Error, data: Object}): void} options.callback - 任务完成回调。
      */
     constructor({ taskId, param, taskType, maxTaskNum, highPriority, useDB, callback }) {
-        this.taskId = taskId || "";
+        this.taskId = taskId || randomUUID();
         this.param = param;
         this.taskType = taskType;
         this.maxTaskNum = maxTaskNum;
         this.callback = callback;
         this.highPriority = highPriority || false;
         this.useDB = useDB;
+
+        this.status = TASK_STATUS.PENDING;
+        this.useMS = 0;//耗时
     }
 }

@@ -1,61 +1,26 @@
 sequenceDiagram
-    participant Client as 浏览器/客户端
-    participant PreMW as 前置中间件<br>(ErrorHandler/CORS/Logger)
-    participant Static as 静态文件/Swagger
-    participant Wrapper as ResponseWrapper
-    participant Router as Router
-    participant Controller as Controller
-    participant Service as Service
-    participant Repo as Repository
-    participant DB as SQLite
-    participant WS as WebSocket<br>(Socket.IO)
+    participant Client as 客户端
+    participant Controller as BookController
+    participant Service as BookDetailQueryService
+    participant EbookRepo as EbookRepository
+    participant ChapterRepo as ChapterRepository
+    participant VolumeRepo as VolumeRepository
 
-    Note over Client,DB: ─── HTTP 请求流程 ───
+    Client->>+Controller: GET /library/book?bookid=209
+    Controller->>Controller: 参数校验 (BookIdRequest)
+    Controller->>+Service: getBookDetail(209)
 
-    Client->>PreMW: GET /api/books
-    activate PreMW
-    PreMW->>PreMW: 错误捕获/CORS/日志记录
-    PreMW->>Static: 非静态文件，继续
-    activate Static
-    Static->>Wrapper: 继续
-    deactivate Static
-    activate Wrapper
-    Wrapper->>Router: 路由匹配
-    deactivate Wrapper
-    activate Router
-    Router->>Controller: listBooks(ctx)
-    deactivate Router
-    activate Controller
-    Controller->>Service: getBookList()
-    deactivate Controller
-    activate Service
-    Service->>Repo: findAll()
-    deactivate Service
-    activate Repo
-    Repo->>DB: SELECT * FROM ebooks
-    deactivate Repo
-    DB-->>Repo: 原始数据
-    activate Repo
-    Repo-->>Service: [Ebook 模型]
-    deactivate Repo
-    activate Service
-    Service->>Service: 映射为 DTO
-    Service-->>Controller: [BookDTO]
-    deactivate Service
-    activate Controller
-    Controller-->>Wrapper: ctx.body = data
-    deactivate Controller
-    activate Wrapper
-    Wrapper->>Wrapper: 包装为 {code, data, msg}
-    Wrapper-->>Client: 200 JSON
-    deactivate Wrapper
-    deactivate PreMW
+    par 并发查询 (Promise.all)
+        Service->>+EbookRepo: findById(209)
+        EbookRepo-->>-Service: 返回图书基础信息
+        Service->>+ChapterRepo: findIntroduction(209)
+        ChapterRepo-->>-Service: 返回简介内容
+        Service->>+ChapterRepo: findByBookId(209)
+        ChapterRepo-->>-Service: 返回章节列表(Index)
+        Service->>+VolumeRepo: findByBookId(209)
+        VolumeRepo-->>-Service: 返回分卷列表(Volumes)
+    end
 
-    Note over Client,WS: ─── WebSocket 流程（独立通道） ───
-
-    Client->>WS: 连接 / (Socket.IO)
-    WS-->>Client: 连接成功
-    Client->>WS: emit('book:list')
-    WS->>Service: 调用 bookQuery.getBookList()
-    Service-->>WS: 返回数据
-    WS-->>Client: callback({ success, data })
+    Service->>Service: 组装 BookDetail DTO
+    Service-->>-Controller: 返回完整数据
+    Controller-->>-Client: 200 OK (统一包装格式)

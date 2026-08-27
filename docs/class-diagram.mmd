@@ -1,75 +1,127 @@
 classDiagram
-    class BookController {
-        -BookQueryService bookQueryService
-        -BookCommandService bookCommandService
-        +listBooks(ctx)
-        +createBook(ctx)
+    %% 实体定义
+    class Ebook {
+        +int id
+        +string BookName
+        +string Author
+        +string CoverImg
+        +int Hotness
+        +int TotalWord
     }
 
-    class BookQueryService {
-        -EbookRepository ebookRepository
-        +getBookList() List~BookDTO~
-        +getBookDetail(id) BookDTO
+    class Volume {
+        +int id
+        +string Title
+        +string Introduction
+        +int OrderNum
+        +int BookId
     }
 
-    class BookCommandService {
-        -EbookRepository ebookRepository
-        +createBook(bookDTO) BookDTO
-        +updateBook(id, data) BookDTO
+    class EbookChapter {
+        +int id
+        +string Title
+        +string Content
+        +int OrderNum
+        +int VolumeId
+        +int BookId
     }
 
-    class EbookRepository {
-        -SequelizeModel EbookModel
-        +findAll() List~Ebook~
-        +findById(id) Ebook
-        +create(data) Ebook
-        +update(id, data) Ebook
-        +delete(id) void
+    class WebBook {
+        +int id
+        +string WebBookName
+        +bool AutoSyncEnabled
+        +bool isCheckRepeat
+        +int defaultIndex
+        +int BookId
     }
 
-    class EbookEntity {
-        +id
-        +BookName
-        +Author
-        +Hotness
-        +createdAt
-        +updatedAt
+    class WebBookChapter {
+        +int id
+        +string WebTitle
+        +int IndexId
     }
 
-    class ConfigLoader {
-        -env
-        -configDir
-        +load() Config
+    class WebBookIndexURL {
+        +int id
+        +string Path
+        +int WebBookIndexId
     }
 
-    class DatabaseConnection {
-        +createDatabaseConnection(dbPath) Sequelize
+    class WebBookIndexSourceURL {
+        +int id
+        +string Path
+        +int WebBookId
     }
 
-    class SystemCompositionRoot {
-        +assemble()
+    class Tag {
+        +int id
+        +string Text
+        +string Color
     }
 
-    class HttpSetup {
-        +setupHttpServer(app, config, controllers) http.Server
+    class EBookTag {
+        +int BookId
+        +int TagId
     }
 
-    class WebsocketSetup {
-        +setupWebsocket(server, services, config) SocketIO.Server
+    class ReviewRule {
+        +int id
+        +string Name
+        +string Rule
+        +string Replace
     }
 
-    SystemCompositionRoot --> HttpSetup : 调用
-    SystemCompositionRoot --> WebsocketSetup : 调用
-    HttpSetup --> BookController : 挂载路由
-    WebsocketSetup --> BookQueryService : 注入事件
-    WebsocketSetup --> BookCommandService : 注入事件
+    class ReviewRuleUsing {
+        +int RuleId
+        +int BookId
+    }
 
-    BookController --> BookQueryService : 依赖
-    BookController --> BookCommandService : 依赖
-    BookQueryService --> EbookRepository : 依赖
-    BookCommandService --> EbookRepository : 依赖
-    EbookRepository --> EbookEntity : 映射
-    EbookRepository --> DatabaseConnection : 使用
+    class Bookmark {
+        +int id
+        +int IndexId
+    }
 
-    SystemCompositionRoot --> ConfigLoader : 加载配置
-    SystemCompositionRoot --> DatabaseConnection : 初始化
+    class SystemConfig {
+        +int id
+        +string Group
+        +string Name
+        +string Value
+    }
+
+    %% ---------- 关联关系（标准单向箭头） ----------
+    %% Ebook 与 Volume
+    Ebook "1" --> "0..*" Volume : has
+
+    %% Ebook 与 EbookChapter
+    Ebook "1" --> "0..*" EbookChapter : has
+
+    %% Volume 与 EbookChapter（可选外键）
+    Volume "1" --> "0..*" EbookChapter : contains (nullable)
+
+    %% Ebook 与 WebBook（一对一扩展）
+    Ebook "1" --> "0..1" WebBook : extends
+
+    %% EbookChapter 与 WebBookChapter（一对一扩展）
+    EbookChapter "1" --> "0..1" WebBookChapter : extends
+
+    %% WebBook 与 WebBookIndexSourceURL
+    WebBook "1" --> "0..*" WebBookIndexSourceURL : has
+
+    %% WebBookChapter 与 WebBookIndexURL
+    WebBookChapter "1" --> "0..*" WebBookIndexURL : has
+
+    %% ---------- 多对多通过中间表 ----------
+    %% Ebook 与 Tag 通过 EBookTag
+    Ebook "1" --> "0..*" EBookTag : has
+    Tag "1" --> "0..*" EBookTag : used in
+    EBookTag "1" --> "1" Ebook : belongs to
+    EBookTag "1" --> "1" Tag : belongs to
+
+    %% ReviewRule 与 Ebook 通过 ReviewRuleUsing
+    ReviewRule "1" --> "0..*" ReviewRuleUsing : applied by
+    Ebook "1" --> "0..*" ReviewRuleUsing : uses
+    ReviewRuleUsing "1" --> "1" ReviewRule : references
+    ReviewRuleUsing "1" --> "1" Ebook : references
+
+    %% Bookmark 与 EbookChapter（一对一）
+    EbookChapter "1" --> "0..1" Bookmark : has

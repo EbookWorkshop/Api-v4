@@ -27,7 +27,8 @@ export class BookExportExecutor extends ITaskExecutor {
             const result = await this.#bookExportService.exportBook(bookId, format, setting);
             return result;
         } catch (error) {
-
+            error.stack = `BookExportExecutor::execute: ${import.meta.filename}\n${error.stack}`;
+            throw error;
         }
     }
 }
