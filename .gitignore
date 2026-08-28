@@ -7,3 +7,4 @@ config/local.js
 */swagger.json
 scripts/*.txt
 test/*
+version.json

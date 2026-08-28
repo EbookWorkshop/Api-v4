@@ -27,18 +27,19 @@ import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 
 import { AssetsQueryService } from './AssetsQueryService.js';
 
-import { TaskSchedulerService } from "./TaskSchedulerService.js"
-// import { WorkerPool } from '../../4-infrastructure/workers/index.js';
+import { TaskSchedulerService } from "./TaskSchedulerService.js";
+import { ServiceQueryService } from './ServiceQueryService.js';
 
 /**
  * 服务层 组装所有 Service
  * @param {*} repositories 
  * @param {ITransaction} databaseTransaction 
  * @param {WorkerPool} workerPool 
+ * @param {ServiceServer} svr 
  * @param {Object} config 
  * @returns 
  */
-export function createServices(repositories, databaseTransaction, workerPool, config = {}) {
+export function createServices(repositories, databaseTransaction, workerPool, svr, config = {}) {
   const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
   const { tagRepository, systemConfigRepository, } = repositories;
 
@@ -91,6 +92,7 @@ export function createServices(repositories, databaseTransaction, workerPool, co
 
     task: new TaskSchedulerService(workerPool),
 
+    serviceQuery: new ServiceQueryService(config, svr),
     // bookExport: bookExportService,
   };
 }

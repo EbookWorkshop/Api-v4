@@ -11,6 +11,7 @@ import { AssetsController } from "./AssetsController.js"
 import { EmailController } from './EmailController.js';
 import { RuleForWebController } from "./RuleForWebController.js"
 import { ExportController } from './ExportController.js';
+import { ServiceController } from "./ServiceController.js"
 
 /**
  * 
@@ -37,7 +38,8 @@ export function createControllers(services, config) {
     email: new EmailController(services.email),
 
     export: new ExportController(services.task),
+    service: new ServiceController(services.serviceQuery),
+    
     swagger: new SwaggerController(config),
   };
 }
-
