@@ -106,9 +106,9 @@ export class WorkerPool {
     }
 
     #remoteBroadcastEvent(message, worker) {
-        const { eventName, data } = message;
+        const { eventName, args_data } = message;
         if (!eventName) { console.warn("消息转发失败：已丢失消息名。"); return; }
-        this.#event.emit(eventName, ...data);
+        this.#event.emit(eventName, ...args_data);
     }
 
     /**

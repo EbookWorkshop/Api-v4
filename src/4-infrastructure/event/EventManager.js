@@ -55,7 +55,7 @@ export class EventManager {
     parentPort?.postMessage({
       type: TASK_MESSAGE_TYPE.TASK_EVENT_ENVELOPE,
       eventName,
-      data: { ...args },
+      args_data: [...args],
     });
   }
 

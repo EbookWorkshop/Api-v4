@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import Epub from 'epub-gen';//可替代版本 pnpm install @publiwrite/html-to-epub
 import { BookExportData } from "../../../2-application/dto/BookExportData.dto.js"
 import { IGenerator } from '../../../2-application/ports/IGenerator.js';
+import { accessDir } from "../drivers/fileSystemDriver.js";
 
 export class EpubGenerator extends IGenerator {
     constructor(temp) {
@@ -35,7 +36,8 @@ export class EpubGenerator extends IGenerator {
 
         option.content = this.#setChapters(ebook, isCompact);
         const outputFile = `${ebook.title}${randomBytes(2).toString("hex")}.epub`;
-        option.output = path.join(option.tempDir, "epub", outputFile);
+        option.output = path.join(option.tempDir, outputFile);
+        await accessDir(option.output);
         return new Epub(option).promise.then(
             () => { return { path: option.output, filename: outputFile }; },
             err => {

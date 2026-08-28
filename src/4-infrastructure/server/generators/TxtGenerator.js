@@ -25,7 +25,7 @@ export class TxtGenerator extends IGenerator {
             let { embedTitle, enableIndent } = ebook.setting;
             outputPath = outputPath || this.tempFolder;
             const outputFile = `${ebook.title}${randomBytes(2).toString("hex")}.txt`;
-            outputPath = path.join(outputPath, "txt", outputFile);
+            outputPath = path.join(outputPath, outputFile);
 
             await accessDir(path.dirname(outputPath));
             writeStream = createWriteStream(outputPath);

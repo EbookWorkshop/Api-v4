@@ -110,7 +110,7 @@ export class BookExportService {
                 title: book.BookName,
                 author: book.Author,
                 cover: coverPath,
-                introduction: introduction.Content,
+                introduction: introduction?.Content,
                 chapters: chapterAftTyp,
                 setting: rest,           //TODO：格式、排版、字体等设置
             });

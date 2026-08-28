@@ -14,13 +14,13 @@ import { FileSystemWriter } from "../../4-infrastructure/server/adapters/FileSys
 import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
 
 
-
 /** 
  * 负责组装出导出器
- * @param {Object} repositories 
+ * @param {Object} config 配置
+ * @param {Object} repositories 线程/服务器资源
  * @returns {ITaskExecutor}
  */
-export async function createExportBookTask(repositories, config) {
+export async function createExportBookTask(config, repositories) {
     const { ebookRepository, volumeRepository, chapterRepository } = repositories;
     const bookServ = new BookQueryService(ebookRepository);
     const chapServ = new ChapterQueryService(chapterRepository);
@@ -40,7 +40,6 @@ export async function createExportBookTask(repositories, config) {
         volume: volumeServ,
         chapter: chapServ,
     }, factory, fileServ, eventMgr, config);
-
     return new BookExportExecutor(bookExpServ);
 }
 export default createExportBookTask;
