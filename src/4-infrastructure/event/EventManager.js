@@ -22,6 +22,8 @@ export class EventManager {
 
   /**
    * 监听事件（对外屏蔽底层实现细节）
+   * @param {string|symbol} eventName
+   * @param listener
    */
   on(eventName, listener) {
     this.#emitter.on(eventName, listener);
@@ -31,6 +33,7 @@ export class EventManager {
 
   /**
    * 触发事件
+   * @param {string|symbol} eventName
    */
   emit(eventName, ...args) {
     // if (!isMainThread) {        //在子线程中发信息
@@ -44,7 +47,7 @@ export class EventManager {
 
   /**
    * 向主线程，触发
-   * @param {*} eventName 
+   * @param {string|symbol} eventName 
    * @param  {...any} args 
    * @returns 
    */

@@ -1,7 +1,7 @@
 
 import { randomBytes } from "node:crypto";
 import { SHOW_BOOKNAME } from "../../3-domain/constants/BookConstants.js";
-import { EMT_EXPORT_BOOK_END } from "../../3-domain/constants/Event.js";
+import { EXPORT_EVENTS } from "../../3-domain/constants/Event.js";
 import { IFileWriter } from "../ports/IFileWriter.js"
 import { BookExportData } from '../dto/BookExportData.dto.js';
 import { BookQueryService } from "../services/BookQueryService.js"
@@ -78,6 +78,7 @@ export class BookExportService {
     async exportBook(bookId, format, setting) {
         let result = null;
         let runErr = null;
+        let bookName = "";
         try {
             const { volumeIds, chapterIds, embedBookName, coverImageData, ...rest } = setting;
             let showChapters = chapterIds || [];
@@ -105,7 +106,7 @@ export class BookExportService {
 
             let coverPath;
             if (format != "txt") coverPath = await this.#setCover(book.CoverImg, embedBookName, coverImageData,);
-
+            bookName = book.BookName;
             const exportData = new BookExportData({
                 title: book.BookName,
                 author: book.Author,
@@ -126,7 +127,8 @@ export class BookExportService {
             runErr = error;
             throw error;
         } finally {
-            this.#eventManager.emit(EMT_EXPORT_BOOK_END, { bookId, setting, result, error: runErr });
+            delete setting.coverImageData;//可能存在大段文本（几MB的封面）
+            this.#eventManager.emit(EXPORT_EVENTS.FILE_GENERATED, { payload: { bookId, bookName, format, setting, result, error: runErr } });
         }
     }
 

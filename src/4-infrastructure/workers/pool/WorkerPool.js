@@ -7,6 +7,7 @@ import { AsyncResource } from 'node:async_hooks';
 
 import { AppError } from "../../../5-shared/errors/index.js"
 import { TASK_MESSAGE_TYPE, TASK_STATUS } from "../../../3-domain/constants/Task.js"
+import { WORKERPOOL_ADD_TASK } from "../../../3-domain/constants/Event.js"
 import { Task } from "../tasks/Task.js";
 import { WorkerQueue } from "./WorkerQueue.js";
 import { EventManager } from "../../event/EventManager.js";
@@ -75,10 +76,20 @@ export class WorkerPool {
         this.#waitingTask = new Map();
         this.#runningThreadCountByType = new Map();
         this.#taskHistory = new Array();
+
+        this.#init();
     }
 
     /**
-     * 创建一个新线程备用
+     * 初始化处理
+     */
+    #init() {
+        this.#event.on(WORKERPOOL_ADD_TASK, (task) => this.addTask(task));
+    }
+
+
+    /**
+     * 创建一个新线程
      * @param {boolean} useDB 是否需要数据库
      * @returns {Worker|null}
      */
@@ -136,10 +147,10 @@ export class WorkerPool {
         }
         switch (type) {
             case TASK_MESSAGE_TYPE.TASK_ERROR:
-                this.#freeAWorker(worker, TASK_STATUS.REJECTED);
+                this.#freeAWorker(worker, TASK_STATUS.REJECTED, { error });
                 break;
             case TASK_MESSAGE_TYPE.TASK_COMPLETED:
-                this.#freeAWorker(worker, TASK_STATUS.FULFILLED);
+                this.#freeAWorker(worker, TASK_STATUS.FULFILLED, { data });
                 this.#runTask();
                 break;
         }
@@ -155,7 +166,7 @@ export class WorkerPool {
     async #errorHandler(error, worker) {
         try {
             console.warn("线程执行出错：", error);
-            this.#freeAWorker(worker, TASK_STATUS.REJECTED);//释放线程计数
+            this.#freeAWorker(worker, TASK_STATUS.REJECTED, { error });//释放线程计数
         } catch (error) {
 
         } finally {
@@ -247,11 +258,13 @@ export class WorkerPool {
      * @param {Worker} worker 
      * @param {TASK_STATUS} resule 
      */
-    #freeAWorker(worker, resule) {
-        const data = this.#workerData.get(worker);
-        const task = data[kTaskData];
+    #freeAWorker(worker, resule, { data, error }) {
+        const tData = this.#workerData.get(worker);
+        const task = tData[kTaskData];
         task.status = resule;
-        task.useMS = performance.now() - data[kTaskStartTime];
+        task.useMS = performance.now() - tData[kTaskStartTime];
+        if (data) task.data = data;//执行结果
+        if (error) task.error = error;//失败原因
 
         const runNum = this.#runningThreadCountByType.get(task.taskType) || 1;
         this.#runningThreadCountByType.set(task.taskType, runNum - 1);
@@ -259,7 +272,10 @@ export class WorkerPool {
         this.#workerData.delete(worker);
         this.#workersQueue(worker.withDB).free(worker);
 
-        if (this.workerDebug) console.log(`进程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。`);
+        if (this.workerDebug) {
+            console.log(`进程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。`);
+            if (resule === TASK_STATUS.REJECTED) console.warn("失败原因：", error || data);
+        }
     }
 
     /**

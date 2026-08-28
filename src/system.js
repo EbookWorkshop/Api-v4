@@ -33,7 +33,7 @@ const { transactionManager } = miniCore;
 const svr = new ServiceServer(config);
 
 // 3.2 服务层 (Application) - 依赖 Repositories
-const services = createServices(repositories, transactionManager, workerPool, svr, config);
+const services = createServices(repositories, transactionManager, workerPool, svr, eventManager, config);
 
 // 3.3 控制器层 (Interfaces) - 依赖 Services
 const controllers = createControllers(services, config);

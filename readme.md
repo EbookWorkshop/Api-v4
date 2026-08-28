@@ -54,124 +54,59 @@
 
 ## 三、项目目录结构
 ```
-Api-V4/
+src/                                       # 源码根目录
 │
-├── config/                                    # 【配置目录】
-│   ├── default.js                             # 默认配置（所有环境继承，Git 提交）
-│   ├── development.js                         # 开发环境覆盖（Git 提交）
-│   ├── production.js                          # 生产环境覆盖（Git 提交）
-│   └── local.js                               # 本地覆盖（.gitignore 忽略）
+├── 1-interfaces/                          # 接口适配层（对外暴露的协议适配）
+│   ├── http/                              # HTTP 协议适配
+│   │   ├── controllers/                   # 控制器：接收请求、调用应用服务、返回响应
+│   │   ├── dtos/                          # 数据传输对象（请求/响应结构 + Swagger 注解）
+│   │   │   ├── components/                # 公共组件 DTO（如 BookIdRequest, ApiResponse）
+│   │   │   └── ……/                        # 各个领域的 DTO
+│   │   ├── middlewares/                   # Koa 中间件（错误处理、日志、CORS、响应包装、静态文件）
+│   │   └── routes/                        # 路由定义（每个文件对应一个控制器模块的路由）
+│   └── websocket/                         # WebSocket 协议适配
+│       ├── handlers/                      # Socket 事件处理器（注册业务事件）
+│       └── index.js                       # WebSocket 服务器装配
 │
-├── data/                                      # 【数据目录】SQLite 数据库文件
-│   └── dev.sqlite                             # 开发数据库（自动生成）
+├── 2-application/                         # 应用层（用例编排、业务服务、端口定义）
+│   ├── dto/                               # 应用层数据传输对象（供服务间或线程传递）
+│   ├── orchestrators/                     # 编排器（监听领域事件，协调多个服务完成复杂流程，如导出流程）
+│   ├── ports/                             # 端口（抽象接口，定义基础设施必须实现的能力，如 IEmailSender, IFileScanner）
+│   ├── services/                          # 应用服务（具体业务用例实现）
+│   │   ├── executor/                      # 任务执行器（实现 ITaskExecutor，用于线程池执行）
+│   │   └── index.js                       # 服务组装工厂
+│   └── thread-assemblers/                 # 工作线程专用装配器（为子线程组装独立的服务实例）
 │
-├── docs/                                      # 【文档目录】
-│   ├── ARCHITECTURE.md                        # 架构描述（供 AI 快速恢复上下文）
-│   ├── architecture.mmd                       # 分层架构图（Mermaid）
-│   ├── class-diagram.mmd                      # UML 类图（Mermaid）
-│   ├── sequence-diagram.mmd                   # 运行时时序图（Mermaid）
-│   └── swagger.json                           # OpenAPI 文档（npm run swagger 生成）
+├── 3-domain/                              # 领域层（业务核心概念、规则、常量）
+│   ├── associations/                      # 模型关联定义（Sequelize 关系映射）
+│   │   └── scope.js                       # 模型作用域（默认查询范围）
+│   ├── constants/                         # 领域常量（事件名称、任务类型、系统配置分组、图书标记等）
+│   └── entities/                          # 领域实体（Sequelize 模型定义，对应数据表结构）
 │
-├── migrations/                                # 【迁移目录】数据库版本管理
-│   └── (umzug 迁移文件)
+├── 4-infrastructure/                      # 基础设施层（技术实现，依赖外部组件）
+│   ├── cache/                             # 缓存实现（内存缓存）
+│   ├── config/                            # 配置加载器（加载 default/环境/local.js 及环境变量）
+│   ├── container/                         # 轻量级容器（用于子线程快速构建核心依赖）
+│   ├── database/                          # 数据库连接、事务管理
+│   ├── email/                             # 邮件发送实现（基于 Nodemailer）
+│   ├── event/                             # 事件管理器（封装 EventEmitter，支持跨线程转发）
+│   ├── repositories/                      # 数据仓储实现（封装 Sequelize 模型操作，提供领域对象持久化）
+│   ├── server/                            # 服务器相关基础设施
+│   │   ├── adapters/                      # 适配器（文件系统扫描、写入，实现端口接口）
+│   │   ├── drivers/                       # 底层驱动（文件系统底层操作函数）
+│   │   ├── generators/                    # 导出文件生成器（Epub、Pdf、Txt）及工厂
+│   │   └── ServiceServer.js               # 系统信息服务（获取版本、系统状态）
+│   └── workers/                           # 多线程支持
+│       ├── pool/                          # 线程池（WorkerPool, WorkerQueue）
+│       ├── runner/                        # 工作线程入口（run.js 不带数据库，runOnDB.js 带数据库）
+│       └── tasks/                         # 任务定义（Task 类）和任务分配器（assignTasks）
 │
-├── scripts/                                   # 【辅助脚本】
-│   ├── generate-swagger.js                    # 生成 Swagger JSON
-│   └── start.sh                               # 启动脚本
+├── 5-shared/                              # 共享工具与通用错误
+│   ├── errors/                            # 自定义错误类（AppError, UserInputError）
+│   └── utils/                             # 通用工具函数（文件大小格式化等）
 │
-├── src/                                       # 【源码根目录】
-│   │
-│   ├── 1-interfaces/                          # 【接口适配层】
-│   │   ├── http/
-│   │   │   ├── controllers/                   # 职责：处理 ctx，调用 Service，挂载 Swagger 注解
-│   │   │   │   ├── index.js                   # 桶文件：组装所有 Controller
-│   │   │   │   ├── BookController.js
-│   │   │   │   └── SystemConfigController.js
-│   │   │   ├── dtos/                          # 职责：HTTP 请求/响应结构（含 Swagger schema）
-│   │   │   │   └── BookListResponse.js
-│   │   │   ├── routes/                        # 职责：路由聚合器（显式组合子路由）
-│   │   │   │   ├── index.js                   # 主路由聚合器
-│   │   │   │   └── book.routes.js
-│   │   │   ├── middlewares/                   # 职责：错误处理、CORS、日志、响应包装
-│   │   │   │   ├── index.js                   # 桶文件：统一注册所有中间件
-│   │   │   │   ├── errorHandler.js
-│   │   │   │   ├── cors.js
-│   │   │   │   ├── logger.js
-│   │   │   │   └── responseWrapper.js
-│   │   │   └── index.js                       # HTTP 层入口（只做适配，不创建业务依赖）
-│   │   └── websocket/                         # WebSocket 协议（可选）
-│   │
-│   ├── 2-application/                         # 【应用服务层】业务用例编排
-│   │   ├── services/                          # 职责：实现业务用例，编排 Repository
-│   │   │   ├── index.js                       # 桶文件：组装所有 Service
-│   │   │   ├── BookQueryService.js            # 查询服务（只读）
-│   │   │   ├── BookCommandService.js          # 命令服务（写入）
-│   │   │   ├── SystemConfigService.js         # 系统配置服务
-│   │   │   └── FontService.js                 # 字体服务
-│   │   ├── dto/                               # 职责：业务数据传输对象（Service 层内部传递）
-│   │   │   └── ChapterContentDTO.js
-│   │   └── ports/                             # 职责：定义抽象接口（依赖倒置）
-│   │       └── IChapterFetcher.js
-│   │
-│   ├── 3-domain/                              # 【领域模型层】纯数据结构
-│   │   ├── entities/                          # 职责：数据库表结构映射（Sequelize 定义）
-│   │   │   ├── index.js                       # 桶文件：导出所有实体定义
-│   │   │   └── EbookEntity.js
-│   │   ├── associations/                      # 职责：模型关系定义（hasMany/belongsTo）
-│   │   │   └── index.js
-│   │   ├── constants/                         # 职责：业务常量
-│   │   │   └── SystemConfigGroup.js
-│   │   └── value-objects/                     # 职责：值对象（校验逻辑）
-│   │       └── ISBN.js
-│   │
-│   ├── 4-infrastructure/                      # 【基础设施层】具体技术实现
-│   │   ├── config/                            # 职责：配置加载与管理
-│   │   │   ├── index.js                       # 桶文件
-│   │   │   └── ConfigLoader.js
-│   │   ├── database/                          # 职责：数据库连接
-│   │   │   └── databaseConnection.js
-│   │   ├── repositories/                      # 职责：具体 SQL/ORM 操作
-│   │   │   ├── index.js                       # 桶文件：组装所有 Repository
-│   │   │   ├── EbookRepository.js
-│   │   │   ├── TagRepository.js
-│   │   │   └── SystemConfigRepository.js
-│   │   ├── collectors/                        # 职责：纯数据采集/解析（不碰数据库）
-│   │   │   ├── EpubParser.js
-│   │   │   ├── PdfParser.js
-│   │   │   └── WebChapterFetcher.js
-│   │   ├── workers/                           # 职责：多线程任务执行端
-│   │   │   ├── WorkerPool.js
-│   │   │   └── WorkerRunner.js
-│   │   ├── server/                            # 职责：文件系统工具
-│   │   │   └── fileSystemUtils.js
-│   │   ├── event/                             # 职责：事件总线
-│   │   │   └── EventManager.js
-│   │   ├── cache/                             # 职责：内存缓存
-│   │   │   └── MemoryCache.js
-│   │   └── debug/                             # 职责：开发调试辅助
-│   │       └── DebugLogger.js
-│   │
-│   ├── 5-shared/                              # 【共享工具层】跨层通用工具
-│   │   ├── errors/                            # 职责：自定义业务异常类
-│   │   │   └── AppError.js
-│   │   └── utils/                             # 职责：纯工具函数
-│   │       └── (仅放真正复杂的、跨领域的纯函数)
-│   │
-│   ├── system.js                              # 【组合根】唯一组装所有依赖的地方
-│   │                                          # 职责：调用各层桶文件，组装依赖链，启动应用
-│   │                                          # 新增模块时，此文件不改动（由桶文件承接）
-│   │
-│   └── app.js                                 # 【应用入口】启动服务器（极其轻薄）
-│
-├── tests/                                     # 【测试目录】
-│   ├── unit/                                  # 单元测试（Domain + Application 层）
-│   └── integration/                           # 集成测试（Infrastructure 层 + 真实 DB）
-│
-├── .env                                       # 环境变量（最高优先级，不提交）
-├── .env.example                               # 环境变量模板
-├── .gitignore
-├── package.json
-└── README.md
+├── app.js                                 # 应用启动入口（启动 HTTP 服务器）
+└── system.js                              # 系统组装核心（加载配置、初始化数据库、组装依赖、创建控制器/服务/HTTP/WS）
 ```
 
 ### 目录层级与职责

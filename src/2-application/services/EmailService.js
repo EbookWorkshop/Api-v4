@@ -1,21 +1,27 @@
 import { EMAIL_SETTING_GROUP, KINDLE_INBOX } from '../../3-domain/constants/SystemConfigGroup.js';
-import { AppError,UserInputError } from '../../5-shared/errors/index.js';
+import { MAIL_SENT } from '../../3-domain/constants/Event.js';
+import { AppError, UserInputError } from '../../5-shared/errors/index.js';
 import { IEmailSender } from '../ports/IEmailSender.js';
+
 
 export class EmailService {
     /** @type {IEmailSender} */
     #emailSender;
     #systemConfigService;
     #transaction;
+    #eventMgr;
 
     /**
      * @param {IEmailSender} emailSender - 依赖注入邮件发送适配器
      * @param {*} systemConfigService - 配置服务
      */
-    constructor(emailSender, systemConfigService, transaction) {
+    constructor(emailSender, systemConfigService, transaction, eventMgr) {
         this.#emailSender = emailSender;
         this.#systemConfigService = systemConfigService;
         this.#transaction = transaction;
+        this.#eventMgr = eventMgr;
+
+        this.#eventMgr.on(MAIL_SENT, this.sendEmail.bind(this));
     }
 
     // ---------- 配置读写 ----------
@@ -44,23 +50,24 @@ export class EmailService {
      * @param {*} password 密码
      */
     async saveEmailAccount(address, password) {
-        return this.#transaction.runInTransaction(async (transaction) => {
+        const save = async (transaction) => {
             await this.#systemConfigService.setConfig(EMAIL_SETTING_GROUP, 'address', address, { transaction });
             await this.#systemConfigService.setConfig(EMAIL_SETTING_GROUP, 'password', password, { transaction });
             return { address, password };
-        });
+        };
+        return this.#transaction?.runInTransaction(save) || save();
     }
 
     /**
      * @param {Object} params
-     * @param {string} params.title
-     * @param {string} params.content
      * @param {Array<{filename: string, filepath: string}>} params.files
+     * @param {string} params.[title]
+     * @param {string} params.[content]
      * @param {string} [params.mailto]
      * @param {string} [params.sender]
      * @param {string} [params.pass]
      */
-    async sendEmail({ title, content, files, mailto, sender, pass }) {
+    async sendEmail({ title, content, files, mailto, sender, pass, version }) {
         // 1. 补全缺省配置
         if (!mailto) {
             const inbox = await this.getInboxAddress();
@@ -71,6 +78,7 @@ export class EmailService {
             if (!sender) sender = account.address;
             if (!pass) pass = account.password;
         }
+        if (version) version = `v${version}`;
 
         // 2. 校验必填项
         if (!sender || !mailto || !pass) {
@@ -87,13 +95,16 @@ export class EmailService {
             path: f.filepath || f.path,
         }));
 
+        let firstFile = attachments[0]?.filename;
+        if (attachments.length > 1) firstFile += " ...等"
+
         // 4. 调用端口（适配器）
         await this.#emailSender.sendMail({
             from: sender,
             authPass: pass,
             to: mailto,
-            subject: title || 'EBook Workshop 发送的邮件',
-            text: content || 'This email sent by EBook Workshop!',
+            subject: title || `来自 EBook Workshop ${version} 的 ${attachments.length}个文件 ${firstFile || "。"}`,
+            text: content || `文件清单：\n${attachments.map(f => f.filename).join("\n")}\n\n\t\t—— by EBook Workshop ${version}!`,
             attachments,
         });
 

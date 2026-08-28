@@ -18,6 +18,7 @@ export function createMiniCore(config) {
     const transactionManager = DBHelper.createDatabaseTransaction(sequelize);
 
     return {
+        version: config?.version,
         sequelize,
         repositories,
         transactionManager,

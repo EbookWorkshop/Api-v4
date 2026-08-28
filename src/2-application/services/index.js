@@ -39,7 +39,7 @@ import { ServiceQueryService } from './ServiceQueryService.js';
  * @param {Object} config 
  * @returns 
  */
-export function createServices(repositories, databaseTransaction, workerPool, svr, config = {}) {
+export function createServices(repositories, databaseTransaction, workerPool, svr, eventManager, config = {}) {
   const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
   const { tagRepository, systemConfigRepository, } = repositories;
 
@@ -80,7 +80,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
     tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),
 
     systemConfig: systemConfigService,
-    email: new EmailService(emailSender, systemConfigService, databaseTransaction),
+    email: new EmailService(emailSender, systemConfigService, databaseTransaction, eventManager),
     font: fontService,
 
     reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),

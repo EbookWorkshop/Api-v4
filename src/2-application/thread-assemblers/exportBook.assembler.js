@@ -1,19 +1,20 @@
 import { EventEmitter } from 'node:events';
 
-import { EMT_EXPORT_BOOK_END } from "../../3-domain/constants/Event.js"
-
 import { ITaskExecutor } from "../ports/ITaskExecutor.js";
 import { BookExportExecutor } from "../services/executor/BookExportExecutor.js";
 import { BookExportService } from "../services/BookExportService.js";
 import { BookQueryService } from "../services/BookQueryService.js";
 import { VolumeQueryService } from "../services/VolumeQueryService.js"
 import { ChapterQueryService } from "../services/ChapterQueryService.js";
+import { SystemConfigService } from "../services/SystemConfigService.js";
 
 import { EventManager } from "../../4-infrastructure/event/EventManager.js";
 import { FileSystemWriter } from "../../4-infrastructure/server/adapters/FileSystemWriter.js";
 import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
 
-
+import { EmailService } from '../services/EmailService.js';
+import { NodemailerEmailSender } from "../../4-infrastructure/email/NodemailerEmailSender.js"
+import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js"
 /** 
  * 负责组装出导出器
  * @param {Object} config 配置
@@ -31,9 +32,10 @@ export async function createExportBookTask(config, repositories) {
     const factory = new GeneratorFactory(tempFolder);
 
     const eventMgr = new EventManager(new EventEmitter());
-    eventMgr.on(EMT_EXPORT_BOOK_END, (event) => {
-        console.log("收到消息：", EMT_EXPORT_BOOK_END, event);
-    })
+    const systemConfigService = new SystemConfigService(repositories.systemConfigRepository);
+
+    new EmailService(new NodemailerEmailSender(), systemConfigService, null, eventMgr);
+    new ExportOrchestrator(eventMgr, config);
 
     const bookExpServ = new BookExportService({
         book: bookServ,
