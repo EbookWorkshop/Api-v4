@@ -46,7 +46,7 @@
  *         location:
  *           type: string
  *           description: 安装路径（仅部分包存在）
- *           example: "/home/coco/Project/EBW/Api/node_modules/sharp"
+ *           example: "/path/to/Api/node_modules/sharp"
  *       additionalProperties: true   # 允许其他未列出的字段
  *
  *     VersionInfo:
@@ -68,7 +68,7 @@
  *         dataPath:
  *           type: string
  *           description: 数据存储路径
- *           example: "/home/coco/Project/EBW/MyLibrary"
+ *           example: "/path/to/data"
  *         databaseSize:
  *           type: integer
  *           description: 数据库大小（字节）
@@ -141,8 +141,7 @@
  *               wanted: "0.35.4"
  *               latest: "0.35.4"
  *               dependent: "Api"
- *               location: "/home/coco/Project/EBW/Api/node_modules/sharp"
- *           dataPath: "/home/coco/Project/EBW/MyLibrary"
+ *           dataPath: "/path/to/data"
  *           databaseSize: 210264064
  *           nodeVersion: "v24.19.0"
  *           osType: "Linux"

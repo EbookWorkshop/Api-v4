@@ -1,9 +1,8 @@
 import path from "node:path";
 import { randomBytes } from "node:crypto";
-import Epub from 'epub-gen';//可替代版本 pnpm install @publiwrite/html-to-epub
+import { EPub } from '@publiwrite/html-to-epub';
 import { BookExportData } from "../../../2-application/dto/BookExportData.dto.js"
 import { IGenerator } from '../../../2-application/ports/IGenerator.js';
-import { accessDir } from "../drivers/fileSystemDriver.js";
 
 export class EpubGenerator extends IGenerator {
     constructor(temp) {
@@ -19,32 +18,33 @@ export class EpubGenerator extends IGenerator {
     async generate(ebook, outputPath) {
         const { setting } = ebook;
         const { embedTitle, isCompact, enableIndent } = setting;
-
-        let option = {
-            title: ebook.title, // *必需，书籍标题。
-            author: ebook.author || "佚名", // *必需，作者名字。
-            appendChapterTitles: embedTitle,//是否在章节内容前面添加章节标题
-            lang: "zh-CN",
-            css: enableIndent ? `\np,.rr{ text-indent: 2em;} \n` : "",//统一加入段落缩进
-            tocTitle: "目  录",//默认 Table Of Contents
-            publisher: setting.publisher,
-            cover: ebook.cover, // URL 或文件路径，均可。
-            content: [],
-            tempDir: outputPath || this.tempFolder,
-            verbose: false,//是否输出控制台日志
-        }
-
-        option.content = this.#setChapters(ebook, isCompact);
-        const outputFile = `${ebook.title}${randomBytes(2).toString("hex")}.epub`;
-        option.output = path.join(option.tempDir, outputFile);
-        await accessDir(option.output);
-        return new Epub(option).promise.then(
-            () => { return { path: option.output, filename: outputFile }; },
-            err => {
-                err.stack = `ERROR: create Epub failed on: ${import.meta.filename}\n${err.stack}`
-                throw err;
+        try {
+            let option = {
+                title: ebook.title, // *必需，书籍标题。
+                description: ebook.introduction,
+                author: ebook.author || "佚名", // *必需，作者名字。
+                appendChapterTitles: embedTitle,//是否在章节内容前面添加章节标题
+                lang: "zh-CN",
+                css: enableIndent ? `\np,.rr{ text-indent: 2em;} \n` : "",//统一加入段落缩进
+                tocTitle: "目  录",//默认 Table Of Contents
+                publisher: setting.publisher,
+                cover: ebook.cover, // URL 或文件路径，均可。
+                content: [],
+                tempDir: outputPath || this.tempFolder,
+                verbose: false,//是否输出控制台日志
             }
-        );
+            // await accessDir(option.tempDir); //EPub底层有这个代码
+
+            option.content = this.#setChapters(ebook, isCompact);
+            const outputFile = `${ebook.title}${randomBytes(2).toString("hex")}.epub`;
+            const output = path.join(option.tempDir, outputFile);
+            let epub = new EPub(option, output);
+            const result = await epub.render();
+            return { path: output, filename: outputFile, ...result };
+        } catch (error) {
+            error.stack = `ERROR: create Epub failed on: ${import.meta.filename}\n${error.stack}`
+            throw error;
+        }
     }
 
 
