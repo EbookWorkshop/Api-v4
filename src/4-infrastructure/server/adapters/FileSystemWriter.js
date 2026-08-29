@@ -60,4 +60,15 @@ export class FileSystemWriter extends IFileWriter {
         const relativePath = path.join(...dirArray);
         return path.resolve(relativePath);
     }
+
+    async deleteFile(filePath) {
+        const full = path.join(this.#repositoryPath, filePath);
+        await fs.unlink(full);
+    }
+
+    async renameFile(oldPath, newPath) {
+        const fullOld = path.join(this.#repositoryPath, oldPath);
+        const fullNew = path.join(this.#repositoryPath, newPath);
+        await fs.rename(fullOld, fullNew);
+    }
 }

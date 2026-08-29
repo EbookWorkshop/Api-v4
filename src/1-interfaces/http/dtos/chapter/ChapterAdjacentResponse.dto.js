@@ -20,15 +20,15 @@
  *       description: 前一篇和后一篇章节 ID
  *       properties:
  *         pre:
- *           oneOf:
- *             - $ref: '#/components/schemas/ChapterAdjacentItem'
- *             - type: 'null'
  *           description: 上一章节 ID，若无则为 null
- *         next:
- *           oneOf:
+ *           allOf:
  *             - $ref: '#/components/schemas/ChapterAdjacentItem'
- *             - type: 'null'
+ *           nullable: true
+ *         next:
  *           description: 下一章节 ID，若无则为 null
+ *           allOf:
+ *             - $ref: '#/components/schemas/ChapterAdjacentItem'
+ *           nullable: true
  *       required:
  *         - pre
  *         - next

@@ -19,27 +19,27 @@ import { ServiceController } from "./ServiceController.js"
  * @returns 
  */
 export function createControllers(services, config) {
-  const { bookQuery, bookCommand, bookDetailQuery } = services;
-  const { tagQuery, tagCommand } = services;
+    const { bookQuery, bookCommand, bookDetailQuery } = services;
+    const { tagQuery, tagCommand } = services;
 
-  //注意：路由聚合器的设计要求了，路由对应的控制器必须是路由模块名字的小骆峰名字。即：abcRouter必须对应的控制器为abc。
-  return {
-    book: new BookController(bookQuery, bookCommand, bookDetailQuery),
-    webBook: new WebBookController(services.webBookQuery, null, services.webBookDetailQuery),
-    volume: new VolumeController(services.volumeQuery, services.volumeCommand),
-    chapter: new ChapterController(services.chapterQuery, services.chapterCommand),
-    tag: new TagController(tagQuery, tagCommand),
-    font: new FontController(services.font, null),
-    reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
+    //注意：路由聚合器的设计要求了，路由对应的控制器必须是路由模块名字的小骆峰名字。即：abcRouter必须对应的控制器为abc。
+    return {
+        book: new BookController(bookQuery, bookCommand, bookDetailQuery),
+        webBook: new WebBookController(services.webBookQuery, null, services.webBookDetailQuery),
+        volume: new VolumeController(services.volumeQuery, services.volumeCommand),
+        chapter: new ChapterController(services.chapterQuery, services.chapterCommand),
+        tag: new TagController(tagQuery, tagCommand),
+        font: new FontController(services.font),
+        reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
 
-    ruleForWeb: new RuleForWebController(services.ruleForWebQuery, services.ruleForWebCommand),
+        ruleForWeb: new RuleForWebController(services.ruleForWebQuery, services.ruleForWebCommand),
 
-    assets: new AssetsController(services.assetsQuery, services.assetsCommand),
-    email: new EmailController(services.email),
+        assets: new AssetsController(services.assetsQuery, services.assetsCommand),
+        email: new EmailController(services.email),
 
-    export: new ExportController(services.task),
-    service: new ServiceController(services.serviceQuery),
-    
-    swagger: new SwaggerController(config),
-  };
+        export: new ExportController(services.task),
+        service: new ServiceController(services.serviceQuery),
+
+        swagger: new SwaggerController(config),
+    };
 }

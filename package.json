@@ -1,25 +1,25 @@
 {
-  "name": "ebook-api",
-  "version": "4.0.0",
-  "type": "module",
-  "description": "新分层架构的电子书管理系统 (V4)",
-  "scripts": {
-    "start": "node src/app.js",
-    "dev": "node --watch src/app.js",
-    "swagger": "node scripts/generate-swagger.js",
-    "db": "cp -f data/latest.sqlite data/dev.sqlite"
-  },
-  "dependencies": {
-    "@koa/router": "^15.7.0",
-    "@publiwrite/html-to-epub": "^0.0.28",
-    "koa": "^3.2.1",
-    "koa-body": "^8.0.0",
-    "koa-static": "^5.0.0",
-    "nodemailer": "^9.0.5",
-    "sequelize": "^6.32.1",
-    "sharp": "^0.35.3",
-    "socket.io": "^4.8.3",
-    "sqlite3": "^6.0.1",
-    "swagger-jsdoc": "^6.2.8"
-  }
+    "name": "ebook-api",
+    "version": "4.0.0",
+    "type": "module",
+    "description": "新分层架构的电子书管理系统 (V4)",
+    "scripts": {
+        "start": "node src/app.js",
+        "dev": "node --watch src/app.js",
+        "swagger": "node scripts/generate-swagger.js",
+        "db": "cp -f data/latest.sqlite data/dev.sqlite"
+    },
+    "dependencies": {
+        "@koa/router": "^15.7.0",
+        "@publiwrite/html-to-epub": "^0.0.28",
+        "koa": "^3.2.1",
+        "koa-body": "^8.0.0",
+        "koa-static": "^5.0.0",
+        "nodemailer": "^9.0.5",
+        "sequelize": "^6.32.1",
+        "sharp": "^0.35.3",
+        "socket.io": "^4.8.3",
+        "sqlite3": "^6.0.1",
+        "swagger-jsdoc": "^6.2.8"
+    }
 }

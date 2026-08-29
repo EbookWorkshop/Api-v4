@@ -35,6 +35,7 @@ import { UserInputError } from "../../../../5-shared/errors/index.js";
  *         - rule
  *         - replace
  *
+ *   examples:
  *     ReviewRuleCreateRequest:
  *       summary: 创建规则的请求体示例
  *       value:

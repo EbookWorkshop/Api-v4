@@ -7,9 +7,9 @@ import { WebBookController } from '../controllers/WebBookController.js';
  * @returns 
  */
 export function createWebBookRoutes(bookController) {
-  const router = new Router({ prefix: '/library/webbook' });
-  router.get('/list', (ctx) => bookController.listBooks(ctx));
-  router.get('/', (ctx) => bookController.getBookById(ctx));
+    const router = new Router({ prefix: '/library/webbook' });
+    router.get('/list', (ctx) => bookController.listBooks(ctx));
+    router.get('/', (ctx) => bookController.getBookById(ctx));
 
-  return router;
+    return router;
 }

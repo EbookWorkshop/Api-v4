@@ -27,19 +27,19 @@ import { RuleForWebRepository } from './RuleForWebRepository.js';
  * }}
  */
 export function createRepositories(sequelize) {
-  return {
-    ebookRepository: new EbookRepository(sequelize),
-    systemConfigRepository: new SystemConfigRepository(sequelize),
-    tagRepository: new TagRepository(sequelize),
-    fontRepository: new FontRepository(sequelize),
+    return {
+        ebookRepository: new EbookRepository(sequelize),
+        systemConfigRepository: new SystemConfigRepository(sequelize),
+        tagRepository: new TagRepository(sequelize),
+        fontRepository: new FontRepository(sequelize),
 
-    indexRepository: new IndexRepository(sequelize),
-    chapterRepository: new ChapterRepository(sequelize),
-    volumeRepository: new VolumeRepository(sequelize),
+        indexRepository: new IndexRepository(sequelize),
+        chapterRepository: new ChapterRepository(sequelize),
+        volumeRepository: new VolumeRepository(sequelize),
 
-    webBookRepository: new WebBookRepository(sequelize),
+        webBookRepository: new WebBookRepository(sequelize),
 
-    reviewRuleRepository: new ReviewRuleRepository(sequelize),
-    ruleForWebRepository: new RuleForWebRepository(sequelize),
-  };
+        reviewRuleRepository: new ReviewRuleRepository(sequelize),
+        ruleForWebRepository: new RuleForWebRepository(sequelize),
+    };
 }

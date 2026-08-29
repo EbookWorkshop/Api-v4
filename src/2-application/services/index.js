@@ -19,6 +19,7 @@ import { NodemailerEmailSender } from '../../4-infrastructure/email/NodemailerEm
 
 import { FontService } from './FontService.js';
 import { FileSystemScanner } from '../../4-infrastructure/server/adapters/FileSystemScanner.js';
+import { FileSystemWriter } from '../../4-infrastructure/server/adapters/FileSystemWriter.js';
 
 import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
 import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
@@ -40,61 +41,61 @@ import { ServiceQueryService } from './ServiceQueryService.js';
  * @returns 
  */
 export function createServices(repositories, databaseTransaction, workerPool, svr, eventManager, config = {}) {
-  const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
-  const { tagRepository, systemConfigRepository, } = repositories;
+    const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
+    const { tagRepository, systemConfigRepository, } = repositories;
 
-  const bookDetailQueryService = new BookDetailQueryService(ebookRepository, volumeRepository, indexRepository, chapterRepository);
+    const bookDetailQueryService = new BookDetailQueryService(ebookRepository, volumeRepository, indexRepository, chapterRepository);
 
-  // ========== 基础服务 ==========
-  const systemConfigService = new SystemConfigService(systemConfigRepository);
+    // ========== 基础服务 ==========
+    const systemConfigService = new SystemConfigService(systemConfigRepository);
 
-  // ========== 字体服务（依赖 systemConfigService + 配置路径） ==========
-  const fontDirPath = config?.font.path;
-  const fontUrlPrefix = "/font";
-  const fileScanner = new FileSystemScanner(path.join(process.cwd(), config?.repository.path));
-  // const fileWriter = new FileSystemWriter(path.join(process.cwd(), config?.repository.path));
-  const fontService = new FontService(
-    systemConfigService,
-    fontDirPath,
-    fontUrlPrefix,
-    fileScanner
-  );
+    // ========== 字体服务（依赖 systemConfigService + 配置路径） ==========
+    const fileScanner = new FileSystemScanner(path.join(process.cwd(), config?.repository.path));
+    const fileWriter = new FileSystemWriter(path.join(process.cwd(), config?.repository.path));
 
-  const emailSender = new NodemailerEmailSender();
+    const fontService = new FontService(
+        systemConfigService,
+        fileScanner,
+        fileWriter,
+        config.font.path,        //字体目录路径
+        '/font'
+    );
 
-  return {
-    bookQuery: new BookQueryService(ebookRepository),
-    bookDetailQuery: bookDetailQueryService,
-    bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction),
+    const emailSender = new NodemailerEmailSender();
 
-    webBookQuery: new WebBookQueryService(repositories.webBookRepository),
-    webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
+    return {
+        bookQuery: new BookQueryService(ebookRepository),
+        bookDetailQuery: bookDetailQueryService,
+        bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction),
 
-    volumeQuery: new VolumeQueryService(volumeRepository),
-    volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),
+        webBookQuery: new WebBookQueryService(repositories.webBookRepository),
+        webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
 
-    chapterQuery: new ChapterQueryService(chapterRepository),
-    chapterCommand: new ChapterCommandService(chapterRepository, databaseTransaction),
+        volumeQuery: new VolumeQueryService(volumeRepository),
+        volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),
 
-    tagQuery: new TagQueryService(tagRepository),
-    tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),
+        chapterQuery: new ChapterQueryService(chapterRepository),
+        chapterCommand: new ChapterCommandService(chapterRepository, databaseTransaction),
 
-    systemConfig: systemConfigService,
-    email: new EmailService(emailSender, systemConfigService, databaseTransaction, eventManager),
-    font: fontService,
+        tagQuery: new TagQueryService(tagRepository),
+        tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),
 
-    reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
-    reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
+        systemConfig: systemConfigService,
+        email: new EmailService(emailSender, systemConfigService, databaseTransaction, eventManager),
+        font: fontService,
 
-    ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository),
+        reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
+        reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
 
-    assetsQuery: new AssetsQueryService(fileScanner, config),
+        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository),
 
-    task: new TaskSchedulerService(workerPool),
+        assetsQuery: new AssetsQueryService(fileScanner, config),
 
-    serviceQuery: new ServiceQueryService(config, svr),
-    // bookExport: bookExportService,
-  };
+        task: new TaskSchedulerService(workerPool),
+
+        serviceQuery: new ServiceQueryService(config, svr),
+        // bookExport: bookExportService,
+    };
 }
 // console.warn("TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js");
 // /*

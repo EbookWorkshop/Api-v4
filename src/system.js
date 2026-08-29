@@ -44,10 +44,10 @@ const controllers = createControllers(services, config);
 const app = new Koa();
 // 解析请求体（必须在路由前）
 app.use(koaBody({
-  multipart: true,
-  formLimit: '50mb',
-  jsonLimit: '50mb',
-  textLimit: '50mb',
+    multipart: true,
+    formLimit: '50mb',
+    jsonLimit: '50mb',
+    textLimit: '50mb',
 }));
 // 4.2 装配 HTTP 层（返回原生 Server）
 const httpServer = setupHttpServer(app, config, controllers);
@@ -59,19 +59,19 @@ const io = setupWebsocket(httpServer, services, config);
 // 5. 数据库同步与启动（开发环境）
 // ============================================================
 async function initializeDatabase() {
-  /**
-   * alter: false   默认，同步并创建不存在的表
-   * alter: true	  尝试使用Alter修改表结构以适配
-   * force: true	  无论什么情况都删表重建
-   */
-  await sequelize.sync();//{ alter: true, force: false }
-  if (config.env === 'development') {
-    console.log('✅ 数据库表结构已同步 (development)');
-  }
+    /**
+     * alter: false   默认，同步并创建不存在的表
+     * alter: true	  尝试使用Alter修改表结构以适配
+     * force: true	  无论什么情况都删表重建
+     */
+    await sequelize.sync();//{ alter: true, force: false }
+    if (config.env === 'development') {
+        console.log('✅ 数据库表结构已同步 (development)');
+    }
 }
 
 async function closeDatabase() {
-  await miniCore.close();
+    await miniCore.close();
 }
 
 export { app, httpServer, io, config, initializeDatabase, closeDatabase };

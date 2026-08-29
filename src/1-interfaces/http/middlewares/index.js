@@ -14,10 +14,10 @@ export { createStaticServer } from "./staticServer.js"
  * @param {*} config 
  */
 export function registerPreResponseMiddlewares(app, config) {
-  // 洋葱模型：从外到内
-  app.use(createErrorHandlerMiddleware(config));
-  app.use(createCorsMiddleware());
-  app.use(createLoggerMiddleware(config));
+    // 洋葱模型：从外到内
+    app.use(createErrorHandlerMiddleware(config));
+    app.use(createCorsMiddleware());
+    app.use(createLoggerMiddleware(config));
 }
 
 /**
@@ -26,5 +26,5 @@ export function registerPreResponseMiddlewares(app, config) {
  * @param {*} config 
  */
 export function registerPostResponseMiddlewares(app, config) {
-  app.use(createResponseWrapperMiddleware());
+    app.use(createResponseWrapperMiddleware());
 }

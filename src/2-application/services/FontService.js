@@ -1,79 +1,121 @@
 // src/2-application/services/FontService.js
+import path from 'node:path';
 import { SYSTEM_DEFAULT_FONT } from '../../3-domain/constants/SystemConfigGroup.js';
-import { IFileScanner } from '../ports/IFileScanner.js';
-
-import path from "node:path";
+import { AppError, UserInputError } from '../../5-shared/errors/index.js';
 
 export class FontService {
-  #systemConfigService;
-  #fontDirPath;          // 字体目录的绝对路径
-  #staticUrlPrefix;      // 静态资源 URL 前缀（如 '/static'）
-  #fileScanner;
+    #systemConfigService;
+    #fileScanner;
+    #fileWriter;
+    #fontDir;          // 字体目录相对于仓库根目录的相对路径，如 'font'
+    #staticUrlPrefix;  // 例如 '/font'
 
-  /**
-   * 
-   * @param {*} systemConfigService 
-   * @param {*} fontDirPath 字体目录与资源目录的相对路径
-   * @param {*} staticUrlPrefix 
-   * @param {IFileScanner} fileScanner 
-   */
-  constructor(systemConfigService, fontDirPath, staticUrlPrefix = '/font', fileScanner) {
-    this.#systemConfigService = systemConfigService;
-    this.#fontDirPath = fontDirPath;
-    this.#staticUrlPrefix = staticUrlPrefix;
-    this.#fileScanner = fileScanner;
-  }
-
-  /**
-   * 获取当前系统使用的 UI 字体
-   * @returns {Promise<{ name: string, url: string } | null>}
-   */
-  async getUIFont() {
-    // 1. 从配置中读取字体名
-    const fontName = await this.#systemConfigService.getConfig(SYSTEM_DEFAULT_FONT, 'defaultUIFont');
-
-    if (!fontName) {
-      // 如果未配置，可以返回默认字体或 null
-      return { name: "楷体" };
+    /**
+     * @param {SystemConfigService} systemConfigService
+     * @param {IFileScanner} fileScanner
+     * @param {IFileWriter} fileWriter
+     * @param {string} fontDir - 字体目录相对路径（如 'font'）
+     * @param {string} staticUrlPrefix - 静态资源前缀（如 '/font'）
+     */
+    constructor(systemConfigService, fileScanner, fileWriter, fontDir, staticUrlPrefix = '/font') {
+        this.#systemConfigService = systemConfigService;
+        this.#fileScanner = fileScanner;
+        this.#fileWriter = fileWriter;
+        this.#fontDir = fontDir;
+        this.#staticUrlPrefix = staticUrlPrefix;
     }
 
-    // 2. 在字体目录中查找匹配的文件（带扩展名）
-    const matchedFile = await this.#fileScanner.findFileByBasename(this.#fontDirPath, fontName);
-    if (!matchedFile) {
-      // 如果文件不存在，可以记录警告并返回 null
-      console.warn(`Font file not found for: ${fontName}`);
-      return null;
+    // ---------- 查询 ----------
+    async getFontList() {
+        const fontFileTypes = ['ttf', 'fon', 'otf', 'woff', 'woff2', 'ttc', 'dfont'];
+        const list = await this.#fileScanner.listFiles(this.#fontDir, {
+            filetype: fontFileTypes,
+            detail: true,
+        });
+        if (!list) return [];
+        return list.map((item) => ({
+            name: item.name,
+            url: path.join(this.#staticUrlPrefix, item.file),
+            size: item.size,
+            createTime: item.createTime,
+        }));
     }
 
-    // 3. 构建 URL
-    const url = `${this.#staticUrlPrefix}/${matchedFile}`;
+    async getReadingFont() {
+        return await this.#systemConfigService.getConfig(SYSTEM_DEFAULT_FONT, 'defaultReadingFont');
+    }
 
-    return {
-      name: fontName,
-      url: url,
-    };
-  }
+    async getUIFont() {
+        const fontName = await this.#systemConfigService.getConfig(SYSTEM_DEFAULT_FONT, 'defaultUIFont');
+        if (!fontName) return null;
+        // 找到实际文件路径
+        const matched = await this.#fileScanner.findFileByBasename(this.#fontDir, fontName);
+        if (!matched) {
+            // 文件丢失，返回名称但 URL 为空
+            return { name: fontName, url: null };
+        }
+        return {
+            name: fontName,
+            url: path.join(this.#staticUrlPrefix, matched),
+        };
+    }
 
-  /**
-   * 列出字体目录下所有字体文件
-   */
-  async getFontList() {
-    const fontFileType = ["ttf", "fon", "otf", "woff", "woff2", "ttc", "dfont"];
-    const fontList = await this.#fileScanner.listFiles(this.#fontDirPath, { filetype: fontFileType, detail: true });
-    if (!fontList) return [];
-    return fontList.map(({ name, size, ...fon }) => ({
-      url: path.join(this.#staticUrlPrefix, fon.file),
-      size,
-      name
-    }));
-  }
+    // ---------- 命令 ----------
+    async uploadFont(file) {
+        if (!file) throw new UserInputError('未提供字体文件');
+        const fileName = file.originalFilename || file.name;
+        if (!fileName) throw new UserInputError('文件名无效');
+        const savePath = path.join(this.#fontDir, fileName);
+        await this.#fileWriter.saveFile(savePath, file.filepath, 'file'); // fileWriter 需支持从临时路径复制
+        return { fileName, path: savePath };
+    }
 
-  /**
-   * 获得阅读字体
-   * @returns 字体名（文件名）
-   */
-  async getFontReading() {
-    const fontName = await this.#systemConfigService.getConfig(SYSTEM_DEFAULT_FONT, 'defaultReadingFont');
-    return fontName;
-  }
+    async deleteFont(fontName) {
+        if (!fontName) throw new UserInputError('字体名不能为空');
+        const fullPath = path.join(this.#fontDir, fontName);
+        // 检查是否存在
+        const list = await this.#fileScanner.listFiles(this.#fontDir, { filetype: null, detail: false });
+        if (!list || !list.includes(fontName)) {
+            throw new AppError(`字体文件 ${fontName} 不存在`, 404);
+        }
+        // 删除文件
+        await this.#fileWriter.deleteFile(fullPath);
+        return true;
+    }
+
+    async renameFont(oldName, newName) {
+        if (!oldName || !newName) throw new UserInputError('原文件名和新文件名都不能为空');
+        const ext = path.extname(oldName);
+        const newFull = newName + ext; // 保留原扩展名
+        const oldPath = path.join(this.#fontDir, oldName);
+        const newPath = path.join(this.#fontDir, newFull);
+        // 检查旧文件是否存在
+        const list = await this.#fileScanner.listFiles(this.#fontDir, { filetype: null, detail: false });
+        if (!list || !list.includes(oldName)) {
+            throw new AppError(`原字体文件 ${oldName} 不存在`, 404);
+        }
+        await this.#fileWriter.renameFile(oldPath, newPath);
+        return { oldName, newName: newFull };
+    }
+
+    async setDefaultReadingFont(fontName) {
+        if (!fontName) throw new UserInputError('字体名不能为空');
+        // 验证字体存在
+        const list = await this.#fileScanner.listFiles(this.#fontDir, { filetype: null, detail: false });
+        if (!list || !list.includes(fontName)) {
+            throw new AppError(`字体文件 ${fontName} 不存在`, 404);
+        }
+        await this.#systemConfigService.setConfig(SYSTEM_DEFAULT_FONT, 'defaultReadingFont', fontName);
+        return { fontName };
+    }
+
+    async setDefaultUIFont(fontName) {
+        if (!fontName) throw new UserInputError('字体名不能为空');
+        const list = await this.#fileScanner.listFiles(this.#fontDir, { filetype: null, detail: false });
+        if (!list || !list.includes(fontName)) {
+            throw new AppError(`字体文件 ${fontName} 不存在`, 404);
+        }
+        await this.#systemConfigService.setConfig(SYSTEM_DEFAULT_FONT, 'defaultUIFont', fontName);
+        return { fontName };
+    }
 }

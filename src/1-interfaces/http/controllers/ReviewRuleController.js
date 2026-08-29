@@ -116,7 +116,7 @@ export class ReviewRuleController {
      *       - Review - Rule —— 自助校阅 - 规则库
      *       - Review
      *     parameters:
-     *       - $ref: '#/components/parameters/IdQuery'
+     *       - $ref: '#/components/parameters/IdRequest'
      *     responses:
      *       200:
      *         description: 删除成功，返回统一成功信息
