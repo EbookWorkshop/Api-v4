@@ -39,6 +39,12 @@ export class AssetsController {
         ctx.body = await this.#assetsService.listArchiveBooks();
     }
 
+    async renameFile(ctx) {
+        const { file, name } = ctx.request.body;
+        const result = await this.#assetsService.renameFile(file, name);
+        ctx.body = result;
+    }
+
     /**
      * @swagger
      * /assets/archive/book/{name}:
