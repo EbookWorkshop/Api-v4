@@ -15,7 +15,7 @@ export class FileSystemWriter extends IFileWriter {
      * @returns {string} 实际存储路径
      */
     async saveFile(filePath, data, format = "") {
-        let pathArray = [process.cwd(), this.#repositoryPath];
+        let pathArray = [this.#repositoryPath];
         if (typeof (filePath) === "string") pathArray.push(filePath);
         else if (Array.isArray(filePath)) pathArray.push(...filePath);
         const tempFile = path.join(...pathArray);

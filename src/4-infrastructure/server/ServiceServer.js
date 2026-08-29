@@ -8,7 +8,7 @@ import { VERSION_FILE } from "../../3-domain/constants/System.js";
 import { toMB_Unit, toGBStr } from "../../5-shared/utils/fileSize.js"
 
 
-//因为npm outdated会以失败退出码反馈是否有升级，node的promisify不能用，手搓一个从stdout读取内容。
+//NOTE: 因为npm outdated会以失败退出码反馈是否有升级，node的promisify不能用，手搓一个从stdout读取内容。
 const promisify = (fun) => {
     return (cmd) => {
         return new Promise((resolve, reject) => {
@@ -65,11 +65,11 @@ export class ServiceServer {
                 },
             }
             const result = await Promise.all([
-                execAsync("pnpm outdated --json", runOption),        //注意：这个命令在有包可更新时，会以1作为退出码（process.exit(1)）在系统底层会认为命令出错从而触发reject。但stdout输出是正常的，直接采用即可。
+                execAsync("pnpm outdated --json", runOption),        //NOTE: 这个命令在有包可更新时，会以1作为退出码（process.exit(1)）在系统底层会认为命令出错从而触发reject。但stdout输出是正常的，直接采用即可。
                 execAsync("pnpm list --json --depth=0", runOption)
             ]);
             const [outdata, packageList] = result.map((j) => JSON.parse(j));
-            const packageInfo = Object.assign({}, packageList[0].dependencies);//注意，pnpm返回的是数组，npm返回的是对象，修改命令要注意调整取数方式
+            const packageInfo = Object.assign({}, packageList[0].dependencies);//NOTE: pnpm返回的是数组，npm返回的是对象，修改命令要注意调整取数方式
             for (let pack of Object.keys(outdata)) packageInfo[pack] = Object.assign(packageInfo[pack], outdata[pack]);
 
             await fs.writeFile(VERSION_FILE, JSON.stringify(packageInfo));

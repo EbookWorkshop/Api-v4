@@ -7,7 +7,7 @@ export class IFileWriter {
     }
 
     /**
-     * 写入文件，注意：是从仓库开始的相对路径
+     * 写入文件，NOTE: 是从仓库开始的相对路径
      * @param {string|Array<string>} path 存储路径，若为数组则是路径目录
      * @param {*} data 写入数据
      * @param {*} format 写入格式，如 base64

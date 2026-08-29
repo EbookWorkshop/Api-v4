@@ -1,5 +1,5 @@
 /**
- *  # 注意： 若需要支持跨线程的消息，不能使用Symbol定义！
+ *  # NOTE:  若需要支持跨线程的消息，不能使用Symbol定义！
  * 
  *     Symbol("a")!==Symbol("a")
  *     Symbol.for("a")===Symbol.for("a")

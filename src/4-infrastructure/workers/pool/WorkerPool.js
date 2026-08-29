@@ -238,7 +238,7 @@ export class WorkerPool {
             curTask.status = TASK_STATUS.EXECUTING;
             this.#workerData.set(worker, {
                 [kTaskCallback]: callback,
-                [kTaskData]: curTask,//注意：要传对象引用，便于跟进更新对象状态（不要传taskData）。
+                [kTaskData]: curTask,//NOTE: 要传对象引用，便于跟进更新对象状态（不要传taskData）。
                 [kTaskStartTime]: performance.now(),
             })
 

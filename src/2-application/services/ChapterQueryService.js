@@ -23,7 +23,7 @@ export class ChapterQueryService {
         if (!cpt) throw new AppError('章节不存在', 404);
         const { Ebook: book, ...chapter } = cpt;
         return {
-            Book: { "FontFamily": "", ...book },//TODO:修复FontFamily的耦合
+            Book: { "FontFamily": "", ...book },//TODO: 修复FontFamily的耦合
             ...chapter
         }
     }

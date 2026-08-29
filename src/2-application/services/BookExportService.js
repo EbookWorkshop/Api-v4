@@ -83,7 +83,7 @@ export class BookExportService {
             const { volumeIds, chapterIds, embedBookName, coverImageData, ...rest } = setting;
             let showChapters = chapterIds || [];
 
-            //获取章节——TODO：应用字典校阅功能
+            //获取章节——TODO: 应用字典校阅功能
             if (volumeIds && volumeIds.length > 0) {
                 showChapters = await this.#chapterQueryService.listChaptersByVolumes(bookId, volumeIds);
             } else if (chapterIds && chapterIds.length > 0) {
@@ -113,7 +113,7 @@ export class BookExportService {
                 cover: coverPath,
                 introduction: introduction?.Content,
                 chapters: chapterAftTyp,
-                setting: rest,           //TODO：格式、排版、字体等设置
+                setting: rest,           //格式、排版、字体等设置
             });
 
             // 通过工厂接口，运行时获取对应的生成器实例
@@ -177,7 +177,7 @@ export class BookExportService {
 
     /**
      * 配置封面
-     * # TODO::封面逻辑较为复杂，考虑提取为 CoverService
+     * # TODO: 封面逻辑较为复杂，考虑提取为 CoverService
      * @param {*} coverImg 封面原设置
      * @param {boolean} embedBookName 是否显示嵌入标题的封面
      * @param {string} coverImageData Base64 格式的封面图片

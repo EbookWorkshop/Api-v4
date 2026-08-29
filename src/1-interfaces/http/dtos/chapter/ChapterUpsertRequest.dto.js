@@ -35,8 +35,6 @@ import { UserInputError } from "../../../../5-shared/errors/index.js"
  *         - BookId
  *         - Title
  *         - Content
- *       # 注意：IndexId 仅在修改时需要，但非必填，在描述中说明
- *       # 实际 required 中不包含 IndexId
  */
 export class ChapterUpsertRequest {
     static fromBody(chapter) {

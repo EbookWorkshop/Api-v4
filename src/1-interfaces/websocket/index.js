@@ -19,7 +19,7 @@ export function setupWebsocket(httpServer, services) {
     });
 
     // 1. 全局 Socket 中间件（例如：认证鉴权）
-    // 注意：这是 Socket.IO 自己的中间件，不是 Koa 中间件
+    // NOTE: 这是 Socket.IO 自己的中间件，不是 Koa 中间件
     // io.use((socket, next) => { ... });
 
     // 2. 监听连接事件

@@ -12,12 +12,6 @@ export class EventManager {
      */
     constructor(emitter) {
         this.#emitter = emitter;
-
-        // if (!isMainThread) {
-        //   // TODO：可以尝试将截获到的消息，通过子线程用线程间通讯转发到主线程，再由主线程通过消息模块转发出去
-        //   console.warn("!!!注意!!! 检测到子线程引用了单例模块。子线程使用独立的单例，与主线程的消息模块并不互通。");
-        //   console.trace();
-        // }
     }
 
     /**
@@ -36,12 +30,6 @@ export class EventManager {
      * @param {string|symbol} eventName
      */
     emit(eventName, ...args) {
-        // if (!isMainThread) {        //在子线程中发信息
-        //   console.info("尝试在子线程中发消息：\n", eventName, ...args);
-        //   console.warn("!!!注意!!!尝试在子线程中使用消息模块！子线程使用独立的单例，与主线程的消息模块并不互通。");
-        //   console.trace();
-        //   return false;
-        // }
         return this.#emitter.emit(eventName, ...args);
     }
 

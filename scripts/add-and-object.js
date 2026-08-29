@@ -130,7 +130,7 @@ export class ${_ObjName}QueryService {
 }`, { flag: 'wx' });
 
     fs.appendFileSync(path.resolve(__dirname, "src/2-application/services/index.js"), `
-console.warn("TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js");
+console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
 /*
 import { ${_ObjName}QueryService } from './${_ObjName}QueryService.js';
 ${_objName}Query: new ${_ObjName}QueryService(repositories.${_objName}Repository),
@@ -163,7 +163,7 @@ export class ${_ObjName}CommandService {
 }`, { flag: 'wx' });
 
     fs.appendFileSync(path.resolve(__dirname, "src/2-application/services/index.js"), `
-console.warn("TODO： 在服务层桶文件中注册新服务 //src/2-application/services/index.js");
+console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
 /*
 import { ${_ObjName}CommandService } from './${_ObjName}CommandService.js';
 ${_objName}Command: new ${_ObjName}CommandService(repositories.${_objName}Repository),
@@ -185,7 +185,7 @@ export class ${_ObjName}Repository {
     #${_ObjName}Model;
 
     constructor(sequelize) {
-        this.#${_ObjName}Model = sequelize.models.${_ObjName};//TODO：检查对象名与模型的实际区别
+        this.#${_ObjName}Model = sequelize.models.${_ObjName};//TODO: 检查对象名与模型的实际区别
     }
 }`, { flag: 'wx' });
 
