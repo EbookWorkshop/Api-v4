@@ -90,4 +90,29 @@ export class RuleForWebController {
         const result = await this.#ruleForWebQueryService.getRulesByHost(host);
         ctx.body = result;
     }
+
+    /**
+     * @swagger
+     * /services/botrule/export:
+     *   get:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *       - BotRule
+     *     summary: 导出指定站点的规则
+     *     description: 导出指定站点的规则——用于备份，数据迁移等
+     *     parameters:
+     *       - $ref: '#/components/parameters/BotRuleHostQuery'
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    async exportRules(ctx) {
+        const host = ctx.query.host;
+        ctx.body = JSON.stringify(await this.#ruleForWebQueryService.getRulesByHost(host));
+        ctx.state.skipResponseWrapper = true;
+        ctx.set("Content-Type", "application/octet-stream");
+        ctx.set("Content-Disposition", `attachment;filename=EBW_botrule_export_${host}.json`);
+    }
 }
