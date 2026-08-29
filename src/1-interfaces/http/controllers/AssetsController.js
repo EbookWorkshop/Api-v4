@@ -46,7 +46,8 @@ export class AssetsController {
      *     summary: 删除归档文件
      *     description: 根据文件名删除指定的归档文件（统一包装格式）
      *     tags:
-     *       - Archive
+     *       - Assets —— 资源管理
+     *       - Assets
      *     parameters:
      *       - $ref: '#/components/parameters/ArchiveNameParam'
      *     responses:

@@ -12,6 +12,7 @@ import { EmailController } from './EmailController.js';
 import { RuleForWebController } from "./RuleForWebController.js"
 import { ExportController } from './ExportController.js';
 import { ServiceController } from "./ServiceController.js"
+import { BookmarkController } from "./BookmarkController.js"
 
 /**
  * 
@@ -30,6 +31,7 @@ export function createControllers(services, config) {
         chapter: new ChapterController(services.chapterQuery, services.chapterCommand),
         tag: new TagController(tagQuery, tagCommand),
         font: new FontController(services.font),
+        bookmark: new BookmarkController(services.bookmark),
         reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
 
         ruleForWeb: new RuleForWebController(services.ruleForWebQuery, services.ruleForWebCommand),

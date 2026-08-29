@@ -7,6 +7,7 @@ import { VolumeQueryService } from './VolumeQueryService.js';
 import { VolumeCommandService } from './VolumeCommandService.js';
 import { ChapterQueryService } from "./ChapterQueryService.js"
 import { ChapterCommandService } from './ChapterCommandService.js';
+import { BookmarkService } from './BookmarkService.js';
 
 import { WebBookQueryService } from "./WebBookQueryService.js"
 import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
@@ -79,6 +80,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
 
         tagQuery: new TagQueryService(tagRepository),
         tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),
+        bookmark: new BookmarkService(repositories.bookmarkRepository),
 
         systemConfig: systemConfigService,
         email: new EmailService(emailSender, systemConfigService, databaseTransaction, eventManager),
