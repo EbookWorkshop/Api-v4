@@ -26,4 +26,20 @@ export class IFileScanner {
     async listFiles(sourcePath, options = {}) {
         throw new Error('接口方法尚未实现');
     }
+
+    /**
+     * 检查文件是否存在
+     * @param {*} filePath 文件路径
+     * @returns {boolean} 文件是否存在
+     */
+    async accessFile(filePath) {
+        throw new Error('接口方法尚未实现');
+    }
+
+    /**
+     * 获取服务器地址
+     * @param {Array<string>|string} dir 路径
+     * @returns 
+     */
+    mapPath(dir) { throw new Error('接口方法尚未实现'); }
 }

@@ -104,6 +104,33 @@ export async function accessDir(dir) {
 }
 
 /**
+ * 
+ * @param {*} path 文件路径
+ * @returns {boolean} 是否存在
+ */
+export async function accessFile(path) {
+    try {
+        await fs.access(path);
+        return true;
+    } catch (err) {
+        return false
+    }
+}
+
+/**
+ * 获取服务器地址——相对仓库的路径
+ * @param {Array<string>|string} dir 
+ * @returns 
+ */
+export function mapPath(dir, basePath) {
+    const dirArray = [basePath];
+    if (Array.isArray(dir)) dirArray.push(...dir);
+    else dirArray.push(dir);
+    const relativePath = path.join(...dirArray);
+    return path.resolve(relativePath);
+}
+
+/**
  * 用流写
  * @param {*} stream 
  * @param {*} chunk 
@@ -130,4 +157,15 @@ export async function writeOnStream(stream, chunk) {
             stream.once('error', onError);
         });
     }
-} 
+}
+
+export async function deleteFile(filePath, basePath) {
+    const full = path.join(basePath, filePath);
+    await fs.unlink(full);
+}
+
+export async function renameFile(oldPath, newPath, basePath) {
+    const fullOld = path.join(basePath, oldPath);
+    const fullNew = path.join(basePath, newPath);
+    await fs.rename(fullOld, fullNew);
+}

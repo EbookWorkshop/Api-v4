@@ -1,6 +1,6 @@
 import path from "node:path";
 import sharp from "sharp";     //提供图像格式转换
-import { saveFile, accessDir } from '../drivers/fileSystemDriver.js';
+import { saveFile, accessDir, mapPath, deleteFile, renameFile } from '../drivers/fileSystemDriver.js';
 import { IFileWriter } from '../../../2-application/ports/IFileWriter.js';
 
 export class FileSystemWriter extends IFileWriter {
@@ -54,21 +54,14 @@ export class FileSystemWriter extends IFileWriter {
      * @returns 
      */
     mapPath(dir) {
-        const dirArray = [this.#repositoryPath];
-        if (Array.isArray(dir)) dirArray.push(...dir);
-        else dirArray.push(dir);
-        const relativePath = path.join(...dirArray);
-        return path.resolve(relativePath);
+        return mapPath(dir, this.#repositoryPath);
     }
 
     async deleteFile(filePath) {
-        const full = path.join(this.#repositoryPath, filePath);
-        await fs.unlink(full);
+        deleteFile(filePath, this.#repositoryPath);
     }
 
     async renameFile(oldPath, newPath) {
-        const fullOld = path.join(this.#repositoryPath, oldPath);
-        const fullNew = path.join(this.#repositoryPath, newPath);
-        await fs.rename(fullOld, fullNew);
+        renameFile(oldPath, newPath, this.#repositoryPath)
     }
 }

@@ -35,6 +35,7 @@ export class FontService {
         if (!list) return [];
         return list.map((item) => ({
             name: item.name,
+            file: item.file,
             url: path.join(this.#staticUrlPrefix, item.file),
             size: item.size,
             createTime: item.createTime,
@@ -71,13 +72,11 @@ export class FontService {
     }
 
     async deleteFont(fontName) {
-        if (!fontName) throw new UserInputError('字体名不能为空');
+        if (!fontName || fontName === 'undefined') throw new UserInputError('字体名不能为空');
         const fullPath = path.join(this.#fontDir, fontName);
+
         // 检查是否存在
-        const list = await this.#fileScanner.listFiles(this.#fontDir, { filetype: null, detail: false });
-        if (!list || !list.includes(fontName)) {
-            throw new AppError(`字体文件 ${fontName} 不存在`, 404);
-        }
+        if (! await this.#fileScanner.accessFile(fullPath)) throw new AppError(`字体文件 ${fontName} 不存在`, 404);
         // 删除文件
         await this.#fileWriter.deleteFile(fullPath);
         return true;
@@ -90,10 +89,7 @@ export class FontService {
         const oldPath = path.join(this.#fontDir, oldName);
         const newPath = path.join(this.#fontDir, newFull);
         // 检查旧文件是否存在
-        const list = await this.#fileScanner.listFiles(this.#fontDir, { filetype: null, detail: false });
-        if (!list || !list.includes(oldName)) {
-            throw new AppError(`原字体文件 ${oldName} 不存在`, 404);
-        }
+        if (! await this.#fileScanner.accessFile(oldPath)) throw new AppError(`字体文件 ${oldPath} 不存在`, 404);
         await this.#fileWriter.renameFile(oldPath, newPath);
         return { oldName, newName: newFull };
     }
