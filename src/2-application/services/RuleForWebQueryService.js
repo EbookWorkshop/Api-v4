@@ -78,4 +78,32 @@ export class RuleForWebQueryService {
         return rsl;
     }
 
+    async listRegisteredWebsites() {
+        const hosts = await this.listHosts();
+
+        const result = [];
+        for (const item of hosts) {
+            const rows = await this.#ruleForWebRepository.findHostUsing(item);
+            let maxCreatedAt = null;
+            if (rows && rows.length > 0) {
+                maxCreatedAt = rows[0].MaxCreatedAt || null;
+            }
+
+            const bookMap = new Map();
+            for (const r of rows) {
+                const bookId = r['WebBook.BookId'] || r.BookId;
+                const bookName = r['WebBook.Ebook.BookName'] || null;
+                if (bookId && !bookMap.has(bookId)) bookMap.set(bookId, bookName);
+            }
+
+            result.push({
+                Host: item,
+                BookCount: bookMap.size,
+                LastAddedTime: maxCreatedAt,
+                Books: Array.from(bookMap.entries()).map(([BookId, BookName]) => ({ BookId, BookName })),
+            });
+        }
+        return result;
+    }
+
 }

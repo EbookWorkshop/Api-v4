@@ -316,7 +316,7 @@ export class ChapterRepository {
         const replacements = [];//参数数组
         // const ids = [];
         orderData.forEach(({ indexId, newOrder }) => {
-            caseSql += ` WHEN ? THEN ?`;        //使用占位符
+            caseSql += ` WHEN ? THEN ?`;        //使用占位符        //防SQL注入
             replacements.push(indexId, newOrder);
         });
 

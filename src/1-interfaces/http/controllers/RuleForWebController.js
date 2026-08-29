@@ -115,4 +115,89 @@ export class RuleForWebController {
         ctx.set("Content-Type", "application/octet-stream");
         ctx.set("Content-Disposition", `attachment;filename=EBW_botrule_export_${host}.json`);
     }
+
+
+    /**
+     * @swagger
+     * /services/botrule/registeredwebsites:
+     *   get:
+     *     summary: 获取已注册的网站列表
+     *     description: 返回所有已配置规则的网站及其关联图书统计信息（统一包装格式）
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *       - BotRule
+     *     responses:
+     *       200:
+     *         description: 成功返回网站列表
+     *         content:
+     *           application/json:
+     *             schema:
+     *               allOf:
+     *                 - $ref: '#/components/schemas/ApiResponse'
+     *                 - type: object
+     *                   properties:
+     *                     data:
+     *                       type: array
+     *                       items:
+     *                         type: object
+     *                         properties:
+     *                           Host:
+     *                             type: string
+     *                             description: 网站主机名
+     *                             example: "www.example.com"
+     *                           BookCount:
+     *                             type: integer
+     *                             description: 该网站下已抓取的图书数量
+     *                             example: 2
+     *                           LastAddedTime:
+     *                             type: string
+     *                             format: date-time
+     *                             description: 最后添加时间（ISO 8601 格式）
+     *                             example: "2025-03-23 18:20:27.802 +00:00"
+     *                           Books:
+     *                             type: array
+     *                             items:
+     *                               type: object
+     *                               properties:
+     *                                 BookId:
+     *                                   type: integer
+     *                                   description: 图书 ID
+     *                                   example: 77
+     *                                 BookName:
+     *                                   type: string
+     *                                   description: 图书名称
+     *                                   example: "书籍一"
+     *                               required:
+     *                                 - BookId
+     *                                 - BookName
+     *                         required:
+     *                           - Host
+     *                           - BookCount
+     *                           - LastAddedTime
+     *                           - Books
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-29T16:00:00.000Z"
+     *               data:
+     *                 - Host: "www.example.com"
+     *                   BookCount: 2
+     *                   LastAddedTime: "2025-03-23 18:20:27.802 +00:00"
+     *                   Books:
+     *                     - BookId: 77
+     *                       BookName: "书籍一"
+     *                     - BookId: 78
+     *                       BookName: "书籍二"
+     *                 - Host: "blog.example.org"
+     *                   BookCount: 1
+     *                   LastAddedTime: "2025-04-10 09:15:00.000 +00:00"
+     *                   Books:
+     *                     - BookId: 80
+     *                       BookName: "示例书籍"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async listRegisteredWebsites(ctx) {
+        ctx.body = await this.#ruleForWebQueryService.listRegisteredWebsites();
+    }
 }

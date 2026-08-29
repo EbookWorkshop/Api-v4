@@ -10,6 +10,7 @@ export function createRuleForWebRoutes(ruleForWebController) {
     router.get('/', (ctx) => ruleForWebController.getBotRules(ctx));
     router.get('/export', (ctx) => ruleForWebController.exportRules(ctx));
     router.get('/hostlist', (ctx) => ruleForWebController.listBotRuleHosts(ctx));
+    router.get('/registeredwebsites', (ctx) => ruleForWebController.listRegisteredWebsites(ctx));
 
     return router;
 }
