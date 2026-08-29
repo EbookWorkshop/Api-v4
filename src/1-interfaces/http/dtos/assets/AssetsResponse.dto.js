@@ -79,3 +79,17 @@
  *         timestamp: "2026-08-20T14:00:00.000Z"
  *         data: []
  */
+
+/**
+ * @swagger
+ * components:
+ *   parameters:
+ *     ArchiveNameParam:
+ *       in: path
+ *       name: name
+ *       schema:
+ *         type: string
+ *       required: true
+ *       description: 要删除的归档文件名（如 "ewrdf.txt"）
+ *       example: "ewrdf.txt"
+ */

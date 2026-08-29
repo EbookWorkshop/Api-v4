@@ -1,17 +1,14 @@
 
-import { AssetsQueryService } from "../../../2-application/services/AssetsQueryService.js";
-// import { AssetsCommandService } from "../../../2-application/services/AssetsCommandService.js";
+import { AssetsService } from "../../../2-application/services/AssetsService.js";
+import { UserInputError } from "../../../5-shared/errors/UserInputError.js";
 
 export class AssetsController {
-    #assetsQueryService;
-    #assetsCommandService;
+    #assetsService;
     /**
-     * @param {AssetsQueryService} assetsQueryService 
-     * @param {AssetsCommandService} assetsCommandService 
+     * @param {AssetsService} assetsService 
      */
-    constructor(assetsQueryService, assetsCommandService) {
-        this.#assetsQueryService = assetsQueryService;
-        this.#assetsCommandService = assetsCommandService;
+    constructor(assetsService) {
+        this.#assetsService = assetsService;
     }
 
     /**
@@ -39,7 +36,57 @@ export class AssetsController {
      *         description: 服务器内部错误
      */
     async listArchiveBooks(ctx) {
-        ctx.body = await this.#assetsQueryService.listArchiveBooks();
+        ctx.body = await this.#assetsService.listArchiveBooks();
     }
 
+    /**
+     * @swagger
+     * /assets/archive/book/{name}:
+     *   delete:
+     *     summary: 删除归档文件
+     *     description: 根据文件名删除指定的归档文件（统一包装格式）
+     *     tags:
+     *       - Archive
+     *     parameters:
+     *       - $ref: '#/components/parameters/ArchiveNameParam'
+     *     responses:
+     *       200:
+     *         description: 删除成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-29T12:00:00.000Z"
+     *       400:
+     *         description: 参数错误（name 缺失或为空）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "文件名不能为空"
+     *               timestamp: "2026-08-29T12:00:00.000Z"
+     *       404:
+     *         description: 文件不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该文件"
+     *               timestamp: "2026-08-29T12:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async deleteArchiveFile(ctx) {
+        const fileName = ctx.params.name;
+        if (!fileName) throw UserInputError("文件名不能为空");
+        await this.#assetsService.deleteFile(fileName);
+        ctx.body = true;
+    }
 }

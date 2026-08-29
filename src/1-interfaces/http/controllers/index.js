@@ -34,7 +34,7 @@ export function createControllers(services, config) {
 
         ruleForWeb: new RuleForWebController(services.ruleForWebQuery, services.ruleForWebCommand),
 
-        assets: new AssetsController(services.assetsQuery, services.assetsCommand),
+        assets: new AssetsController(services.assets),
         email: new EmailController(services.email),
 
         export: new ExportController(services.task),

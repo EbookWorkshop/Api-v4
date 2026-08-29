@@ -26,7 +26,7 @@ import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
 
 import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 
-import { AssetsQueryService } from './AssetsQueryService.js';
+import { AssetsService } from './AssetsService.js';
 
 import { TaskSchedulerService } from "./TaskSchedulerService.js";
 import { ServiceQueryService } from './ServiceQueryService.js';
@@ -89,7 +89,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
 
         ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository),
 
-        assetsQuery: new AssetsQueryService(fileScanner, config),
+        assets: new AssetsService(fileScanner, fileWriter, config),
 
         task: new TaskSchedulerService(workerPool),
 
