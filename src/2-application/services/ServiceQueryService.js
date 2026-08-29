@@ -10,7 +10,11 @@ export class ServiceQueryService {
     }
 
     async getVersionInfo() {
-        this.#serviceServer.updateVersionInfo();
         return this.#serviceServer.version();
+    }
+    
+    async checkSiteAccessibility(host) {
+        return this.#serviceServer.checkSiteAccessibility(host)
+
     }
 }

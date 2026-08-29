@@ -1,5 +1,6 @@
 import os from "node:os";
 import path from "node:path";
+import https from "node:https";
 import fs from "node:fs/promises";
 import { exec } from 'node:child_process';
 // import { exec } from 'node:child_process/promises';  //当前版本ESM加载器不支持promises子路径。以后升级node可以尝试。
@@ -77,5 +78,51 @@ export class ServiceServer {
         catch (error) {
             if (this.#config.env === "development") console.warn("执行更新包版本信息出错，错误信息：", error);
         }
+    }
+
+    /**
+     * 检查网站是否可达
+     * @param {*} hostname 
+     * @returns 
+     */
+    async checkSiteAccessibility(hostname) {
+        return new Promise((resolve, reject) => {
+            hostname = hostname.replace(/https?:\/\//, ''); // 去掉http://或https://
+            // 发送HTTPs请求
+            https.get({ hostname, timeout: 5000 }, (response) => {
+                let html = "";
+                let resTitle = "";
+                const resUrl = response.headers.location || response.client._host;
+                response.on('data', (chunk) => {
+                    html += chunk;
+                });
+                response.on("end", () => {
+                    const title = html.match(/<title>([^<]+)<\/title>/);
+                    if (title?.length >= 2) resTitle = title[1];
+
+                    resolve({
+                        status: response.statusCode,
+                        result: false,
+                        location: resUrl,
+                        title: resTitle,
+                    });
+                });
+
+            }).on('error', (err) => {
+                // 如果请求失败，返回false
+                resolve({
+                    status: -500,
+                    result: false,
+                    error: err
+                });
+            }).on('timeout', () => {
+                // 如果请求超时，返回false
+                resolve({
+                    status: -555,
+                    title: "Time Out",
+                    result: false
+                });
+            });
+        });
     }
 }

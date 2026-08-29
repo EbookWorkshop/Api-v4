@@ -1,5 +1,6 @@
 
 import { ServiceQueryService } from "../../../2-application/services/ServiceQueryService.js";
+import { getHost } from "../../../5-shared/utils/site.js"
 
 export class ServiceController {
     #serviceQueryService;
@@ -34,5 +35,10 @@ export class ServiceController {
      */
     async getVersion(ctx) {
         ctx.body = await this.#serviceQueryService.getVersionInfo();
+    }
+
+    async checkSiteAccessibility(ctx) {
+        let host = getHost(ctx.query.host);
+        ctx.body = await this.#serviceQueryService.checkSiteAccessibility(host);
     }
 }
