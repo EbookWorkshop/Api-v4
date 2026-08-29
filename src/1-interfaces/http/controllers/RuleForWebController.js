@@ -45,7 +45,49 @@ export class RuleForWebController {
      *       500:
      *         description: 服务器内部错误
      */
-    async getBotRuleHostList(ctx) {
+    async listBotRuleHosts(ctx) {
         ctx.body = await this.#ruleForWebQueryService.listHosts();
+    }
+
+    /**
+     * @swagger
+     * /services/botrule:
+     *   get:
+     *     summary: 获取指定主机的 Bot 规则列表
+     *     description: 根据主机名返回该站点下的所有爬虫规则（统一包装格式）
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *       - BotRule
+     *     parameters:
+     *       - $ref: '#/components/parameters/BotRuleHostQuery'
+     *     responses:
+     *       200:
+     *         description: 成功返回规则列表
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BotRuleListResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/BotRuleListSuccess'
+     *               empty:
+     *                 $ref: '#/components/examples/BotRuleListEmpty'
+     *       400:
+     *         description: 参数错误（host 缺失）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "host 为必填参数"
+     *               timestamp: "2026-08-29T14:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async getBotRules(ctx) {
+        const host = ctx.query.host;
+        const result = await this.#ruleForWebQueryService.getRulesByHost(host);
+        ctx.body = result;
     }
 }

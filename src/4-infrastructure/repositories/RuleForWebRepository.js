@@ -18,4 +18,14 @@ export class RuleForWebRepository {
         });
         return hosts.map(item => item.Host);
     }
+
+    async finByHost(host) {
+        let rules = await this.#RuleForWebModel.findAll({
+            where: { Host: host },
+            raw: true,
+        });
+
+        return rules;
+    }
+
 }

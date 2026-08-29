@@ -7,7 +7,8 @@ import Router from '@koa/router';
  */
 export function createRuleForWebRoutes(ruleForWebController) {
     const router = new Router({ prefix: '/services/botrule' });
-    router.get('/hostlist', (ctx) => ruleForWebController.getBotRuleHostList(ctx));
+    router.get('/', (ctx) => ruleForWebController.getBotRules(ctx));
+    router.get('/hostlist', (ctx) => ruleForWebController.listBotRuleHosts(ctx));
 
     return router;
 }

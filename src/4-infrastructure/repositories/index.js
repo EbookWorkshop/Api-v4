@@ -10,6 +10,7 @@ import { BookmarkRepository } from './BookmarkRepository.js';
 import { ReviewRuleRepository } from './ReviewRuleRepository.js';
 
 import { RuleForWebRepository } from './RuleForWebRepository.js';
+import { ReviewDictionaryRepository } from './ReviewDictionaryRepository.js';
 
 /**
  * 仓储层工厂函数
@@ -43,5 +44,6 @@ export function createRepositories(sequelize) {
 
         reviewRuleRepository: new ReviewRuleRepository(sequelize),
         ruleForWebRepository: new RuleForWebRepository(sequelize),
+        dictionaryRepository: new ReviewDictionaryRepository(sequelize),
     };
 }

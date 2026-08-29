@@ -1,15 +1,28 @@
+import { getHost } from "../../5-shared/utils/site.js";
+import { WEBSITE_TIMEOUT, WEBSITE_SCRAPING, WEBSITE_USERAGENT } from "../../3-domain/constants/SystemConfigGroup.js";
 import { RuleForWebRepository } from '../../4-infrastructure/repositories/RuleForWebRepository.js';
+import { ReviewDictionaryRepository } from "../../4-infrastructure/repositories/ReviewDictionaryRepository.js";
 import { AppError, UserInputError } from "../../5-shared/errors/index.js"
+
+const DEFAULT_SCRAPING = "puppeteer";
 
 export class RuleForWebQueryService {
     /** @type {RuleForWebRepository} */
     #ruleForWebRepository;
+    /** @type {SystemConfigService} */
+    #systemConfigService;
+    /** @type {ReviewDictionaryRepository} */
+    #dictionaryRepository;
 
     /**
      * @param {RuleForWebRepository} ruleForWebRepository 
+     * @param {SystemConfigService} systemConfigService 
+     * @param {ReviewDictionaryRepository} dictionaryRepository 
      */
-    constructor(ruleForWebRepository) {
+    constructor(ruleForWebRepository, systemConfigService, dictionaryRepository) {
         this.#ruleForWebRepository = ruleForWebRepository;
+        this.#systemConfigService = systemConfigService;
+        this.#dictionaryRepository = dictionaryRepository;
     }
 
     /**
@@ -18,6 +31,51 @@ export class RuleForWebQueryService {
      */
     async listHosts() {
         return this.#ruleForWebRepository.listHosts();
+    }
+
+
+    async getRulesByHost(urlOrHost) {
+        let host = getHost(urlOrHost);
+        const rules = await this.#ruleForWebRepository.finByHost(host);
+        let rsl = rules.map(r => ({
+            host: r.Host,
+            ruleName: r.RuleName,
+            selector: r.Selector,
+            getContentAction: r.GetContentAction,
+            getUrlAction: r.GetUrlAction,
+            checkSetting: r.CheckSetting,
+            removeSelector: r.RemoveSelector ? r.RemoveSelector.split(",") : [],
+            type: r.Type
+        }));
+
+        // //超时设置
+        let timeout = await this.#systemConfigService.getConfig(WEBSITE_TIMEOUT, host);
+        if (timeout) {
+            rsl.push({
+                ruleName: "Timeout",
+                selector: timeout * 1,
+            })
+        }
+        let userAgent = await this.#systemConfigService.getConfig(WEBSITE_USERAGENT, host);
+        if (userAgent) {
+            rsl.push({
+                ruleName: "UserAgent",
+                selector: userAgent,
+            })
+        }
+        let scraping = await this.#systemConfigService.getConfig(WEBSITE_SCRAPING, host) || DEFAULT_SCRAPING;
+        rsl.push({
+            ruleName: "Scraping",
+            selector: scraping,
+        });
+
+        let dict = await this.#dictionaryRepository.GetDictionaryByURL(host);
+        if (dict)
+            rsl.push({
+                ruleName: "Dictionary",
+                data: dict
+            });
+        return rsl;
     }
 
 }
