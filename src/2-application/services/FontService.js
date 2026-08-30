@@ -43,7 +43,8 @@ export class FontService {
     }
 
     async getReadingFont() {
-        return await this.#systemConfigService.getConfig(SYSTEM_DEFAULT_FONT, 'defaultReadingFont');
+        const rF = await this.#systemConfigService.getConfig(SYSTEM_DEFAULT_FONT, 'defaultReadingFont');
+        return rF || "楷体";
     }
 
     async getUIFont() {

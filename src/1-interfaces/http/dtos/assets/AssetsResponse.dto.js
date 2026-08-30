@@ -93,3 +93,31 @@
  *       description: 要删除的归档文件名（如 "ewrdf.txt"）
  *       example: "ewrdf.txt"
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     RenameArchiveRequest:
+ *       type: object
+ *       description: 重命名归档文件的请求体
+ *       properties:
+ *         file:
+ *           type: string
+ *           description: 当前文件名（含扩展名）
+ *           example: "原文件名.txt"
+ *         name:
+ *           type: string
+ *           description: 新文件名（不含扩展名，原扩展名将保留）
+ *           example: "新文件名"
+ *       required:
+ *         - file
+ *         - name
+ *
+ *   examples:
+ *     RenameArchiveRequestExample:
+ *       summary: 重命名归档文件请求示例
+ *       value:
+ *         file: "原文件名.txt"
+ *         name: "新文件名"
+ */

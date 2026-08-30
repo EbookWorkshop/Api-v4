@@ -1,4 +1,4 @@
-
+import { HostRequest } from "../dtos/ruleForWeb/RuleForWebResponse.dto.js";
 import { RuleForWebQueryService } from "../../../2-application/services/RuleForWebQueryService.js";
 import { RuleForWebCommandService } from "../../../2-application/services/RuleForWebCommandService.js";
 
@@ -86,7 +86,7 @@ export class RuleForWebController {
      *         description: 服务器内部错误
      */
     async getBotRules(ctx) {
-        const host = ctx.query.host;
+        const host = HostRequest.inQuery(ctx.query);
         const result = await this.#ruleForWebQueryService.getRulesByHost(host);
         ctx.body = result;
     }
@@ -109,7 +109,7 @@ export class RuleForWebController {
      *         description: 参数错误，参数类型错误
      */
     async exportRules(ctx) {
-        const host = ctx.query.host;
+        const host = HostRequest.inQuery(ctx.query);
         ctx.body = JSON.stringify(await this.#ruleForWebQueryService.getRulesByHost(host));
         ctx.state.skipResponseWrapper = true;
         ctx.set("Content-Type", "application/octet-stream");
@@ -208,6 +208,7 @@ export class RuleForWebController {
      *     summary: 批量创建或更新 Bot 规则
      *     description: 接收一个规则对象数组，用于批量添加或更新爬虫规则（统一包装格式）
      *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
      *       - BotRule
      *     requestBody:
      *       required: true
@@ -274,6 +275,7 @@ export class RuleForWebController {
      *     summary: 从文件导入 Bot 规则（批量）
      *     description: 通过上传 JSON 文件批量创建或更新爬虫规则。文件内容应为 `BotRuleItem` 对象数组，格式与 `POST /services/botrule` 的请求体一致。（统一包装格式）
      *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
      *       - BotRule
      *     requestBody:
      *       required: true
@@ -314,6 +316,57 @@ export class RuleForWebController {
     async importBotRules(ctx) {
         const file = ctx.request.files?.data;//TODO: 接入DTO层
         const result = await this.#ruleForWebCommandService.importRulesFromFile(file);
+        ctx.body = result;
+    }
+
+    /**
+     * @swagger
+     * /services/botrule:
+     *   delete:
+     *     summary: 删除指定主机的所有 Bot 规则
+     *     description: 根据主机名删除该站点下配置的全部爬虫规则（统一包装格式）
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *       - BotRule
+     *     parameters:
+     *       - $ref: '#/components/parameters/BotRuleHostQuery'
+     *     responses:
+     *       200:
+     *         description: 删除成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-30T22:00:00.000Z"
+     *       400:
+     *         description: 参数错误（host 缺失）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "host 为必填参数"
+     *               timestamp: "2026-08-30T22:00:00.000Z"
+     *       404:
+     *         description: 该主机下无规则或主机不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该主机的规则"
+     *               timestamp: "2026-08-30T22:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async deleteBotRules(ctx) {
+        const host = HostRequest.inQuery(ctx.query);
+        const result = await this.#ruleForWebCommandService.deleteRulesByHost(host);
         ctx.body = result;
     }
 }

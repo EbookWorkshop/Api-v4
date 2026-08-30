@@ -35,8 +35,8 @@ export class RuleForWebCommandService {
     async batchUpsertRules(rules) {
         return this.#transaction.runInTransaction(async (trans) => {
             //全套规则删除并更新
-            const oneHost = rules[0].host;
-            await this.deleteRules(oneHost, { transaction: trans });
+            const oneHost = rules[0].host;      //NOTE: 如果要兼容单文件多个配置的情况...
+            await this.deleteRulesByHost(oneHost, { transaction: trans });
 
             const timeoutRule = rules.find(r => r.ruleName == "Timeout");
             if (timeoutRule && timeoutRule.selector != DEFAULT_TIME_OUT) {
@@ -83,11 +83,23 @@ export class RuleForWebCommandService {
     }
 
     /**
+     * 站点更名
+     * @param {*} host 
+     * @param {*} newHost 
+     */
+    async changeHostname(host, newHost) {
+        this.#transaction.runInTransaction((transaction) => {
+
+
+        })
+    }
+
+    /**
      * 删除全套规则
      * @param {string} host 
      * @param {*} transaction 
      */
-    async deleteRules(host, { transaction }) {
+    async deleteRulesByHost(host, { transaction } = {}) {
         let deleter = async (tran) => {
             //删除附加配置
             await this.#sysConfig.deleteConfig(undefined, host, { transaction: tran });

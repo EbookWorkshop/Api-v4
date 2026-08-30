@@ -39,6 +39,58 @@ export class AssetsController {
         ctx.body = await this.#assetsService.listArchiveBooks();
     }
 
+    /**
+     * @swagger
+     * /assets/archive/book:
+     *   post:
+     *     summary: 重命名归档文件
+     *     description: 将指定的归档文件重命名为新文件名（统一包装格式）
+     *     tags:
+     *       - Assets —— 资源管理
+     *       - Assets
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/RenameArchiveRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/RenameArchiveRequestExample'
+     *     responses:
+     *       200:
+     *         description: 重命名成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-30T20:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如缺少必填字段、文件不存在或新文件名已存在）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "file 和 name 为必填字段，且文件必须存在"
+     *               timestamp: "2026-08-30T20:00:00.000Z"
+     *       404:
+     *         description: 原文件不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该文件"
+     *               timestamp: "2026-08-30T20:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
     async renameFile(ctx) {
         const { file, name } = ctx.request.body;
         const result = await this.#assetsService.renameFile(file, name);

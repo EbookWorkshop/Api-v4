@@ -14,5 +14,8 @@ export function createRuleForWebRoutes(ruleForWebController) {
     
     router.post('/', (ctx) => ruleForWebController.batchUpsertBotRules(ctx));
     router.post('/import', (ctx) => ruleForWebController.importBotRules(ctx));
+    // router.post('/changehostname', (ctx) => ruleForWebController.importBotRules(ctx));
+
+    router.delete('/', (ctx) => ruleForWebController.deleteBotRules(ctx));
     return router;
 }

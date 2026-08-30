@@ -41,10 +41,10 @@ classDiagram
         +int IndexId
     }
 
-    class WebBookIndexURL {
+    class WebBookChapterURL {
         +int id
         +string Path
-        +int WebBookIndexId
+        +int WebBookChapterId
     }
 
     class WebBookIndexSourceURL {
@@ -107,8 +107,8 @@ classDiagram
     %% WebBook 与 WebBookIndexSourceURL
     WebBook "1" --> "0..*" WebBookIndexSourceURL : has
 
-    %% WebBookChapter 与 WebBookIndexURL
-    WebBookChapter "1" --> "0..*" WebBookIndexURL : has
+    %% WebBookChapter 与 WebBookChapterURL
+    WebBookChapter "1" --> "0..*" WebBookChapterURL : has
 
     %% ---------- 多对多通过中间表 ----------
     %% Ebook 与 Tag 通过 EBookTag

@@ -40,10 +40,10 @@ erDiagram
         string WebTitle
         int IndexId FK
     }
-    WebBookIndexURL {
+    WebBookChapterURL {
         int id PK
         string Path
-        int WebBookIndexId FK
+        int WebBookChapterId FK
     }
     ReviewRule {
         int id PK
@@ -118,7 +118,7 @@ erDiagram
 
     %% 本地章节与网文章节映射
     EbookChapter ||--|| WebBookChapter : "has one"
-    WebBookChapter ||--o{ WebBookIndexURL : "has"
+    WebBookChapter ||--o{ WebBookChapterURL : "has"
 
     %% 替换规则多对多
     Ebook ||--o{ ReviewRuleUsing : "uses"

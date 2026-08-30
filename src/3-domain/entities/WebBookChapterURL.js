@@ -6,14 +6,14 @@ import { DataTypes } from "sequelize";
  * @returns 
  */
 export default function (sqlConnect) {
-    return sqlConnect.define("WebBookIndexURL", {   //每一章的地址
+    return sqlConnect.define("WebBookChapterURL", {   //每一章的地址
         Path: { type: DataTypes.STRING(500), allowNull: false },
-        WebBookIndexId: { type: DataTypes.INTEGER, allowNull: false },
+        WebBookChapterId: { type: DataTypes.INTEGER, allowNull: false },
     }, {
         indexes: [
             {
-                // 单列索引，对应 SQL: CREATE INDEX ON WebBookIndexURLs(WebBookIndexId)
-                fields: ['WebBookIndexId'],
+                // 单列索引，对应 SQL: CREATE INDEX ON WebBookChapterURLs(WebBookChapterId)
+                fields: ['WebBookChapterId'],
             },
         ],
     });

@@ -1,3 +1,5 @@
+import { UserInputError } from "../../../../5-shared/errors/index.js";
+import { getHost } from "../../../../5-shared/utils/site.js"
 /**
  * @swagger
  * components:
@@ -55,17 +57,6 @@
  *                 $ref: '#/components/schemas/BotRuleItem'
  *       required:
  *         - data
- *
- *   parameters:
- *     BotRuleHostQuery:
- *       in: query
- *       name: host
- *       schema:
- *         type: string
- *       required: true
- *       description: 要查询规则的主机名
- *       example: "www.example.com"
- *
  *   examples:
  *     BotRuleListSuccess:
  *       summary: 规则列表成功响应示例
@@ -99,3 +90,25 @@
  *         timestamp: "2026-08-29T14:00:00.000Z"
  *         data: []
  */
+
+
+export class HostRequest {
+    /**
+     * @swagger
+     * components:
+     *   parameters:
+     *     BotRuleHostQuery:
+     *       in: query
+     *       name: host
+     *       schema:
+     *         type: string
+     *       required: true
+     *       description: 要查询规则的主机名
+     *       example: "www.example.com"
+     */
+    static inQuery(query) {
+        let host = query.host;
+        if (!host) throw new UserInputError("网站主机名为空。");
+        return getHost(host);
+    }
+}
