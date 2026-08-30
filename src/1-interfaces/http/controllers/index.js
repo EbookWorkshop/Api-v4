@@ -7,6 +7,7 @@ import { FontController } from "./FontController.js";
 import { WebBookController } from "./WebBookController.js"
 import { SwaggerController } from "./SwaggerController.js"
 import { ReviewRuleController } from "./ReviewRuleController.js"
+import { ReviewRuleUsingController } from "./ReviewRuleUsingController.js"
 import { AssetsController } from "./AssetsController.js"
 import { EmailController } from './EmailController.js';
 import { RuleForWebController } from "./RuleForWebController.js"
@@ -32,8 +33,9 @@ export function createControllers(services, config) {
         tag: new TagController(tagQuery, tagCommand),
         font: new FontController(services.font),
         bookmark: new BookmarkController(services.bookmark),
-        reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
 
+        reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
+        reviewRuleUsing: new ReviewRuleUsingController(services.reviewRuleUsing),
         ruleForWeb: new RuleForWebController(services.ruleForWebQuery, services.ruleForWebCommand),
 
         assets: new AssetsController(services.assets),

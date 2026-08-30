@@ -27,6 +27,7 @@ import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
 
 import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 import { ReviewDictionaryService } from "./ReviewDictionaryService.js"
+import { ReviewRuleUsingService } from './ReviewRuleUsingService.js';
 
 import { AssetsService } from './AssetsService.js';
 
@@ -89,8 +90,8 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
 
         reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
         reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
-
-        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService,new ReviewDictionaryService(repositories.dictionaryRepository)),
+        reviewRuleUsing: new ReviewRuleUsingService(repositories.reviewRuleUsingRepository),
+        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, new ReviewDictionaryService(repositories.dictionaryRepository)),
 
         assets: new AssetsService(fileScanner, fileWriter, config),
 

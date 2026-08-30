@@ -321,7 +321,7 @@ export class BookController {
      */
     async createBook(ctx) {
         const { bookDTO, chaptersDTO } = CreateBookRequest.fromBody(ctx.request.body);
-        ctx.body = await this.#bookCommandService.createBook(bookDTO, chaptersDTO);//TODO: DTO adapter
+        ctx.body = await this.#bookCommandService.createBook(bookDTO, chaptersDTO);
     }
 
     /**

@@ -6,10 +6,10 @@ import { BookmarkController } from "../controllers/BookmarkController.js"
      * @returns 
      */
     export function createBookmarkRoutes(bookmarkController) {
-        const router = new Router({ prefix: '/library/bookmark' });//TODO: 设置路由前缀
-        router.get('/', (ctx) => bookmarkController.listBookmarks(ctx));    //设子路由与控制器之间的关联
-        router.post('/', (ctx) => bookmarkController.addBookmark(ctx));    //设子路由与控制器之间的关联
-        router.delete('/', (ctx) => bookmarkController.deleteBookmark(ctx));    //设子路由与控制器之间的关联
+        const router = new Router({ prefix: '/library/bookmark' });
+        router.get('/', (ctx) => bookmarkController.listBookmarks(ctx));
+        router.post('/', (ctx) => bookmarkController.addBookmark(ctx));
+        router.delete('/', (ctx) => bookmarkController.deleteBookmark(ctx));
     
         return router;
     }

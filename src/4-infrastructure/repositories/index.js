@@ -10,6 +10,7 @@ import { BookmarkRepository } from './BookmarkRepository.js';
 import { ReviewRuleRepository } from './ReviewRuleRepository.js';
 
 import { RuleForWebRepository } from './RuleForWebRepository.js';
+import { ReviewRuleUsingRepository } from './ReviewRuleUsingRepository.js';
 import { ReviewDictionaryRepository } from './ReviewDictionaryRepository.js';
 
 /**
@@ -45,5 +46,6 @@ export function createRepositories(sequelize) {
         reviewRuleRepository: new ReviewRuleRepository(sequelize),
         ruleForWebRepository: new RuleForWebRepository(sequelize),
         dictionaryRepository: new ReviewDictionaryRepository(sequelize),
+        reviewRuleUsingRepository: new ReviewRuleUsingRepository(sequelize),
     };
 }
