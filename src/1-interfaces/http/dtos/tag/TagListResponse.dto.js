@@ -71,12 +71,4 @@
  *             Text: "科幻"
  *             Color: "#1E90FF"
  *             Count: 34
- *
- *     TagListEmpty:
- *       summary: 标签列表成功响应示例（无数据）
- *       value:
- *         code: 20000
- *         msg: "success"
- *         timestamp: "2026-08-13T12:00:00.000Z"
- *         data: []
  */

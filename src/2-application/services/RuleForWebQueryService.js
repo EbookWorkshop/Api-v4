@@ -69,13 +69,17 @@ export class RuleForWebQueryService {
             selector: scraping,
         });
 
-        let dict = await this.#dictionaryRepository.GetDictionaryByURL(host);
+        let dict = await this.#dictionaryRepository.getDictionaryByURL(host);
         if (dict)
             rsl.push({
                 ruleName: "Dictionary",
                 data: dict
             });
         return rsl;
+    }
+
+    async getDictionaryByURL(host) {
+        return this.#dictionaryRepository.getDictionaryByURL(host);
     }
 
     async listRegisteredWebsites() {

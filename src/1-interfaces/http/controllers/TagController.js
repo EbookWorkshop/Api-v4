@@ -39,7 +39,7 @@ export class TagController {
      *               success:
      *                 $ref: '#/components/examples/TagListSuccess'
      *               empty:
-     *                 $ref: '#/components/examples/TagListEmpty'
+     *                 $ref: '#/components/examples/ResultListEmpty'
      *       500:
      *         description: 服务器内部错误
      *         content:
@@ -76,7 +76,7 @@ export class TagController {
      *               success:
      *                 $ref: '#/components/examples/TagListSuccess'
      *               empty:
-     *                 $ref: '#/components/examples/TagListEmpty'
+     *                 $ref: '#/components/examples/ResultListEmpty'
      *       500:
      *         description: 服务器内部错误
      *         content:

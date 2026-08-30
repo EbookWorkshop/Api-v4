@@ -103,3 +103,8 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         // bookExport: bookExportService,
     };
 }
+console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
+/*
+import { WebBookCommandService } from './WebBookCommandService.js';
+webBookCommand: new WebBookCommandService(repositories.webBookRepository),
+*/

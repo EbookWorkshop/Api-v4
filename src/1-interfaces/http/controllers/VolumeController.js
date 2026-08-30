@@ -43,7 +43,7 @@ export class VolumeController {
      *               success:
      *                 $ref: '#/components/examples/BookVolumeListSuccess'
      *               empty:
-     *                 $ref: '#/components/examples/BookVolumeListEmpty'
+     *                 $ref: '#/components/examples/ResultListEmpty'
      *       600:
      *         description: 请求参数错误（如 bookId 非数字或小于 1）
      *         content:

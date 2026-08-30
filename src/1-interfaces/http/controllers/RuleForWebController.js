@@ -71,7 +71,7 @@ export class RuleForWebController {
      *               success:
      *                 $ref: '#/components/examples/BotRuleListSuccess'
      *               empty:
-     *                 $ref: '#/components/examples/BotRuleListEmpty'
+     *                 $ref: '#/components/examples/ResultListEmpty'
      *       400:
      *         description: 参数错误（host 缺失）
      *         content:
@@ -116,6 +116,44 @@ export class RuleForWebController {
         ctx.set("Content-Disposition", `attachment;filename=EBW_botrule_export_${host}.json`);
     }
 
+    /**
+     * @swagger
+     * /services/botrule/dictionaries:
+     *   get:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *       - BotRule
+     *     summary: 拿到指定站点的字典
+     *     description: 拿到指定站点的字典
+     *     parameters:
+     *       - $ref: '#/components/parameters/BotRuleHostQuery'
+     *     responses:
+     *       200:
+     *         description: 成功返回规则列表
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/DictionaryListResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/DictionaryListResponse'
+     *               empty:
+     *                 $ref: '#/components/examples/ResultListEmpty'
+     *       400:
+     *         description: 参数错误（host 缺失）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "host 为必填参数"
+     *               timestamp: "2026-08-29T14:00:00.000Z"
+     */
+    async getDictionaryByURL(ctx) {
+        const host = HostRequest.inQuery(ctx.query);
+        ctx.body = await this.#ruleForWebQueryService.getDictionaryByURL(host);
+    }
 
     /**
      * @swagger

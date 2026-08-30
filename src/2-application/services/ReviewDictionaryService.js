@@ -17,7 +17,7 @@ export class ReviewDictionaryService {
      * @param {*} host url/host
      * @returns 
      */
-    async GetDictionaryByURL(host) {
+    async getDictionaryByURL(host) {
         return this.#reviewDictionaryRepository.findByHost(host);
     }
 }

@@ -81,14 +81,63 @@ import { getHost } from "../../../../5-shared/utils/site.js"
  *             getUrlAction: "attr:href"
  *             type: "List"
  *             checkSetting: ""
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     DictionaryItem:
+ *       type: object
+ *       description: Bot 规则条目
+ *       properties:
+ *         Host:
+ *           type: string
+ *           description: 应用的站点
+ *           example: "www.example.com"
+ *         ExecuteType:
+ *           type: string
+ *           description: 分类执行条件(Selector、Boolean)
+ *           example: "Selector"
+ *         Execute:
+ *           type: string
+ *           description: 应用条件：即达到条件，这份对照字典才启用
+ *           example: "#book-title"
+ *         Data:
+ *           type: string
+ *           description: 实际存储字典数据
+ *           example: "a  b"
+ *       required:
+ *         - Host
+ *         - ExecuteType
  *
- *     BotRuleListEmpty:
- *       summary: 规则列表为空时的响应示例
+ *     DictionaryListResponse:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ApiResponse'
+ *         - type: object
+ *           properties:
+ *             data:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/DictionaryItem'
+ *       required:
+ *         - data
+ *   examples:
+ *     DictionaryListResponse:
+ *       summary: 规则列表成功响应示例
  *       value:
  *         code: 20000
  *         msg: "success"
  *         timestamp: "2026-08-29T14:00:00.000Z"
- *         data: []
+ *         data:
+ *           - Host: "www.example.com"
+ *             ExecuteType: "Selector"
+ *             Execute: "#book-title"
+ *             Data: "a a1\nb b1"
+ *           - Host: "www.example.com"
+ *             ExecuteType: "Selector"
+ *             Execute: "#chapter-list a"
+ *             Data: "c c1\nd d1"
  */
 
 

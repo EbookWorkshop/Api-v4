@@ -70,14 +70,6 @@
  *             size: 245678
  *             createTime: "2026/7/22 09:12:05"
  *             filePath: "Books/福尔摩斯探案集.mobi"
- *
- *     ArchiveBookListEmpty:
- *       summary: 归档图书文件列表为空时的响应示例
- *       value:
- *         code: 20000
- *         msg: "success"
- *         timestamp: "2026-08-20T14:00:00.000Z"
- *         data: []
  */
 
 /**

@@ -62,12 +62,4 @@
  *             OrderNum: 53
  *             BookId: 209
  *             VolumeId: 53
- *
- *     BookVolumeListEmpty:
- *       summary: 图书分卷列表为空时的响应示例
- *       value:
- *         code: 20000
- *         msg: "success"
- *         timestamp: "2026-08-16T12:00:00.000Z"
- *         data: []
  */

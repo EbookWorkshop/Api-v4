@@ -15,4 +15,13 @@
  *             - data
  *             - msg
  *             - timestamp
+ * 
+ *   examples:
+ *     ResultListEmpty:
+ *       summary: 结果列表为空时的响应示例
+ *       value:
+ *         code: 20000
+ *         msg: "success"
+ *         timestamp: "2026-08-29T14:00:00.000Z"
+ *         data: []
  */

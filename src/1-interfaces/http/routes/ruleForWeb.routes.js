@@ -10,6 +10,7 @@ export function createRuleForWebRoutes(ruleForWebController) {
     router.get('/', (ctx) => ruleForWebController.getBotRules(ctx));
     router.get('/export', (ctx) => ruleForWebController.exportRules(ctx));
     router.get('/hostlist', (ctx) => ruleForWebController.listBotRuleHosts(ctx));
+    router.get('/dictionaries', (ctx) => ruleForWebController.getDictionaryByURL(ctx));
     router.get('/registeredwebsites', (ctx) => ruleForWebController.listRegisteredWebsites(ctx));
     
     router.post('/', (ctx) => ruleForWebController.batchUpsertBotRules(ctx));

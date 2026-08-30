@@ -31,7 +31,7 @@ export class AssetsController {
      *               success:
      *                 $ref: '#/components/examples/ArchiveBookListSuccess'
      *               empty:
-     *                 $ref: '#/components/examples/ArchiveBookListEmpty'
+     *                 $ref: '#/components/examples/ResultListEmpty'
      *       500:
      *         description: 服务器内部错误
      */
