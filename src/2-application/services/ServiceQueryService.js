@@ -12,9 +12,14 @@ export class ServiceQueryService {
     async getVersionInfo() {
         return this.#serviceServer.version();
     }
-    
+
     async checkSiteAccessibility(host) {
         return this.#serviceServer.checkSiteAccessibility(host)
 
+    }
+
+
+    getRuntime() {
+        return performance.now();
     }
 }
