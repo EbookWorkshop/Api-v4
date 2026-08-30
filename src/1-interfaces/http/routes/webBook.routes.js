@@ -11,6 +11,6 @@ export function createWebBookRoutes(bookController) {
     router.get('/list', (ctx) => bookController.listBooks(ctx));
     router.get('/', (ctx) => bookController.getBookById(ctx));
     
-    router.delete('/', (ctx) => bookController.getBookById(ctx));
+    router.delete('/', (ctx) => bookController.deleteBook(ctx));
     return router;
 }

@@ -7,17 +7,20 @@ export class WebBookController {
     #webBookQueryService;
     #webBookCommandService;
     #webBookDetailQuery;
+    #bookCommandService;
 
     /**
      * 
-     * @param {WebBookQueryService} bookQueryService 
-     * @param {*} bookCommandService 
-     * @param {WebBookDetailQueryService} bookDetailQuery 
+     * @param {WebBookQueryService} webBookQueryService 
+     * @param {WebBookCommandService} webBookCommandService 
+     * @param {WebBookDetailQueryService} webBookDetailQuery 
+     * @param {BookCommandService} bookCommandService 
      */
-    constructor(bookQueryService, bookCommandService, bookDetailQuery) {
-        this.#webBookQueryService = bookQueryService;
-        this.#webBookCommandService = bookCommandService;
-        this.#webBookDetailQuery = bookDetailQuery;
+    constructor(webBookQueryService, webBookCommandService, webBookDetailQuery, bookCommandService) {
+        this.#webBookQueryService = webBookQueryService;
+        this.#webBookCommandService = webBookCommandService;
+        this.#webBookDetailQuery = webBookDetailQuery;
+        this.#bookCommandService = bookCommandService;
     }
 
     /**
@@ -96,4 +99,49 @@ export class WebBookController {
         ctx.body = await this.#webBookDetailQuery.getBookDetail(bookId);
     }
 
+    /**
+     * @swagger
+     * /library/webbook:
+     *   delete:
+     *     summary: 删除图书
+     *     description: 根据图书 ID 删除指定的图书及其关联数据（如章节、分卷等）（统一包装格式）
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *       - WebBook
+     *     parameters:
+     *       - $ref: '#/components/parameters/BookIdQuery'
+     *     responses:
+     *       200:
+     *         description: 删除成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 参数错误（如 bookid 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookid 必须为有效整数"
+     *               timestamp: "2026-08-21T11:00:00.000Z"
+     *       404:
+     *         description: 图书不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该图书"
+     *               timestamp: "2026-08-21T11:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async deleteBook(ctx) {
+        const bookId = BookIdRequest.fromQuery(ctx.query);
+        ctx.body = await this.#bookCommandService.deleteBook(bookId);
+    }
 }

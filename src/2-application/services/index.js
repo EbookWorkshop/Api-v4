@@ -11,6 +11,7 @@ import { BookmarkService } from './BookmarkService.js';
 
 import { WebBookQueryService } from "./WebBookQueryService.js"
 import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
+import { WebBookCommandService } from './WebBookCommandService.js';
 
 import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
@@ -74,6 +75,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
 
         webBookQuery: new WebBookQueryService(repositories.webBookRepository),
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
+        webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction),
 
         volumeQuery: new VolumeQueryService(volumeRepository),
         volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),
@@ -103,8 +105,3 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         // bookExport: bookExportService,
     };
 }
-console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
-/*
-import { WebBookCommandService } from './WebBookCommandService.js';
-webBookCommand: new WebBookCommandService(repositories.webBookRepository),
-*/

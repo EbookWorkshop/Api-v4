@@ -4,12 +4,14 @@ import { AppError } from "../../5-shared/errors/index.js"
 export class WebBookCommandService {
     /** @type {WebBookRepository} */
     #webBookRepository;
-
+    /** @type {ITransaction} */
+    #transaction;
     /**
      * @param {WebBookRepository} webBookRepository 
      */
-    constructor(webBookRepository) {
+    constructor(webBookRepository, transaction) {
         this.#webBookRepository = webBookRepository;
+        this.#transaction = transaction;
     }
 
 }
