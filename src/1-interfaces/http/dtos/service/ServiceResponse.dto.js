@@ -154,3 +154,79 @@
  *           memFree: "1.93"
  *           memTotal: "7.16"
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     SiteAccessibility:
+ *       type: object
+ *       description: 网站可访问性检测结果
+ *       properties:
+ *         status:
+ *           type: integer
+ *           description: HTTP 状态码
+ *           example: 403
+ *         result:
+ *           type: boolean
+ *           description: 是否可正常访问（根据内容或状态码判断）
+ *           example: false
+ *         location:
+ *           type: string
+ *           description: 检测的目标主机
+ *           example: "www.test.com"
+ *         title:
+ *           type: string
+ *           description: 返回页面的标题
+ *           example: "Just a moment..."
+ *       required:
+ *         - status
+ *         - result
+ *         - location
+ *         - title
+ *
+ *     SiteAccessibilityResponse:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ApiResponse'
+ *         - type: object
+ *           properties:
+ *             data:
+ *               $ref: '#/components/schemas/SiteAccessibility'
+ *       required:
+ *         - data
+ *
+ *   parameters:
+ *     HostQuery:
+ *       in: query
+ *       name: host
+ *       schema:
+ *         type: string
+ *       required: true
+ *       description: 要检测的网站主机名
+ *       example: "www.test.com"
+ *
+ *   examples:
+ *     SiteAccessibilitySuccess:
+ *       summary: 网站可访问性检测成功响应示例
+ *       value:
+ *         code: 20000
+ *         msg: "success"
+ *         timestamp: "2026-08-30T16:00:00.000Z"
+ *         data:
+ *           status: 403
+ *           result: false
+ *           location: "www.test.com"
+ *           title: "Just a moment..."
+ *
+ *     SiteAccessibilityBlocked:
+ *       summary: 被屏蔽或无法访问的示例
+ *       value:
+ *         code: 20000
+ *         msg: "success"
+ *         timestamp: "2026-08-30T16:00:00.000Z"
+ *         data:
+ *           status: 0
+ *           result: false
+ *           location: "www.test.com"
+ *           title: ""
+ */

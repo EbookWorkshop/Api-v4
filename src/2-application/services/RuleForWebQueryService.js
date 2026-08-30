@@ -105,5 +105,4 @@ export class RuleForWebQueryService {
         }
         return result;
     }
-
 }

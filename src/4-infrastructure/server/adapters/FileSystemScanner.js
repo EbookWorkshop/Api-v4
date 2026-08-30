@@ -1,5 +1,5 @@
 import path from "node:path";
-import { findFileByBasename as impl, listFiles as myListFiles, accessFile, mapPath } from '../drivers/fileSystemDriver.js';
+import { findFileByBasename as impl, listFiles as myListFiles, accessFile, mapPath, readFileData } from '../drivers/fileSystemDriver.js';
 import { IFileScanner } from '../../../2-application/ports/IFileScanner.js';
 
 export class FileSystemScanner extends IFileScanner {
@@ -32,6 +32,8 @@ export class FileSystemScanner extends IFileScanner {
     async accessFile(filePath) {
         return accessFile(this.mapPath(filePath));
     }
+
+    async readFileData(file, options) { return readFileData(file, options); }
 
     /**
      * 获取服务器地址——相对仓库的路径

@@ -37,6 +37,42 @@ export class ServiceController {
         ctx.body = await this.#serviceQueryService.getVersionInfo();
     }
 
+    /**
+     * @swagger
+     * /services/checkSiteAccessibility:
+     *   get:
+     *     summary: 检查网站可访问性
+     *     description: 对指定主机发起请求，检测是否可正常访问并返回状态信息（统一包装格式）
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *       - Service
+     *     parameters:
+     *       - $ref: '#/components/parameters/HostQuery'
+     *     responses:
+     *       200:
+     *         description: 检测完成，返回结果
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/SiteAccessibilityResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/SiteAccessibilitySuccess'
+     *               blocked:
+     *                 $ref: '#/components/examples/SiteAccessibilityBlocked'
+     *       400:
+     *         description: 参数错误（host 缺失）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "host 为必填参数"
+     *               timestamp: "2026-08-30T16:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
     async checkSiteAccessibility(ctx) {
         let host = getHost(ctx.query.host);
         ctx.body = await this.#serviceQueryService.checkSiteAccessibility(host);

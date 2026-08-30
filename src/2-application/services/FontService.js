@@ -48,7 +48,7 @@ export class FontService {
 
     async getUIFont() {
         const fontName = await this.#systemConfigService.getConfig(SYSTEM_DEFAULT_FONT, 'defaultUIFont');
-        if (!fontName) return null;
+        if (!fontName) return { name: "宋体" };
         // 找到实际文件路径
         const matched = await this.#fileScanner.findFileByBasename(this.#fontDir, fontName);
         if (!matched) {

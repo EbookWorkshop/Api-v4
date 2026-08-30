@@ -31,14 +31,10 @@ export const DATABASE_VERSION = 'database_version';
  * 获取网站的超时设置
  */
 export const WEBSITE_TIMEOUT = 'website_timeout';
-
-
 /**
  * 获取网站的用户代理设置
  */
 export const WEBSITE_USERAGENT = 'website_useragent';
-
-
 export const WEBSITE_SCRAPING = "website_scraping";
 
 

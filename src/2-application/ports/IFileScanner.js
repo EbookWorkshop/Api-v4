@@ -37,6 +37,13 @@ export class IFileScanner {
     }
 
     /**
+     * 按格式读取文件内容
+     * @param {*} file 
+     * @param {*} options 
+     */
+    async readFileData(file, { encoding, format } = {}) { throw new Error('接口方法尚未实现'); }
+
+    /**
      * 获取服务器地址
      * @param {Array<string>|string} dir 路径
      * @returns 

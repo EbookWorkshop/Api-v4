@@ -200,4 +200,120 @@ export class RuleForWebController {
     async listRegisteredWebsites(ctx) {
         ctx.body = await this.#ruleForWebQueryService.listRegisteredWebsites();
     }
+
+    /**
+     * @swagger
+     * /services/botrule:
+     *   post:
+     *     summary: 批量创建或更新 Bot 规则
+     *     description: 接收一个规则对象数组，用于批量添加或更新爬虫规则（统一包装格式）
+     *     tags:
+     *       - BotRule
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: array
+     *             items:
+     *               $ref: '#/components/schemas/BotRuleItem'
+     *           examples:
+     *             batch:
+     *               summary: 批量规则示例
+     *               value:
+     *                 - host: "www.example.com"
+     *                   ruleName: "BookName"
+     *                   selector: "#book-title"
+     *                   removeSelector: [".ad", ".footer"]
+     *                   getContentAction: "text"
+     *                   getUrlAction: "attr:href"
+     *                   type: "Object"
+     *                   checkSetting: ""
+     *                 - host: "www.example.com"
+     *                   ruleName: "ChapterList"
+     *                   selector: "#chapter-list a"
+     *                   removeSelector: []
+     *                   getContentAction: "text"
+     *                   getUrlAction: "attr:href"
+     *                   type: "List"
+     *                   checkSetting: ""
+     *     responses:
+     *       200:
+     *         description: 操作成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-30T16:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "请求体必须为非空数组，且每个元素需包含必填字段"
+     *               timestamp: "2026-08-30T16:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async batchUpsertBotRules(ctx) {
+        const rules = ctx.request.body;//TODO: 接入DTO层
+        const result = await this.#ruleForWebCommandService.batchUpsertRules(rules);
+        ctx.body = result;
+    }
+
+    /**
+     * @swagger
+     * /services/botrule/import:
+     *   post:
+     *     summary: 从文件导入 Bot 规则（批量）
+     *     description: 通过上传 JSON 文件批量创建或更新爬虫规则。文件内容应为 `BotRuleItem` 对象数组，格式与 `POST /services/botrule` 的请求体一致。（统一包装格式）
+     *     tags:
+     *       - BotRule
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         multipart/form-data:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               file:
+     *                 type: string
+     *                 format: binary
+     *                 description: 包含规则数组的 JSON 文件（.json），内容为 `BotRuleItem[]`
+     *           # 注：无法直接给出文件内容的 example，但可在描述中说明
+     *     responses:
+     *       200:
+     *         description: 导入成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-30T18:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（未上传文件、文件格式不正确或内容不符合 Schema）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "请上传 JSON 文件，且内容必须为 BotRuleItem 数组"
+     *               timestamp: "2026-08-30T18:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async importBotRules(ctx) {
+        const file = ctx.request.files?.data;//TODO: 接入DTO层
+        const result = await this.#ruleForWebCommandService.importRulesFromFile(file);
+        ctx.body = result;
+    }
 }

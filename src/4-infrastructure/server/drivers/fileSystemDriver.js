@@ -1,6 +1,7 @@
 // src/4-infrastructure/server/fileSystemUtils.js
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { AppError } from '../../../5-shared/errors/index.js';
 
 /**
  * 扫描指定目录下的所有文件，返回文件名数组
@@ -168,4 +169,15 @@ export async function renameFile(oldPath, newPath, basePath) {
     const fullOld = path.join(basePath, oldPath);
     const fullNew = path.join(basePath, newPath);
     await fs.rename(fullOld, fullNew);
+}
+
+export async function readFileData(file, { encoding, format } = {}) {
+    try {
+        if (!file?.filepath) throw new AppError("文件不存在", 404);
+        const data = await fs.readFile(file.filepath, encoding || 'utf8');
+        switch (format) {
+            case "json": return JSON.parse(data);
+            default: return data;
+        }
+    } catch (error) { throw error; }
 }

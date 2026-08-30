@@ -11,6 +11,8 @@ export function createRuleForWebRoutes(ruleForWebController) {
     router.get('/export', (ctx) => ruleForWebController.exportRules(ctx));
     router.get('/hostlist', (ctx) => ruleForWebController.listBotRuleHosts(ctx));
     router.get('/registeredwebsites', (ctx) => ruleForWebController.listRegisteredWebsites(ctx));
-
+    
+    router.post('/', (ctx) => ruleForWebController.batchUpsertBotRules(ctx));
+    router.post('/import', (ctx) => ruleForWebController.importBotRules(ctx));
     return router;
 }

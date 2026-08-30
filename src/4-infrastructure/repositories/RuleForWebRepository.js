@@ -65,10 +65,20 @@ export class RuleForWebRepository {
         LEFT JOIN [WebBooks] wb ON wb.[id] = wbi.[WebBookId]
         LEFT JOIN [Ebooks] eb ON eb.[id] = wb.[BookId]
         WHERE wbi.[Path] LIKE :host`, {
-            replacements: { host:`%${host}%` },
+            replacements: { host: `%${host}%` },
             type: this.#sequelize.QueryTypes.SELECT
         });
         return data;
     }
 
+    async create(rule, { transaction }) {
+        return this.#RuleForWebModel.create(rule, { transaction })
+    }
+
+    async delete(host, { transaction }) {
+        return this.#RuleForWebModel.destroy({
+            where: { Host: host },
+            transaction
+        });
+    }
 }

@@ -26,7 +26,8 @@ import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
 import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
 
 import { RuleForWebQueryService } from './RuleForWebQueryService.js';
-import { ReviewDictionaryService } from "./ReviewDictionaryService.js"
+import { RuleForWebCommandService } from './RuleForWebCommandService.js';
+import { ReviewDictionaryService } from "./ReviewDictionaryService.js";
 import { ReviewRuleUsingService } from './ReviewRuleUsingService.js';
 
 import { AssetsService } from './AssetsService.js';
@@ -92,6 +93,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
         reviewRuleUsing: new ReviewRuleUsingService(repositories.reviewRuleUsingRepository),
         ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, new ReviewDictionaryService(repositories.dictionaryRepository)),
+        ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, systemConfigService, databaseTransaction, fileScanner),
 
         assets: new AssetsService(fileScanner, fileWriter, config),
 
@@ -101,13 +103,3 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         // bookExport: bookExportService,
     };
 }
-// console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
-// /*
-// import { AssetsCommandService } from './AssetsCommandService.js';
-// assetsCommand: new AssetsCommandService(repositories.assetsRepository),
-// */
-
-/*
-import { RuleForWebCommandService } from './RuleForWebCommandService.js';
-ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository),
-*/
