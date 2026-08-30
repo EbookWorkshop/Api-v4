@@ -4,11 +4,11 @@ import * as DBHelper from "../database/index.js";
 import { createRepositories } from "../repositories/index.js";
 
 
-export function createMiniCore(config) {
+export async function createMiniCore(config) {
     const dbPath = config?.database?.path;
     const logging = config?.database?.logging;
 
-    const sequelize = DBHelper.createDatabaseConnection(dbPath, logging);
+    const sequelize = await DBHelper.createDatabaseConnection(dbPath, logging);
     entityDefinitions.forEach(defineFn => defineFn(sequelize));
     setupAssociations(sequelize.models);
 

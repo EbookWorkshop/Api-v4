@@ -8,14 +8,14 @@ let sequelize = null;
 
 
 // 启动子线程
-initWorker((() => {
+initWorker((async () => {
     //创建线程资源
-    const core = createMiniCore(config);
+    const core = await createMiniCore(config);
     const { repositories } = core;
     sequelize = core.sequelize;
     return repositories;    //实际交给各个任务执行器的资源
 })(), async () => {
-    console.log(`线程【${workerId}】关闭，已运行${performance.now() / 60000}分。`)
+    console.log(`线程【${workerId}】关闭，已运行${performance.now() / 60_000}分。`)
     if (sequelize) {
         await sequelize.close();
         console.log(`[Worker ${workerId}] Database connection closed.`);

@@ -1,6 +1,6 @@
 {
     "name": "ebook-api",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "type": "module",
     "description": "新分层架构的电子书管理系统 (V4)",
     "scripts": {

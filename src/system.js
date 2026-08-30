@@ -19,7 +19,7 @@ const config = await loadConfig();
 // ============================================================
 // 2. 初始化数据库与领域层（Infrastructure + Domain）
 // ============================================================
-const miniCore = createMiniCore(config);
+const miniCore = await createMiniCore(config);
 const { sequelize } = miniCore;
 
 // ============================================================

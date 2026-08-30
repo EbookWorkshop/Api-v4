@@ -7,6 +7,6 @@ import staticServer from 'koa-static';
 export function createStaticServer(config) {
     const spath = config.repository?.path;
     const staticPath = path.resolve(process.cwd(), spath);
-    console.log(`📁 静态文件服务已挂载: ${staticPath} `);
+    if (config.debug.mode) console.log(`📁 静态文件服务已挂载: ${staticPath} `);
     return staticServer(staticPath);
 }

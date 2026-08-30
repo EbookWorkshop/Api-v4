@@ -22,10 +22,10 @@ export async function initWorker(serverResources, onclose = () => { }) {
             await runTask(task, config, serverResources);
         });
 
-        process.on('SIGTERM', async () => {
-            console.log('🛑 子线程收到终止信号，正在关闭...');
-            onclose();
-            process.exit(0);
+        process.on('exit', async (code) => {
+            await onclose();
+            console.log('🛑 子线程在关闭...');
+            // process.exit(0);
         });
     } catch (error) {
         throwError(error);

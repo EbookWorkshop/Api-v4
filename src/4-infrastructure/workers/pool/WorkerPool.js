@@ -12,6 +12,7 @@ import { Task } from "../tasks/Task.js";
 import { WorkerQueue } from "./WorkerQueue.js";
 import { EventManager } from "../../event/EventManager.js";
 
+const MAX_DB_WORKER = 8;//SQLite 默认限制为 10 个并发连接
 const MAX_THREAD_NUM = 15;
 const kTaskCallback = Symbol('kTaskCallback');
 const kTaskData = Symbol('kTaskData');
@@ -65,7 +66,7 @@ export class WorkerPool {
         this.#config = config;
         this.#event = eventSer;
         if (!numThreads) {
-            const cpuNum = os.cpus().length;
+            const cpuNum = os.availableParallelism();
             numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
         }
         this.#maxThreadsNum = numThreads;
@@ -87,7 +88,6 @@ export class WorkerPool {
         this.#event.on(WORKERPOOL_ADD_TASK, (task) => this.addTask(task));
     }
 
-
     /**
      * 创建一个新线程
      * @param {boolean} useDB 是否需要数据库
@@ -95,6 +95,7 @@ export class WorkerPool {
      */
     #addNewWorker(useDB = false) {
         if (this.workerCount >= this.#maxThreadsNum) return null;
+        if (useDB && this.#workerQueueWithDB.workerNum > MAX_DB_WORKER) return null;
         try {
             const worker = new Worker(path.resolve(import.meta.dirname, "../runner", `run${useDB ? "OnDB" : ""}.js`), {
                 workerData: {

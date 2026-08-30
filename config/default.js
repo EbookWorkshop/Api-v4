@@ -20,7 +20,7 @@ export default {
     },
     debug: {
         mode: false,
-        level: 'info',
+        level: 'info',      //TODO: 优化-分层化消息层级 error:1>warn:2>info:3>debug:4>none:5  当config.debug.level<="当前消息等级"时，才打印消息。
         switch: {
             requireLog: false,
             worker: true,
@@ -30,5 +30,5 @@ export default {
         timeout: 30000,
         retries: 3,
     },
-    version: "0.0.0",   //当前程序版本
+    version: "0.0.0",   //当前程序版本——最终会被package.json上的配置覆盖
 };
