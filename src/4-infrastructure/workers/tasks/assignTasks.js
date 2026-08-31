@@ -19,7 +19,7 @@ export async function assignTasks(taskType, config, repositories) {
             createTask = "exportBook.assembler.js";
             break;
         default:
-            throw new AppError("尚未开发对接的任务类型。");
+            throw new AppError("尚未开发对接的任务类型：" + taskType);
     }
 
     try {

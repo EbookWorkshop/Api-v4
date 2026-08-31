@@ -38,4 +38,28 @@ export class TaskSchedulerService {
             // return { taskId: null, error };
         }
     }
+
+    /**
+     * 提交创建 WebBook 任务
+     * @param {Object} setting 
+     * @param {boolean} setting.isEmbedBookName   封面是否嵌入文本标题
+     * @param {string} setting.sourcePage   目录页
+     * @param {string?} setting.infoPage    信息页
+     * @returns 
+     */
+    async submitCreateWebBookTask(setting) {
+        try {
+            const task = new Task({
+                taskId: crypto.randomUUID(),
+                param: setting,
+                taskType: TASK_TYPES.WEB_BOOK_COLLECT,
+                useDB: true,
+            })
+
+            this.#workerPool.addTask(task);
+            return { taskId: task.taskId };
+        } catch (error) {
+            throw new AppError("添加采集任务失败：" + error.message);
+        }
+    }
 }

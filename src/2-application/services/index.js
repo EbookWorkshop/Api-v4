@@ -69,6 +69,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
     );
 
     const emailSender = new NodemailerEmailSender();
+    const task = new TaskSchedulerService(workerPool);
 
     return {
         bookQuery: new BookQueryService(ebookRepository),
@@ -103,8 +104,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
 
         assets: new AssetsService(fileScanner, fileWriter, config),
 
-        task: new TaskSchedulerService(workerPool),
-
+        task,
         serviceQuery: new ServiceQueryService(config, svr),
         // bookExport: bookExportService,
     };
