@@ -1,4 +1,4 @@
-import { TagQueryService } from "../../../2-application/services/TagQueryService.js";
+// import { TagQueryService } from "../../../2-application/services/TagQueryService.js";
 import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
 import { TagCreateRequest } from "../dtos/tag/TagCreateRequest.dto.js";
 import { TagIdQuery } from "../dtos/tag/TagIdRequest.dto.js"
@@ -105,7 +105,7 @@ export class TagController {
      * @swagger
      * /library/tag:
      *   post:
-     *     summary: 创建新标签
+     *     summary: 创建新标签/为指定书籍添加标签
      *     description: 创建新的图书标签，可选的关联图书或颜色（统一包装格式）
      *     tags:
      *       - Library - Tag —— 图书馆管理
@@ -127,7 +127,12 @@ export class TagController {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *               allOf:
+     *                 - $ref: '#/components/schemas/ApiResponse'
+     *                 - type: object
+     *                   properties:
+     *                     data:
+     *                       $ref: '#/components/schemas/TagItem'
      *       600:
      *         description: 请求参数错误（如 tagText 缺失、bookId 非数字）
      *         content:

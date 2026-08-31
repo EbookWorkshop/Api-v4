@@ -94,7 +94,7 @@ export class WorkerPool {
             scan: 30_000,        //扫描间隔
             interval: null,      //扫描器句柄
         }
-        this.#poolConfig.interval = setInterval(this.#scanPool, this.#poolConfig.scan);
+        this.#poolConfig.interval = setInterval(this.#scanPool.bind(this), this.#poolConfig.scan);
     }
 
     /**

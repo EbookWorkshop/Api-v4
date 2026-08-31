@@ -72,7 +72,7 @@ async function initializeDatabase() {
     await services.systemConfig.defaultConfig(DATABASE_VERSION, 'create_version', config.version)
 
     if (config.env === 'development') {
-        console.log('✅ 数据库表结构已同步 (development)', vv);
+        console.log('✅ 数据库表结构已同步 (development)');
     }
 }
 

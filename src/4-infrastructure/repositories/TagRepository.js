@@ -77,7 +77,7 @@ export class TagRepository {
                 else throw error;
             }
         }
-        return [isCreate, addToBook];
+        return myTag.toJSON();
     }
 
     /**

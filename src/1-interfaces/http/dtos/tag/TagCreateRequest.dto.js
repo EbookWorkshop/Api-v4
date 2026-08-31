@@ -36,13 +36,6 @@ export class TagCreateRequest {
      *       summary: 创建标签的请求体示例（仅必填字段）
      *       value:
      *         tagText: "经典"
-     *
-     *     CreateTagSuccess:
-     *       summary: 标签创建成功响应示例
-     *       value:
-     *         code: 20000
-     *         msg: "success"
-     *         timestamp: "2026-08-20T16:00:00.000Z"
      */
     static fromBody(body) {
         const { bookId, tagText, color } = body;

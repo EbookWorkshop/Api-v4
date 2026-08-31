@@ -17,15 +17,10 @@
  *           type: string
  *           description: 标签颜色（十六进制颜色码）
  *           example: "#D91AD9"
- *         Count:
- *           type: integer
- *           description: 该标签下图书数量
- *           example: 71
  *       required:
  *         - id
  *         - Text
  *         - Color
- *         - Count
  *
  *     TagListResponse:
  *       allOf:
@@ -36,6 +31,10 @@
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/TagItem'
+ *                 Count:
+ *                   type: integer
+ *                   description: 该标签下图书数量
+ *                   example: 71
  *               description: 标签列表数据
  *       required:
  *         - data
