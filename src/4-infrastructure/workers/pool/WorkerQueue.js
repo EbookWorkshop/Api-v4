@@ -22,6 +22,17 @@ export class WorkerQueue {
     }
 
     /**
+     * 获取首个（也是等待最久的那个）线程的参数（主要是看等待时长）
+     * @param {*} param 
+     * @returns 
+     */
+    getFeeWorkerParam(param) {
+        if (this.#freeWorkers.size == 0) return null;
+        const firstItem = this.#freeWorkers.values().next().value;
+        return firstItem[param];
+    }
+
+    /**
      * 加入线程、并记录到空线程
      */
     add(worker) {

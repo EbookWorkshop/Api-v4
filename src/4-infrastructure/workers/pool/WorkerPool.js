@@ -17,6 +17,7 @@ const MAX_THREAD_NUM = 15;
 const kTaskCallback = Symbol('kTaskCallback');
 const kTaskData = Symbol('kTaskData');
 const kTaskStartTime = Symbol("kTaskStartTime");
+const kWorkerFreeStart = Symbol("kWorkerFreeStart");//开始闲置时间
 
 /**
  * 线程池
@@ -56,11 +57,12 @@ export class WorkerPool {
     #taskHistory;
 
     #event;
+    #poolConfig;//线程池配置
 
     /**
      * 初始化线程池
      * @param {number} numThreads 最大线程数
-     * @param {EventManager} eventSer 消息
+     * @param {EventManager} eventSer 消息管理
      */
     constructor(config, eventSer, { numThreads } = {}) {
         this.#config = config;
@@ -86,6 +88,36 @@ export class WorkerPool {
      */
     #init() {
         this.#event.on(WORKERPOOL_ADD_TASK, (task) => this.addTask(task));
+        this.#poolConfig = {
+            idle: 60_000,        //闲置回收
+            min: 1,              //最低驻守线程
+            scan: 30_000,        //扫描间隔
+            interval: null,      //扫描器句柄
+        }
+        this.#poolConfig.interval = setInterval(this.#scanPool, this.#poolConfig.scan);
+    }
+
+    /**
+     * 扫描线程池，以完成下列任务：
+     * ### 运行任务
+     * ### 回收闲置进程
+     */
+    #scanPool() {
+        const fwNum = this.feeWorkerNum;
+        if (fwNum <= 0) return;//无闲置进程，直接退出
+
+        if (this.allTaskNum > 0 && this.#runTask()) return;     //有闲置线程、有排队任务、成功安排了一个任务 直接退出
+
+        if (fwNum <= this.#poolConfig.min) return;              //达到线程池最低驻留数
+
+        //比较最大空闲时，并清理超出线程
+        [this.#workerQueueNoDB, this.#workerQueueWithDB].forEach((wq) => {
+            const oldestAge = performance.now() - wq.getFeeWorkerParam(kWorkerFreeStart);
+            if (oldestAge >= this.#poolConfig.idle) {
+                const old = wq.getFeeWorker();
+                this.#closeWorker(old);
+            }
+        });
     }
 
     /**
@@ -201,16 +233,18 @@ export class WorkerPool {
     }
 
     /**
-     * 回收进程
+     * 回收进程-销毁
      * @param {Worker} worker 
      */
     async #closeWorker(worker) {
         this.#workersQueue(worker.withDB).remove(worker);
+        await worker.removeAllListeners();
         await worker.terminate();
     }
 
     /**
      * 运行一个任务
+     * @returns {boolean} true:派发任务成功
      */
     #runTask() {
         if (!this.hasFeeWorker && this.workerCount >= this.#maxThreadsNum) return;
@@ -244,6 +278,7 @@ export class WorkerPool {
             })
 
             worker.postMessage(taskData);//发送到子线程。
+            return true;
         } catch (error) {
             if (curTask) {
                 curTask.status = TASK_STATUS.REJECTED;
@@ -256,6 +291,7 @@ export class WorkerPool {
 
     /**
      * 闲置一个进程
+     * #### 当任务执行过后，将进程转为闲置、清理状态、资源等。
      * @param {Worker} worker 
      * @param {TASK_STATUS} resule 
      */
@@ -270,6 +306,7 @@ export class WorkerPool {
         const runNum = this.#runningThreadCountByType.get(task.taskType) || 1;
         this.#runningThreadCountByType.set(task.taskType, runNum - 1);
 
+        worker[kWorkerFreeStart] = performance.now();
         this.#workerData.delete(worker);
         this.#workersQueue(worker.withDB).free(worker);
 
@@ -314,16 +351,20 @@ export class WorkerPool {
     }
 
     /**
-     * 开足马力
+     * 开足马力——跑任务
      */
     run() {
-        let allTaskNum = 0;
-        for (let k of this.#waitingTask.keys()) allTaskNum += this.#waitingTask.get(k).length;
-        if (allTaskNum <= 0) return;
+        if (this.allTaskNum <= 0) return;
         let maxTry = 20;
         while (this.workerCount < this.#maxThreadsNum && --maxTry) this.#runTask();
     }
 
+    get allTaskNum() {
+        let allTaskNum = 0;
+        for (let k of this.#waitingTask.keys()) allTaskNum += this.#waitingTask.get(k).length;
+        return allTaskNum;
+    }
+    get feeWorkerNum() { return this.#workerQueueWithDB.hasFeeWorker + this.#workerQueueNoDB.hasFeeWorker }
     get hasFeeWorker() { return this.#workerQueueWithDB.hasFeeWorker || this.#workerQueueNoDB.hasFeeWorker }
     get workerCount() { return this.#workerQueueNoDB.workerNum + this.#workerQueueWithDB.workerNum; }
     get workerDebug() { return this.#config?.debug?.mode && this.#config?.debug?.switch?.worker; }
