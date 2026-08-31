@@ -8,8 +8,20 @@ import { WebBookController } from '../controllers/WebBookController.js';
  */
 export function createWebBookRoutes(bookController) {
     const router = new Router({ prefix: '/library/webbook' });
-    router.get('/list', (ctx) => bookController.listBooks(ctx));
     router.get('/', (ctx) => bookController.getBookById(ctx));
+    router.get('/list', (ctx) => bookController.listBooks(ctx));
+    router.get('/sources', (ctx) => bookController.getWebBookSources(ctx));
+    router.get('/defsources', (ctx) => bookController.getWebBookDefSources(ctx));
+    router.get('/chapter/sources', (ctx) => bookController.listBooks(ctx));
+
+    router.post('/', (ctx) => ctx.body="TODO: ");
+    router.post('/chapter/autosync', (ctx) => ctx.body="TODO: ");
+    router.post('/chapter/addnewsource', (ctx) => ctx.body="TODO: ");
+    router.post('/chapter/singlechapter', (ctx) => ctx.body="TODO: ");
+    router.post('/chapter/chapter/sources', (ctx) => ctx.body="TODO: ");
+    
+    router.patch('/chapter/mergeindex', (ctx) => ctx.body="TODO: ");
+    router.patch('/chapter/updatechapter', (ctx) => ctx.body="TODO: ");
     
     router.delete('/', (ctx) => bookController.deleteBook(ctx));
     return router;

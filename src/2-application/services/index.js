@@ -73,7 +73,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         bookDetailQuery: bookDetailQueryService,
         bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction),
 
-        webBookQuery: new WebBookQueryService(repositories.webBookRepository),
+        webBookQuery: new WebBookQueryService(repositories.webBookRepository, repositories.webBookIndexSourceURLRepository),
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
         webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction),
 
@@ -105,3 +105,13 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         // bookExport: bookExportService,
     };
 }
+console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
+/*
+import { WebBookIndexSourceURLQueryService } from './WebBookIndexSourceURLQueryService.js';
+webBookIndexSourceURLQuery: new WebBookIndexSourceURLQueryService(repositories.webBookIndexSourceURLRepository),
+*/
+console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
+/*
+import { WebBookIndexSourceURLCommandService } from './WebBookIndexSourceURLCommandService.js';
+webBookIndexSourceURLCommand: new WebBookIndexSourceURLCommandService(repositories.webBookIndexSourceURLRepository),
+*/

@@ -101,6 +101,88 @@ export class WebBookController {
 
     /**
      * @swagger
+     * /library/webbook/sources:
+     *   get:
+     *     summary: 获取网页图书的源列表
+     *     description: 根据图书 ID 返回该书关联的所有网页源（统一包装格式）
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *       - WebBook
+     *     parameters:
+     *       - $ref: '#/components/parameters/BookIdQuery'
+     *     responses:
+     *       200:
+     *         description: 成功返回源列表
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/WebBookSourceListResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/WebBookSourceListSuccess'
+     *               empty:
+     *                 $ref: '#/components/examples/ResultListEmpty'
+     *       400:
+     *         description: 参数错误（bookid 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookid 必须为有效整数"
+     *               timestamp: "2026-08-31T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async getWebBookSources(ctx) {
+        const bookId = BookIdRequest.fromQuery(ctx.query);
+        ctx.body = await this.#webBookQueryService.getBookSources(bookId);
+    }
+
+    /**
+     * @swagger
+     * /library/webbook/defsources:
+     *   get:
+     *     summary: 获取网页图书的默认源列表
+     *     description: 根据图书 ID 返回该书关联的默认网页源（统一包装格式）。
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *       - WebBook
+     *     parameters:
+     *       - $ref: '#/components/parameters/BookIdQuery'
+     *     responses:
+     *       200:
+     *         description: 成功返回源列表
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/WebBookSourceListResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/WebBookSourceListSuccess'
+     *               empty:
+     *                 $ref: '#/components/examples/ResultListEmpty'
+     *       400:
+     *         description: 参数错误（bookid 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookid 必须为有效整数"
+     *               timestamp: "2026-08-31T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async getWebBookDefSources(ctx) {
+        const bookId = BookIdRequest.fromQuery(ctx.query);
+        ctx.body = await this.#webBookQueryService.getDefSources(bookId);
+    }
+
+    /**
+     * @swagger
      * /library/webbook:
      *   delete:
      *     summary: 删除图书
