@@ -13,6 +13,7 @@ import { WebBookQueryService } from "./WebBookQueryService.js"
 import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
 import { WebBookCommandService } from './WebBookCommandService.js';
 import { WebBookSourceURLService } from './WebBookSourceURLService.js';
+import { WebBookChapterURLService } from './WebBookChapterURLService.js';
 
 import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
@@ -77,7 +78,8 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         webBookQuery: new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository),
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
         webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction),
-        webBookSourceURL: new WebBookSourceURLService(repositories.webBookSourceURLRepository,repositories.webBookChapterURLRepository,databaseTransaction),
+        webBookSourceURL: new WebBookSourceURLService(repositories.webBookSourceURLRepository, repositories.webBookChapterURLRepository, databaseTransaction),
+        webBookChapterURL: new WebBookChapterURLService(repositories.webBookChapterURLRepository),
 
         volumeQuery: new VolumeQueryService(volumeRepository),
         volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),

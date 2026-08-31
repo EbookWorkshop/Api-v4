@@ -6,6 +6,7 @@ import { TagController } from './TagController.js';
 import { FontController } from "./FontController.js";
 import { WebBookController } from "./WebBookController.js"
 import { WebBookSourceURLController } from "./WebBookSourceURLController.js"
+import { WebBookChapterURLController } from "./WebBookChapterURLController.js"
 import { SwaggerController } from "./SwaggerController.js"
 import { ReviewRuleController } from "./ReviewRuleController.js"
 import { ReviewRuleUsingController } from "./ReviewRuleUsingController.js"
@@ -30,6 +31,7 @@ export function createControllers(services, config) {
         book: new BookController(bookQuery, bookCommand, bookDetailQuery),
         webBook: new WebBookController(services.webBookQuery, services.webBookCommand, services.webBookDetailQuery, bookCommand),
         webBookSourceURL: new WebBookSourceURLController(services.webBookSourceURL),
+        webBookChapterURL: new WebBookChapterURLController(services.webBookChapterURL),
         volume: new VolumeController(services.volumeQuery, services.volumeCommand),
         chapter: new ChapterController(services.chapterQuery, services.chapterCommand),
         tag: new TagController(tagQuery, tagCommand),
