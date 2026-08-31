@@ -8,7 +8,7 @@ INSERT into  EbookChapters select * from old.EbookChapters;
 INSERT into  WebBooks select * from old.WebBooks;
 INSERT into  WebBookChapters select * from old.WebBookChapters;
 --INSERT into  WebBookIndexSourceURLs select * from old.WebBookIndexSourceURLs;
-INSERT into  WebBookIndexSourceURLs(id,Path,WebBookId,createdAt,updatedAt) select * from old.WebBookIndexSourceURLs;
+INSERT into  WebBookSourceURLs(id,Path,WebBookId,createdAt,updatedAt) select * from old.WebBookIndexSourceURLs;
 INSERT into  PDFBooks select * from old.PDFBooks;
 INSERT into  SystemConfigs select * from old.SystemConfigs where [Group] != 'database_version';
 INSERT into  ReviewRules select * from old.ReviewRules;

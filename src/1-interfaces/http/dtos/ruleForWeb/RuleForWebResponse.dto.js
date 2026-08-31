@@ -160,4 +160,37 @@ export class HostRequest {
         if (!host) throw new UserInputError("网站主机名为空。");
         return getHost(host);
     }
+
+    /**
+     * @swagger
+     * components:
+     *   schemas:
+     *     ChangeHostnameRequest:
+     *       type: object
+     *       description: 更改规则主机名的请求体
+     *       properties:
+     *         oldHostname:
+     *           type: string
+     *           description: 当前主机名
+     *           example: "www.example.com"
+     *         newHostname:
+     *           type: string
+     *           description: 新的主机名
+     *           example: "www.newexample.com"
+     *       required:
+     *         - oldHostname
+     *         - newHostname
+     *
+     *   examples:
+     *     ChangeHostnameRequestExample:
+     *       summary: 更改主机名请求示例
+     *       value:
+     *         oldHostname: "www.example.com"
+     *         newHostname: "www.newexample.com"
+     */
+    static newOldHostInBody(body) {
+        const { oldHostname, newHostname } = body;
+        if (!oldHostname || !newHostname) throw UserInputError("源域名或新域名均不能为空！");
+        return { oldHostname, newHostname };
+    }
 }

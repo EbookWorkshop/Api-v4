@@ -4,7 +4,7 @@ import EbookTag from './EbookTag.js';
 import Volume from './Volume.js';
 import WebBook from "./WebBook.js";
 import WebBookChapter from './WebBookChapter.js';
-import WebBookIndexSourceURL from "./WebBookIndexSourceURL.js";
+import WebBookSourceURL from "./WebBookSourceURL.js";
 import WebBookChapterURL from './WebBookChapterURL.js';
 import RuleForWeb from "./RuleForWeb.js";
 import SystemConfig from "./SystemConfig.js"
@@ -21,7 +21,7 @@ export const entityDefinitions = [
     Volume,
     WebBook,
     WebBookChapter,
-    WebBookIndexSourceURL,
+    WebBookSourceURL,
     WebBookChapterURL,
     RuleForWeb,
     SystemConfig,

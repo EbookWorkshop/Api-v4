@@ -12,6 +12,7 @@ import { BookmarkService } from './BookmarkService.js';
 import { WebBookQueryService } from "./WebBookQueryService.js"
 import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
 import { WebBookCommandService } from './WebBookCommandService.js';
+import { WebBookSourceURLService } from './WebBookSourceURLService.js';
 
 import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
@@ -73,9 +74,10 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         bookDetailQuery: bookDetailQueryService,
         bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction),
 
-        webBookQuery: new WebBookQueryService(repositories.webBookRepository, repositories.webBookIndexSourceURLRepository),
+        webBookQuery: new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository),
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
         webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction),
+        webBookSourceURL: new WebBookSourceURLService(repositories.webBookSourceURLRepository,repositories.webBookChapterURLRepository,databaseTransaction),
 
         volumeQuery: new VolumeQueryService(volumeRepository),
         volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),
@@ -105,13 +107,3 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         // bookExport: bookExportService,
     };
 }
-console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
-/*
-import { WebBookIndexSourceURLQueryService } from './WebBookIndexSourceURLQueryService.js';
-webBookIndexSourceURLQuery: new WebBookIndexSourceURLQueryService(repositories.webBookIndexSourceURLRepository),
-*/
-console.warn("TODO:  在服务层桶文件中注册新服务 //src/2-application/services/index.js");
-/*
-import { WebBookIndexSourceURLCommandService } from './WebBookIndexSourceURLCommandService.js';
-webBookIndexSourceURLCommand: new WebBookIndexSourceURLCommandService(repositories.webBookIndexSourceURLRepository),
-*/

@@ -34,7 +34,7 @@ export class RuleForWebRepository {
      * 查找站点的使用情况
      */
     async findHostUsing(host) {
-        // const rows = await this.#WebBookIndexSourceURL.findAll({
+        // const rows = await this.#WebBookSourceURL.findAll({
         //     where: { Path: { [Models.Op.like]: `%${host}%` } },
         //     include: [{
         //         model: this.#WebBook,
@@ -44,7 +44,7 @@ export class RuleForWebRepository {
         //     attributes: [
         //         'WebBookId',
         //         [this.#sequelize.literal(
-        //             `(SELECT MAX("createdAt") FROM [WebBookIndexSourceURLs] s WHERE s."Path" LIKE '%${host}%')`
+        //             `(SELECT MAX("createdAt") FROM [WebBookSourceURLs] s WHERE s."Path" LIKE '%${host}%')`
         //         ), 'MaxCreatedAt']
         //     ],
         //     raw: true
@@ -58,10 +58,10 @@ export class RuleForWebRepository {
             eb.[BookName] AS [WebBook.Ebook.BookName],
             (
                 SELECT MAX(s.[createdAt])
-                FROM [WebBookIndexSourceURLs] s
+                FROM [WebBookSourceURLs] s
                 WHERE s.[Path] LIKE :host
             ) AS [MaxCreatedAt]
-        FROM [WebBookIndexSourceURLs] wbi
+        FROM [WebBookSourceURLs] wbi
         LEFT JOIN [WebBooks] wb ON wb.[id] = wbi.[WebBookId]
         LEFT JOIN [Ebooks] eb ON eb.[id] = wb.[BookId]
         WHERE wbi.[Path] LIKE :host`, {

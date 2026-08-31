@@ -23,9 +23,9 @@ export function setupAssociations(models) {
     models.Ebook.hasOne(models.WebBook, { foreignKey: 'BookId', sourceKey: 'id', onDelete: 'CASCADE' });
     models.WebBook.belongsTo(models.Ebook, { foreignKey: 'BookId', targetKey: 'id' });
 
-    // WebBook <-- --> WebBookIndexSourceURL
-    models.WebBook.hasMany(models.WebBookIndexSourceURL, { onDelete: 'CASCADE' });
-    models.WebBookIndexSourceURL.belongsTo(models.WebBook);
+    // WebBook <-- --> WebBookSourceURL
+    models.WebBook.hasMany(models.WebBookSourceURL, { onDelete: 'CASCADE' });
+    models.WebBookSourceURL.belongsTo(models.WebBook);
 
     // EbookChapter <-- --> WebBookChapter
     models.EbookChapter.hasOne(models.WebBookChapter, { foreignKey: 'IndexId', sourceKey: 'id', as: "WebBookChapter", onDelete: 'CASCADE' });
