@@ -57,9 +57,32 @@ export class TaskSchedulerService {
             })
 
             this.#workerPool.addTask(task);
-            return { taskId: task.taskId };
+            return `已添加到任务：${task.taskId}` //{ taskId: task.taskId };
         } catch (error) {
             throw new AppError("添加采集任务失败：" + error.message);
         }
     }
+
+    /**
+     * 提交采集单章任务
+     * @param {object} setting 
+     * @returns 
+     */
+    async submitCollectSingleChapterTask(setting) {
+        try {
+            const task = new Task({
+                taskId: crypto.randomUUID(),
+                param: setting,
+                taskType: TASK_TYPES.SINGLE_CHAPTER_COLLECT,
+                useDB: true,
+            })
+
+            this.#workerPool.addTask(task);
+            return `已添加到任务：${task.taskId}` //{ taskId: task.taskId };
+        } catch (error) {
+            throw new AppError("添加采集任务失败：" + error.message);
+        }
+    }
+
+
 }

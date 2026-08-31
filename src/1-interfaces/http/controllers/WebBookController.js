@@ -188,7 +188,7 @@ export class WebBookController {
      * @swagger
      * /library/webbook:
      *   post:
-     *     summary: 创建网页图书
+     *     summary: 创建网页图书[TODO]实际任务未开发
      *     description: 根据提供的源页面和信息页面创建网页图书记录（统一包装格式）
      *     tags:
      *       - Library - WebBook —— 网文图书馆
@@ -230,6 +230,54 @@ export class WebBookController {
         const { url, ...setting } = ctx.request.body;
         if (url && !setting.sourcePage) setting.sourcePage = url;
         ctx.body = await this.#taskSchedulerService.submitCreateWebBookTask(setting);
+    }
+
+    /**
+     * @swagger
+     * /library/webbook/chapter/singlechapter:
+     *   post:
+     *     summary: 采集单章[TODO]实际任务未开发
+     *     description: 根据提供的网址采集单章（统一包装格式）
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *       - WebBook
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/CreateWebBookRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/CreateWebBookRequestExample'
+     *     responses:
+     *       200:
+     *         description: 创建成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-31T14:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如缺少必填字段或 URL 格式不正确）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "sourcePage 和 infoPage 为必填字段，且需为有效 URL"
+     *               timestamp: "2026-08-31T14:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async collectSingleChapter(ctx) {
+        const setting = ctx.request.body;
+        // if (url && !setting.sourcePage) setting.sourcePage = url;
+        ctx.body = await this.#taskSchedulerService.submitCollectSingleChapterTask(setting);
     }
 
     /**

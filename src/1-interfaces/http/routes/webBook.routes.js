@@ -14,9 +14,9 @@ export function createWebBookRoutes(bookController) {
     router.get('/defsources', (ctx) => bookController.getWebBookDefSources(ctx));
 
     router.post('/', (ctx) => bookController.createWebBook(ctx));
+    router.post('/singlechapter', (ctx) => bookController.collectSingleChapter(ctx));
     router.post('/chapter/autosync', (ctx) => ctx.body = "TODO: /chapter/autosync");
     router.post('/chapter/addnewsource', (ctx) => ctx.body = "TODO: /chapter/addnewsource");
-    router.post('/chapter/singlechapter', (ctx) => ctx.body = "TODO: /chapter/singlechapter");
 
     router.patch('/chapter/mergeindex', (ctx) => ctx.body = "TODO: /chapter/mergeindex");
     router.patch('/chapter/updatechapter', (ctx) => ctx.body = "TODO: /chapter/updatechapter");

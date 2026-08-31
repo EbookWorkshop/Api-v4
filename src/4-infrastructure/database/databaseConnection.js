@@ -11,7 +11,7 @@ export async function createDatabaseConnection(dbPath, logging = false) {
         dialect: 'sqlite',
         storage: dbPath,
         logging: logging ? console.log : false,
-        pool: { max: 1, min: 0, acquire: 30000, idle: 10000 },
+        pool: { max: 3, min: 0, acquire: 30000, idle: 60_000 },//闲置超时时间
         dialectOptions: { foreignKeys: true },
     });
 

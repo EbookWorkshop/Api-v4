@@ -18,6 +18,9 @@ export async function assignTasks(taskType, config, repositories) {
         case TASK_TYPES.EXPORT_BOOK:
             createTask = "exportBook.assembler.js";
             break;
+        case TASK_TYPES.WEB_BOOK_COLLECT:
+            createTask = "webBookCollect.assembler.js";
+            break;
         default:
             throw new AppError("尚未开发对接的任务类型：" + taskType);
     }
@@ -25,9 +28,9 @@ export async function assignTasks(taskType, config, repositories) {
     try {
         const creater = await import(assemblerDir + createTask);
         executor = creater?.default(config, repositories);
-        if (!executor instanceof ITaskExecutor) throw new AppError(`线程执行逻辑需实现接口[ITaskExecutor]。模块：${assemblerDir + createTask}\n`);
+        if (!(executor instanceof ITaskExecutor)) throw new AppError(`线程执行逻辑需实现接口[ITaskExecutor]。模块：${assemblerDir + createTask}\n`);
     } catch (error) {
-        console.warn("子线程执行失败-组装线程启动器失败：", createTask, error);
+        console.warn("子线程执行失败-组装线程启动器失败：", createTask, "\n", error);
     }
 
     return executor;
