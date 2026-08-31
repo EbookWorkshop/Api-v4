@@ -1,6 +1,8 @@
 import Koa from 'koa';
 import { koaBody } from 'koa-body';
 import { EventEmitter } from 'node:events';
+
+import { DATABASE_VERSION } from "./3-domain/constants/SystemConfigGroup.js"
 import { EventManager } from './4-infrastructure/event/EventManager.js';
 import { WorkerPool } from "./4-infrastructure/workers/index.js"
 import { loadConfig } from './4-infrastructure/config/index.js';
@@ -65,10 +67,15 @@ async function initializeDatabase() {
      * force: true	  无论什么情况都删表重建
      */
     await sequelize.sync();//{ alter: true, force: false }
+
+    // 记录数据库初始化时使用的项目版本-便于跟踪后续升级
+    await services.systemConfig.defaultConfig(DATABASE_VERSION, 'create_version', config.version)
+
     if (config.env === 'development') {
-        console.log('✅ 数据库表结构已同步 (development)');
+        console.log('✅ 数据库表结构已同步 (development)', vv);
     }
 }
+
 
 async function closeDatabase() {
     await miniCore.close();

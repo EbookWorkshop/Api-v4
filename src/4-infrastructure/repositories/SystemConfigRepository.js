@@ -57,6 +57,27 @@ export class SystemConfigRepository {
     }
 
     /**
+     * 查找记录，如果不存在则创建
+     * @param {*} group 
+     * @param {*} name 
+     * @param {*} value 
+     * @param {*} options 
+     * @returns 
+     */
+    async findOrCreate(group, name, value, options = {}) {
+        const [result] = await this.#SystemConfigModel.findOrCreate({
+            where: {
+                Group: group,
+                Name: name,
+            },
+            defaults: {
+                Value: value,
+            }, transaction: options.transaction
+        });
+        return result.toJSON();
+    }
+
+    /**
      * 删除配置
      * @param {string} group - 可为 null（只按 name 删除）
      * @param {string} name

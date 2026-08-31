@@ -56,5 +56,13 @@ export class SystemConfigService {
         return deletedCount > 0;
     }
 
-
+    /**
+     * 设置默认值/当已有值则不存储
+     * @param {*} group 
+     * @param {*} name 
+     * @param {*} options 
+     */
+    async defaultConfig(group, name, options = {}) {
+        return this.#systemConfigRepository.findOrCreate(group, name, options);
+    }
 }
