@@ -70,6 +70,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
 
     const emailSender = new NodemailerEmailSender();
     const task = new TaskSchedulerService(workerPool);
+    const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
 
     return {
         bookQuery: new BookQueryService(ebookRepository),
@@ -99,8 +100,8 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
         reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
         reviewRuleUsing: new ReviewRuleUsingService(repositories.reviewRuleUsingRepository),
-        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, new ReviewDictionaryService(repositories.dictionaryRepository)),
-        ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, systemConfigService, databaseTransaction, fileScanner),
+        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer),
+        ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner),
 
         assets: new AssetsService(fileScanner, fileWriter, config),
 

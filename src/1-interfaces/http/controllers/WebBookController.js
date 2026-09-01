@@ -288,6 +288,7 @@ export class WebBookController {
      *     summary: 🧵批量更新网页图书章节
      *     description: 根据章节 ID 列表批量更新网页图书的章节内容（如重新抓取、标记更新等），通过 `isUpdate` 控制是否执行实际更新（统一包装格式）
      *     tags:
+     *       - Library - WebBook —— 网文图书馆
      *       - WebBook
      *     requestBody:
      *       required: true
@@ -345,6 +346,7 @@ export class WebBookController {
      *     summary: 设置网页图书自动同步
      *     description: 开启或关闭指定网页图书的自动同步功能（统一包装格式）
      *     tags:
+     *       - Library - WebBook —— 网文图书馆
      *       - WebBook
      *     requestBody:
      *       required: true

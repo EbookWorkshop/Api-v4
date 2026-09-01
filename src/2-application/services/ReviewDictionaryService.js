@@ -20,4 +20,13 @@ export class ReviewDictionaryService {
     async getDictionaryByURL(host) {
         return this.#reviewDictionaryRepository.findByHost(host);
     }
+
+
+    async saveDictionaries(host, data, options) {
+        return this.#reviewDictionaryRepository.batchUpsert(host, data, options);
+    }
+
+    async deleteDictionaries(host, options) {
+        return this.#reviewDictionaryRepository.deleteByHost(host, options);
+    }
 }

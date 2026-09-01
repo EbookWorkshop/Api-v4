@@ -50,3 +50,36 @@
  *             Path: "https://www.aa.bb/page/to/read2"
  *             WebBookIndexId: 47911
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     UpsertWebBookChapterSourceRequest:
+ *       type: object
+ *       description: 更新网页章节源的请求体
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: 章节源网址记录ID
+ *           example: 332
+ *         url:
+ *           type: string
+ *           description: 章节源 URL 地址
+ *           example: "https://www.aa.bb/page/to/read"
+ *       required:
+ *         - url
+ *         - id
+ *
+ *   examples:
+ *     UpsertWebBookChapterSourceRequestExample:
+ *       summary: 创建章节源请求示例（新增）
+ *       value:
+ *         url: "https://www.aa.bb/page/to/read"
+ *
+ *     UpsertWebBookChapterSourceUpdateExample:
+ *       summary: 更新章节源请求示例
+ *       value:
+ *         id: 332
+ *         url: "https://www.aa.bb/page/to/read_new"
+ */

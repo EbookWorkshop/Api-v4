@@ -12,9 +12,10 @@ export function createRuleForWebRoutes(ruleForWebController) {
     router.get('/hostlist', (ctx) => ruleForWebController.listBotRuleHosts(ctx));
     router.get('/dictionaries', (ctx) => ruleForWebController.getDictionaryByURL(ctx));
     router.get('/registeredwebsites', (ctx) => ruleForWebController.listRegisteredWebsites(ctx));
-    
+
     router.post('/', (ctx) => ruleForWebController.batchUpsertBotRules(ctx));
     router.post('/import', (ctx) => ruleForWebController.importBotRules(ctx));
+    router.post('/dictionaries', (ctx) => ruleForWebController.saveDictionaries(ctx));
 
     router.delete('/', (ctx) => ruleForWebController.deleteBotRules(ctx));
     return router;

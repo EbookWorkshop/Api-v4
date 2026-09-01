@@ -359,6 +359,47 @@ export class RuleForWebController {
 
     /**
      * @swagger
+     * /services/botrule/dictionaries:
+     *   post:
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *       - BotRule
+     *     summary: 存储指定站点的字典
+     *     description: 存储指定站点的翻译字典
+     *     parameters:
+     *       - in: body
+     *         name: data
+     *         description: 站点字典数据
+     *         required: true
+     *         schema:
+     *           type: object
+     *           required:
+     *             - host
+     *             - data
+     *           properties:
+     *             host:
+     *               type: string
+     *               description: 站点host标识
+     *             data:
+     *               type: array
+     *               description: 字典条目列表
+     *               items:
+     *                 $ref: '#/components/schemas/DictionaryItem'
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 请求成功
+     *       600:
+     *         description: 参数错误，参数类型错误
+     */
+    async saveDictionaries(ctx) {
+        const { host, data } = ctx.request.body;
+        ctx.body = await this.#ruleForWebCommandService.saveDictionaries(host, data);
+    }
+
+    /**
+     * @swagger
      * /services/botrule:
      *   delete:
      *     summary: 删除指定主机的所有 Bot 规则

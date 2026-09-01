@@ -36,4 +36,18 @@ export class WebBookChapterURLRepository {
             raw: true
         })
     }
+
+    /**
+     * 更新网址
+     * @param {*} id 记录ID
+     * @param {*} url 
+     * @returns 
+     */
+    async updateSourcePath(id, url) {
+        return this.#WebBookChapterURLModel.update({
+            Path: url,
+        }, {
+            where: { id: id }
+        });
+    }
 }

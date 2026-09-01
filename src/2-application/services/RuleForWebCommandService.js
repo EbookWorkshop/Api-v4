@@ -10,6 +10,8 @@ const DEFAULT_SCRAPING = "puppeteer";
 export class RuleForWebCommandService {
     /** @type {RuleForWebRepository} */
     #ruleForWebRepository;
+    /** @type {ReviewDictionaryRepository} */
+    #reviewDictionaryService;
     #sysConfig;
     /** @type {ITransaction} */
     #transaction;
@@ -20,8 +22,9 @@ export class RuleForWebCommandService {
      * @param {RuleForWebRepository} ruleForWebRepository 
      * @param {IFileScanner} fileScanner 
      */
-    constructor(ruleForWebRepository, systemConfigService, transaction, fileScanner) {
+    constructor(ruleForWebRepository, reviewDictionaryService, systemConfigService, transaction, fileScanner) {
         this.#ruleForWebRepository = ruleForWebRepository;
+        this.#reviewDictionaryService = reviewDictionaryService;
         this.#sysConfig = systemConfigService;
         this.#transaction = transaction;
         this.#fileScanner = fileScanner;
@@ -32,6 +35,11 @@ export class RuleForWebCommandService {
         return this.batchUpsertRules(rules);
     }
 
+    /**
+     * 完整导入时用
+     * @param {*} rules 
+     * @returns 
+     */
     async batchUpsertRules(rules) {
         return this.#transaction.runInTransaction(async (trans) => {
             //全套规则删除并更新
@@ -53,14 +61,11 @@ export class RuleForWebCommandService {
                 await this.#sysConfig.setConfig(WEBSITE_SCRAPING, oneHost, scraping.selector, { transaction: trans });
             }
             rules = rules.filter(r => r.ruleName != "Scraping");
-
-            //TODO: 设置站点校阅字典
-            // const dict = rules.find(d => d.ruleName == "Dictionary");
-            // if (dict && dict.data) {
-            //     await DO.DeleteReviewDictionary(oneHost, trans);
-            //     await DO.SaveDictionaries(oneHost, dict.data, trans);
-            rules = rules.filter(r => r.ruleName != "Dictionary");
-            // }
+            const dict = rules.find(d => d.ruleName == "Dictionary");
+            if (dict && dict.data) {
+                await this.#reviewDictionaryService.saveDictionaries(oneHost, dict.data, { transaction: trans });
+                rules = rules.filter(r => r.ruleName != "Dictionary");
+            }
             for (let p of rules) {
                 let rule = {
                     Host: p.host,
@@ -82,16 +87,8 @@ export class RuleForWebCommandService {
         });
     }
 
-    /**
-     * 站点更名
-     * @param {*} host 
-     * @param {*} newHost 
-     */
-    async changeHostname(host, newHost) {
-        this.#transaction.runInTransaction((transaction) => {
-
-
-        })
+    async saveDictionaries(host, data) {
+        return this.#reviewDictionaryService.saveDictionaries(host, data);
     }
 
     /**
@@ -105,7 +102,8 @@ export class RuleForWebCommandService {
             await this.#sysConfig.deleteConfig(undefined, host, { transaction: tran });
             //删除Bot规则
             await this.#ruleForWebRepository.delete(host, { transaction: tran })
-            //TODO: 删除校阅字典
+            //删除校阅字典
+            await this.#reviewDictionaryService.deleteDictionaries(host, { transaction: tran });
             return true;
         }
         if (!transaction) return this.#transaction.runInTransaction(deleter.bind(this));

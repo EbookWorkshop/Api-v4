@@ -8,6 +8,7 @@ import Router from '@koa/router';
 export function createWebBookChapterURLRoutes(webBookChapterURLController) {
     const router = new Router({ prefix: '/library/webbook/chapter' });
     router.get('/sources', (ctx) => webBookChapterURLController.getWebBookChapterSources(ctx));
+    router.post('/sources', (ctx) => webBookChapterURLController.setWebBookChapterSources(ctx));
 
     return router;
 }

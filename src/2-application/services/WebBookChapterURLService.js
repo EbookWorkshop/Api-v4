@@ -15,4 +15,14 @@ export class WebBookChapterURLService {
     async getChapterSources(chapterId) {
         return this.#webBookChapterURLRepository.queryURLByChapterId(chapterId);
     }
+
+    /**
+     * 根据记录ID更新章节来源网址
+     * @param {*} id 
+     * @param {*} url 
+     * @returns 
+     */
+    async upsertChapterSource(id, url) {
+        return this.#webBookChapterURLRepository.updateSourcePath(id, url);
+    }
 }

@@ -1,7 +1,6 @@
 import { getHost } from "../../5-shared/utils/site.js";
 import { WEBSITE_TIMEOUT, WEBSITE_SCRAPING, WEBSITE_USERAGENT } from "../../3-domain/constants/SystemConfigGroup.js";
 import { RuleForWebRepository } from '../../4-infrastructure/repositories/RuleForWebRepository.js';
-import { ReviewDictionaryRepository } from "../../4-infrastructure/repositories/ReviewDictionaryRepository.js";
 import { AppError, UserInputError } from "../../5-shared/errors/index.js"
 
 const DEFAULT_SCRAPING = "puppeteer";
@@ -11,18 +10,18 @@ export class RuleForWebQueryService {
     #ruleForWebRepository;
     /** @type {SystemConfigService} */
     #systemConfigService;
-    /** @type {ReviewDictionaryRepository} */
-    #dictionaryRepository;
+    /** @type {ReviewDictionaryService} */
+    #reviewDictionaryService;
 
     /**
      * @param {RuleForWebRepository} ruleForWebRepository 
      * @param {SystemConfigService} systemConfigService 
-     * @param {ReviewDictionaryRepository} dictionaryRepository 
+     * @param {ReviewDictionaryService} reviewDictionaryService 
      */
-    constructor(ruleForWebRepository, systemConfigService, dictionaryRepository) {
+    constructor(ruleForWebRepository, systemConfigService, reviewDictionaryService) {
         this.#ruleForWebRepository = ruleForWebRepository;
         this.#systemConfigService = systemConfigService;
-        this.#dictionaryRepository = dictionaryRepository;
+        this.#reviewDictionaryService = reviewDictionaryService;
     }
 
     /**
@@ -69,7 +68,7 @@ export class RuleForWebQueryService {
             selector: scraping,
         });
 
-        let dict = await this.#dictionaryRepository.getDictionaryByURL(host);
+        let dict = await this.#reviewDictionaryService.getDictionaryByURL(host);
         if (dict)
             rsl.push({
                 ruleName: "Dictionary",
@@ -79,7 +78,7 @@ export class RuleForWebQueryService {
     }
 
     async getDictionaryByURL(host) {
-        return this.#dictionaryRepository.getDictionaryByURL(host);
+        return this.#reviewDictionaryService.getDictionaryByURL(host);
     }
 
     async listRegisteredWebsites() {
