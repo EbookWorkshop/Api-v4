@@ -35,8 +35,8 @@ export async function initWorker(serverResources, onclose = () => { }) {
 
 /**
  * 运行任务
- * @param {*} resources 线程资源
  * @param {*} task 
+ * @param {*} resources 线程资源
  */
 async function runTask(task, config, resources) {
     const { taskId, taskType, param } = task;

@@ -14,6 +14,9 @@ importers:
       '@publiwrite/html-to-epub':
         specifier: ^0.0.28
         version: 0.0.28
+      axios:
+        specifier: ^1.20.0
+        version: 1.20.0
       koa:
         specifier: ^3.2.1
         version: 3.2.1

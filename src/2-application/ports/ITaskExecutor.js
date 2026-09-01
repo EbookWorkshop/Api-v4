@@ -1,4 +1,7 @@
 import { TASK_TYPES } from "../../3-domain/constants/Task.js";
+/**
+ * 任务执行
+ */
 export class ITaskExecutor {
     /**
      * 执行任务

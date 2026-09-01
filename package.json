@@ -12,6 +12,7 @@
     "dependencies": {
         "@koa/router": "^15.7.0",
         "@publiwrite/html-to-epub": "^0.0.28",
+        "axios": "^1.20.0",
         "koa": "^3.2.1",
         "koa-body": "^8.0.0",
         "koa-static": "^5.0.0",
