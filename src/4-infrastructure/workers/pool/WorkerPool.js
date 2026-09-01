@@ -117,8 +117,9 @@ export class WorkerPool {
             const oldestAge = performance.now() - wq.getFeeWorkerParam(kWorkerFreeStart);
             if (oldestAge >= this.#poolConfig.idle) {
                 const old = wq.getFeeWorker();
+                if (!old) return;
+                // console.log("将回收进程：", old.workerId)
                 this.#closeWorker(old);
-                console.log("已回收进程：", old.workerId)
             }
         });
     }
@@ -249,6 +250,7 @@ export class WorkerPool {
      * @param {Worker} worker 
      */
     async #closeWorker(worker) {
+        if (!worker) return;
         this.#workersQueue(worker.withDB).remove(worker);
         await worker.removeAllListeners();
         await worker.terminate();
@@ -377,7 +379,7 @@ export class WorkerPool {
         for (let k of this.#waitingTask.keys()) allTaskNum += this.#waitingTask.get(k).length;
         return allTaskNum;
     }
-    get feeWorkerNum() { return this.#workerQueueWithDB.hasFeeWorker + this.#workerQueueNoDB.hasFeeWorker }
+    get feeWorkerNum() { return this.#workerQueueWithDB.feeWokerNum + this.#workerQueueNoDB.feeWokerNum }
     get hasFeeWorker() { return this.#workerQueueWithDB.hasFeeWorker || this.#workerQueueNoDB.hasFeeWorker }
     get workerCount() { return this.#workerQueueNoDB.workerNum + this.#workerQueueWithDB.workerNum; }
     get workerDebug() { return this.#config?.debug?.mode && this.#config?.debug?.switch?.worker; }
