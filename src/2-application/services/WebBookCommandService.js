@@ -14,4 +14,9 @@ export class WebBookCommandService {
         this.#transaction = transaction;
     }
 
+    async setAutoSync(bookId, autoSyncEnabled) {
+        return this.#webBookRepository.update(bookId, {
+            AutoSyncEnabled: autoSyncEnabled
+        });
+    }
 }

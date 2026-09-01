@@ -52,7 +52,12 @@ export class WebBookRepository {
     //   return await this.#WebBookModel.bulkCreate(books);
     // }
 
-    getModel() {
-        return this.#WebBookModel;
+
+    async update(bookId, data) {
+        return this.#WebBookModel.update({
+            ...data
+        }, {
+            where: { BookId: bookId }
+        })
     }
 }

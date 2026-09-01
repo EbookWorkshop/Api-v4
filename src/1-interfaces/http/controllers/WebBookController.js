@@ -285,7 +285,7 @@ export class WebBookController {
      * @swagger
      * /library/webbook/updatechapter:
      *   patch:
-     *     summary: 批量更新网页图书章节
+     *     summary: 🧵批量更新网页图书章节
      *     description: 根据章节 ID 列表批量更新网页图书的章节内容（如重新抓取、标记更新等），通过 `isUpdate` 控制是否执行实际更新（统一包装格式）
      *     tags:
      *       - WebBook
@@ -336,6 +336,63 @@ export class WebBookController {
         const chapterIds = ChapterRequest.fromBodyIds(ctx.request.body);
         const setting = ctx.request.body;
         ctx.body = await this.#taskSchedulerService.submitUpdateChapters(chapterIds, setting);
+    }
+
+    /**
+     * @swagger
+     * /library/webbook/autosync:
+     *   post:
+     *     summary: 设置网页图书自动同步
+     *     description: 开启或关闭指定网页图书的自动同步功能（统一包装格式）
+     *     tags:
+     *       - WebBook
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AutoSyncWebBookRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/AutoSyncWebBookRequestExample'
+     *     responses:
+     *       200:
+     *         description: 操作成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-09-01T12:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如 bookid 缺失或非数字、autoSyncEnabled 缺失或非布尔）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookid 必须为有效整数，autoSyncEnabled 必须为布尔值"
+     *               timestamp: "2026-09-01T12:00:00.000Z"
+     *       404:
+     *         description: 网页图书不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该网页图书"
+     *               timestamp: "2026-09-01T12:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async setAutoSync(ctx) {
+        const { bookid: bookId, autoSyncEnabled } = ctx.request.body;   //TODO: 接入DTO层，改用bookId规范
+        const result = await this.#webBookCommandService.setAutoSync(bookId, autoSyncEnabled);
+        ctx.body = result;
     }
 
     /**

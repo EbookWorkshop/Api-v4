@@ -13,13 +13,13 @@ export function createWebBookRoutes(bookController) {
     router.get('/sources', (ctx) => bookController.getWebBookSources(ctx));
     router.get('/defsources', (ctx) => bookController.getWebBookDefSources(ctx));
     router.get('/chapter/sources', (ctx) => ctx.body = "TODO: /chapter/sources");
-    
+
     router.post('/', (ctx) => bookController.createWebBook(ctx));
-    router.post('/autosync', (ctx) => ctx.body = "TODO: /autosync");
+    router.post('/autosync', (ctx) => bookController.setAutoSync(ctx));
     router.post('/singlechapter', (ctx) => bookController.collectSingleChapter(ctx));
     router.post('/addnewsource', (ctx) => ctx.body = "TODO: /addnewsource");
     router.post('/chapter/sources', (ctx) => ctx.body = "TODO: /chapter/sources");
-    
+
     router.patch('/mergeindex', (ctx) => ctx.body = "TODO: /mergeindex");
     router.patch('/updatechapter', (ctx) => bookController.updateWebBookChapters(ctx));
 
