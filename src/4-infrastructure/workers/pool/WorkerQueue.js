@@ -49,9 +49,8 @@ export class WorkerQueue {
         this.#workers.delete(worker);
     }
 
-    free(worker) {
-        this.#freeWorkers.add(worker);
-    }
+    free(worker) { this.#freeWorkers.add(worker); }
+    use(worker) { this.#freeWorkers.delete(worker); }
 
 
     /**

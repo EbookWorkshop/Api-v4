@@ -52,15 +52,16 @@ async function runTask(task, config, resources) {
         parentPort.postMessage({
             type: TMT.TASK_COMPLETED,
             taskId,
+            workerId,
             data: result,
         });
     } catch (error) {
-        throwError(error, taskId);
+        throwError(error, taskId, param);
     }
     // });
 }
 
-function throwError(error, taskId) {
+function throwError(error, taskId, data) {
     const errorPayload = {
         type: TMT.TASK_ERROR,
         workerId,
@@ -69,6 +70,7 @@ function throwError(error, taskId) {
             message: error.message,
             stack: error.stack,
             code: error.code || 'UNKNOWN',
+            data,
         },
     };
     parentPort.postMessage(errorPayload);

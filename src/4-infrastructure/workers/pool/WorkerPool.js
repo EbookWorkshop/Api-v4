@@ -11,6 +11,7 @@ import { WORKERPOOL_ADD_TASK } from "../../../3-domain/constants/Event.js"
 import { Task } from "../tasks/Task.js";
 import { WorkerQueue } from "./WorkerQueue.js";
 import { EventManager } from "../../event/EventManager.js";
+import { WorkerData } from "./WorkerData.js"
 
 const MAX_DB_WORKER = 8;//SQLite 默认限制为 10 个并发连接
 const MAX_THREAD_NUM = 15;
@@ -66,13 +67,14 @@ export class WorkerPool {
      */
     constructor(config, eventSer, { numThreads } = {}) {
         this.#config = config;
+        const isDebug = false;// this.#config.debug;
         this.#event = eventSer;
         if (!numThreads) {
             const cpuNum = os.availableParallelism();
             numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
         }
         this.#maxThreadsNum = numThreads;
-        this.#workerData = new WeakMap();
+        this.#workerData = isDebug ? new WorkerData(isDebug) : new WeakMap();
         this.#workerQueueNoDB = new WorkerQueue();
         this.#workerQueueWithDB = new WorkerQueue();
 
@@ -116,6 +118,7 @@ export class WorkerPool {
             if (oldestAge >= this.#poolConfig.idle) {
                 const old = wq.getFeeWorker();
                 this.#closeWorker(old);
+                console.log("已回收进程：", old.workerId)
             }
         });
     }
@@ -129,13 +132,16 @@ export class WorkerPool {
         if (this.workerCount >= this.#maxThreadsNum) return null;
         if (useDB && this.#workerQueueWithDB.workerNum > MAX_DB_WORKER) return null;
         try {
+            const workerId = crypto.randomUUID()
             const worker = new Worker(path.resolve(import.meta.dirname, "../runner", `run${useDB ? "OnDB" : ""}.js`), {
                 workerData: {
-                    workerId: crypto.randomUUID(),
+                    workerId,
                     config: this.#config,
                 }
             });
             worker.withDB = useDB;
+            worker.workerId = workerId;
+
             if (useDB) this.#workerQueueWithDB.add(worker);
             else this.#workerQueueNoDB.add(worker);
 
@@ -164,9 +170,11 @@ export class WorkerPool {
      * @param {Worker} worker 
      */
     async #messageHandler(message, worker) {
-        const { type, error, data } = message;
+        const { type, error, data, taskId, workerId } = message;
         if (type === TASK_MESSAGE_TYPE.TASK_EVENT_ENVELOPE) return this.#remoteBroadcastEvent(message, worker);
+        // console.log(worker.workerId, type, error, data, taskId)
         const callback = this.#workerData.get(worker)[kTaskCallback];
+        //线程完成后-执行回调
         if (callback && typeof (callback) === "function") {
             const aRunner = new AsyncResource(type);
             try {
@@ -178,6 +186,7 @@ export class WorkerPool {
                 aRunner.emitDestroy();
             }
         }
+        //线程资源释放
         switch (type) {
             case TASK_MESSAGE_TYPE.TASK_ERROR:
                 this.#freeAWorker(worker, TASK_STATUS.REJECTED, { error });
@@ -227,7 +236,10 @@ export class WorkerPool {
             worker = this.#workerQueueWithDB.getFeeWorker();
         }
 
-        if (this.workerCount < this.#maxThreadsNum) worker = this.#addNewWorker(useDB);
+        if (this.workerCount < this.#maxThreadsNum) {
+            worker = this.#addNewWorker(useDB);
+            this.#workersQueue(useDB).use(worker);
+        }
 
         return worker;
     }
@@ -272,6 +284,7 @@ export class WorkerPool {
             let { callback, ...taskData } = curTask;//解构出callback，结构化克隆不支持函数。不能发送到线程
             curTask.status = TASK_STATUS.EXECUTING;
             this.#workerData.set(worker, {
+                taskId: curTask.taskId,
                 [kTaskCallback]: callback,
                 [kTaskData]: curTask,//NOTE: 要传对象引用，便于跟进更新对象状态（不要传taskData）。
                 [kTaskStartTime]: performance.now(),
@@ -312,7 +325,7 @@ export class WorkerPool {
 
         if (this.workerDebug) {
             console.log(`进程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。`);
-            if (resule === TASK_STATUS.REJECTED) console.warn("失败原因：", error || data);
+            if (resule === TASK_STATUS.REJECTED) console.warn("失败回收，原因：", error || data);
         }
     }
 

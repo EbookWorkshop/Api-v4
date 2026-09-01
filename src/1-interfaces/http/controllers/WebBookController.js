@@ -1,3 +1,4 @@
+import { ChapterRequest } from "../dtos/components/Chapter.dto.js";
 import { WebBookQueryService } from "../../../2-application/services/WebBookQueryService.js";
 import { WebBookDetailQueryService } from "../../../2-application/services/WebBookDetailQueryService.js";
 import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
@@ -188,7 +189,7 @@ export class WebBookController {
      * @swagger
      * /library/webbook:
      *   post:
-     *     summary: 创建网页图书[TODO]实际任务未开发
+     *     summary: 🧵创建网页图书
      *     description: 根据提供的源页面和信息页面创建网页图书记录（统一包装格式）
      *     tags:
      *       - Library - WebBook —— 网文图书馆
@@ -234,9 +235,9 @@ export class WebBookController {
 
     /**
      * @swagger
-     * /library/webbook/chapter/singlechapter:
+     * /library/webbook/singlechapter:
      *   post:
-     *     summary: 采集单章[TODO]实际任务未开发
+     *     summary: 🧵采集单章
      *     description: 根据提供的网址采集单章（统一包装格式）
      *     tags:
      *       - Library - WebBook —— 网文图书馆
@@ -278,6 +279,63 @@ export class WebBookController {
         const setting = ctx.request.body;
         // if (url && !setting.sourcePage) setting.sourcePage = url;
         ctx.body = await this.#taskSchedulerService.submitCollectSingleChapterTask(setting);
+    }
+
+    /**
+     * @swagger
+     * /library/webbook/updatechapter:
+     *   patch:
+     *     summary: 批量更新网页图书章节
+     *     description: 根据章节 ID 列表批量更新网页图书的章节内容（如重新抓取、标记更新等），通过 `isUpdate` 控制是否执行实际更新（统一包装格式）
+     *     tags:
+     *       - WebBook
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UpdateWebBookChapterRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/UpdateWebBookChapterRequestExample'
+     *     responses:
+     *       200:
+     *         description: 更新操作成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-09-01T10:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如 chapterIds 为空、非数组或 isUpdate 缺失）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "chapterIds 必须为非空整数数组，isUpdate 为必填布尔字段"
+     *               timestamp: "2026-09-01T10:00:00.000Z"
+     *       404:
+     *         description: 部分或所有章节不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "部分章节 ID 无效"
+     *               timestamp: "2026-09-01T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async updateWebBookChapters(ctx) {
+        const chapterIds = ChapterRequest.fromBodyIds(ctx.request.body);
+        const setting = ctx.request.body;
+        ctx.body = await this.#taskSchedulerService.submitUpdateChapters(chapterIds, setting);
     }
 
     /**

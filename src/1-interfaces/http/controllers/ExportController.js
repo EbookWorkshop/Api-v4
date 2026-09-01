@@ -13,7 +13,7 @@ export class ExportController {
      * @swagger
      * /export/epub:
      *   post:
-     *     summary: 导出 EPUB 格式
+     *     summary: 🧵导出 EPUB 格式
      *     description: 根据导出选项生成 EPUB 文件（统一包装格式）
      *     tags:
      *       - Export —— 图书馆产物
@@ -61,7 +61,7 @@ export class ExportController {
      * @swagger
      * /export/pdf:
      *   post:
-     *     summary: 导出 PDF 格式
+     *     summary: 🧵导出 PDF 格式
      *     description: 根据导出选项生成 PDF 文件（统一包装格式）
      *     tags:
      *       - Export —— 图书馆产物
@@ -109,7 +109,7 @@ export class ExportController {
      * @swagger
      * /export/txt:
      *   post:
-     *     summary: 导出 TXT 格式
+     *     summary: 🧵导出 TXT 格式
      *     description: 根据导出选项生成 TXT 文件（统一包装格式）
      *     tags:
      *       - Export —— 图书馆产物

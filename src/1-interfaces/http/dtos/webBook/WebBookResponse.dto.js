@@ -178,3 +178,33 @@
  *         sourcePage: "https://www.example.com/source"
  *         infoPage: "https://www.example.com/info"
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     UpdateWebBookChapterRequest:
+ *       type: object
+ *       description: 批量更新网页图书章节的请求体
+ *       properties:
+ *         chapterIds:
+ *           type: array
+ *           description: 要更新的章节 ID 列表
+ *           items:
+ *             type: integer
+ *           example: [101, 102, 103]
+ *         isUpdate:
+ *           type: boolean
+ *           description: 是否执行覆盖更新
+ *           example: true
+ *       required:
+ *         - chapterIds
+ *         - isUpdate
+ *
+ *   examples:
+ *     UpdateWebBookChapterRequestExample:
+ *       summary: 更新网页图书章节请求示例
+ *       value:
+ *         chapterIds: [101, 102, 103]
+ *         isUpdate: true
+ */

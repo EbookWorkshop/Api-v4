@@ -54,6 +54,7 @@ export class TaskSchedulerService {
                 param: setting,
                 taskType: TASK_TYPES.WEB_BOOK_COLLECT,
                 useDB: true,
+                maxTaskNum: 8,
             })
 
             this.#workerPool.addTask(task);
@@ -75,6 +76,7 @@ export class TaskSchedulerService {
                 param: setting,
                 taskType: TASK_TYPES.SINGLE_CHAPTER_COLLECT,
                 useDB: true,
+                maxTaskNum: 2,
             })
 
             this.#workerPool.addTask(task);
@@ -84,5 +86,31 @@ export class TaskSchedulerService {
         }
     }
 
+    /**
+     * 提交更新章节任务
+     * #### 会拆解为每章一个任务 
+     * @param {*} chapterIds 
+     * @param {*} setting 
+     */
+    async submitUpdateChapters(chapterIds, setting) {
+        try {
+            const taskIds = [];
+            for (const cid of chapterIds) {
+                setting.chapterId = cid;
+                const task = new Task({
+                    taskId: crypto.randomUUID(),
+                    param: setting,
+                    taskType: TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT,
+                    useDB: true,
+                    maxTaskNum: 5,
+                })
+                this.#workerPool.addTask(task);
+                taskIds.push(task.taskId);
+            }
+            return { message: `已添加到任务x${chapterIds.lenngth}`, taskid: taskIds }
+        } catch (error) {
+            throw new AppError("添加采集任务失败：" + error.message);
+        }
+    }
 
 }
