@@ -6,11 +6,11 @@ export class ICollector {
      * @param {Array<Object>} rules 
      * @param {IDataFetcher} fetcher 
      */
-    constructor(rules, fetcher) { }
+    constructor(rules, fetcher, services) { }
 
     /**
      * 进行采集
      * @param {*} setting 数据设置
      */
-    fetch(setting) { throw new AppError("ICollector::fetch 接口尚未实现") }
+    fetch(setting, payload) { throw new AppError("ICollector::fetch 接口尚未实现") }
 }

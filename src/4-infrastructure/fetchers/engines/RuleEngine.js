@@ -1,5 +1,7 @@
 // import { EventManager } from '../../event/EventManager.js';
 
+import { RuleName } from "../../../3-domain/constants/Rule.js"
+
 /**
  * 规则执行引擎（基础设施层）
  * 负责：在页面上执行 CSS 选择器、移除干扰节点、提取内容、应用字典替换。
@@ -11,62 +13,112 @@ export class RuleEngine {
     }
 
     /**
-     * 执行单个规则
-     * @param {puppeteer.Page|cheerio.Root} pageOrDoc
+     * 执行单个规则采集
+     * @param {puppeteer.Page} pageObj
      * @param {Object} rule - 规则配置
      * @param {boolean} isVis - 是否可视化（调试模式）
-     * @returns {Array<{text, url}>}
+     * @returns {Array<{Rule,text, url}|Object>}
      */
-    async execRule(pageOrDoc, rule, isVis = false) {
-        // 1. 移除干扰元素 (RemoveSelector)
-        // 2. 根据 Type (Object/List) 选择查询方式
-        // 3. 执行 GetContentAction / GetUrlAction
-        // 4. 返回 [{ text, url }]
-        // 注意：如果 pageOrDoc 是 puppeteer Page，使用 page.evaluate；
-        //       如果是 cheerio，使用 cheerio API。
+    async execRule(pageObj, rule, isVis = false) {
+        //先尝试删除干扰元素
+        if (typeof (rule.removeSelector) === "string") rule.removeSelector = [rule.removeSelector];
+        for (let sR of rule.removeSelector)
+            try {
+                await pageObj.$$eval(sR, (node, isVis) => {
+                    for (let nO of node)
+                        if (!isVis) nO.parentNode.removeChild(nO);
+                        else nO.style.border = "5px solid blue";
+                }, isVis);
+            } catch (err) { }//尝试删除干扰元素，失败不管
+
+        if (rule.selector === "") return [];
+        let querySelector = pageObj.$eval;
+        if (rule.type === "List") querySelector = pageObj.$$eval;
+
+        try {
+            //注意：下述代码块运行在浏览器端
+            let rsl = await querySelector.call(pageObj, rule.selector, (node, option, isVis) => {
+                /**
+                 * 动作表达式解释处理器 
+                 * 只能定义在浏览器端，对象不能序列化
+                 * 在服务器执行会失效
+                 * @param {*} action 动作表达式，如：attr/innerText
+                 * @param {*} myNode 已命中的node对象
+                 * @returns {text,url}
+                 */
+                let ActionHandle = (action, myNode) => {
+                    if (action == undefined) return;
+                    let result;
+                    let acExp = action.split("/");
+                    //配置的动作表达式
+                    switch (acExp[0]) {
+                        case "attr": result = myNode[acExp[1]]; break;
+                        case "fun": result = myNode[acExp[1]](...acExp.slice(2)); break;  //执行节点上的方法
+                        case "cache": result = "cache::" + myNode[acExp[1]]; break;       //缓存的
+                        case "reg": result = "ToDo"; break;
+                    }
+                    return result;
+                }
+
+                let myRsl = [];
+                if (option.type !== "List") node = [node];
+                for (let n of node) {
+                    myRsl.push({
+                        Rule: option,
+                        text: ActionHandle(option.getContentAction, n),
+                        url: ActionHandle(option.getUrlAction, n),
+                    });
+
+                    if (isVis) {
+                        n.style.border = "5px solid red";
+                        n.title = `${curObj.url}\n${curObj.text}`
+                    }
+                }
+                return myRsl;
+            }, rule, isVis);
+            return rsl;
+        } catch (err) { //没抓到数据 一般是选择器没命中
+            return [err, rule.selector, err.message, await pageObj.content()];//实际返回错误的时候
+        }
     }
 
     /**
-     * 执行规则集（原 GetDataUseRuleFromPage）
-     * @param {puppeteer.Page|cheerio.Root} pageOrDoc
+     * 执行所有规则
+     * @param {puppeteer.Page} pageObj
      * @param {Array<Object>} rules - 规则列表
      * @param {Array<Object>} dictionaries - 字典列表（用于 Content 规则）
      * @returns {Map<string, Array>} - key: ruleName, value: 提取结果
      */
-    async extract(pageOrDoc, rules, dictionaries = []) {
+    async extract(pageObj, rules, dictionaries = []) {
         const resultMap = new Map();
 
         for (const rule of rules) {
-            let ruleResult = await this.execRule(pageOrDoc, rule, this.debug);
+            let ruleResult = await this.execRule(pageObj, rule, this.debug);
 
             // 如果是 Content 规则，应用字典
-            if (rule.RuleName === 'Content' && dictionaries.length > 0) {
-                // 先判断字典是否生效（isExec 逻辑）
-                const activeDicts = await this.filterActiveDictionaries(pageOrDoc, dictionaries);
+            if (rule.ruleName === RuleName.Content && dictionaries.length > 0) {
+                if (Error.isError(ruleResult[0])) continue;
+                const activeDicts = await this.filterActiveDictionaries(pageObj, dictionaries);
                 const combinedData = activeDicts.map(d => d.Data).join('\n');
                 ruleResult = ruleResult.map(item => ({
                     ...item,
                     text: this.applyDictionary(combinedData, item.text)
                 }));
             }
-
-            resultMap.set(rule.RuleName, ruleResult);
+            resultMap.set(rule.ruleName, ruleResult);
         }
-
         return resultMap;
     }
 
     /**
-     * 判断字典是否生效（原 isExec）
-     * 支持 Selector 和 Boolean 两种模式
+     * 过滤出所有需要执行的字典
      */
-    async filterActiveDictionaries(pageOrDoc, dictionaries) {
+    async filterActiveDictionaries(pageObj, dictionaries) {
         const results = [];
         for (const dict of dictionaries) {
             let active = false;
             if (dict.ExecuteType === 'Selector') {
-                // 使用 page.$$eval 或 cheerio 判断是否存在
-                active = await this.checkSelectorExists(pageOrDoc, dict.Execute);
+                active = await this.checkSelectorExists(pageObj, dict.Execute);
             } else if (dict.ExecuteType === 'Boolean') {
                 active = dict.Execute === 'true' || dict.Execute === '1';
             }
@@ -76,7 +128,7 @@ export class RuleEngine {
     }
 
     /**
-     * 应用字典替换（原 UseDictReplace）
+     * 应用字典替换
      */
     applyDictionary(dictData, text) {
         if (!text) return text;
@@ -98,7 +150,7 @@ export class RuleEngine {
     }
 
     // 私有辅助：检查选择器是否存在
-    async checkSelectorExists(pageOrDoc, selector) {
-        // 实现取决于 pageOrDoc 类型
+    async checkSelectorExists(pageObj, selector) {
+        return await pageObj.$$eval.call(pageObj, selector, (node) => { return node.length > 0; });
     }
 }

@@ -22,7 +22,7 @@ import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js"
  * @param {Object} repositories 线程/服务器资源
  * @returns {ITaskExecutor}
  */
-export async function createExportBookTask(config, taskType, repositories) {
+export async function createExportBookTask(config, taskType, { repositories }) {
     const { ebookRepository, volumeRepository, chapterRepository } = repositories;
     const bookServ = new BookQueryService(ebookRepository);
     const chapServ = new ChapterQueryService(chapterRepository);

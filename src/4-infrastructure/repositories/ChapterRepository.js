@@ -232,24 +232,32 @@ export class ChapterRepository {
         return result;
     }
 
+    async addChapter(chapter) {
+        return this.#ChapterModel.add(chapter);
+    }
 
     /**
      * 插入或更新一章
      * @param {Object} [chapter] 章节信息
-     * @param {number} [chapter.IndexId] 章节ID
+     * @param {number} [chapter.id] 章节ID
      * @param {number} [chapter.BookId] 书籍ID
      * @param {string} [chapter.Title] 章节标题     
      * @param {string} [chapter.Content] 章节正文
      * @param {number} [chapter.VolumeId] 卷ID
      * @param {number} [chapter.OrderNum] 章节排序号
+     * @returns {boolean}
      */
-    async upsertChapter(chapter) {
+    async updateChapter(chapter) {
         //校验卷需要属于同一本书
         if (chapter.VolumeId) {
             const volume = await this.#VolumeModel.findByPk(chapter.VolumeId);
             if (!volume || volume.BookId != chapter.BookId) throw new UserInputError("设置的卷不存在或不属于当前书籍，请选择同一本书内的卷。");
         }
-        const result = await this.#ChapterModel.upsert(chapter);
+        if (!chapter.id) return false;
+
+        const result = await this.#ChapterModel.update(chapter, {
+            where: { id: chapter.id }
+        });
         return !!result;
     }
 

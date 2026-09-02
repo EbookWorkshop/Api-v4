@@ -41,3 +41,12 @@ export const EXPORT_EVENTS = {
     TEMP_CLEANUP: Symbol('temp.cleanup'),
     TEMP_CLEANED: Symbol('temp.cleaned'),
 };
+
+/**
+ * 采集类别的事件
+ * 需要跨线程的事件，
+ */
+export const COLLECT_EVENTS = {
+    UNKNOW: "Unknow.Task",      //未定义任务类型
+    UPDATE_CHAPTER: "Update.Chapter",       //章节采集
+}

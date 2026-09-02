@@ -1,3 +1,4 @@
+import { RuleCommon } from "../../3-domain/constants/Rule.js"
 import { RuleForWebRepository } from '../../4-infrastructure/repositories/RuleForWebRepository.js';
 import { IFileScanner } from "../../2-application/ports/IFileScanner.js"
 import { ITransaction } from '../ports/ITransaction.js';
@@ -46,25 +47,25 @@ export class RuleForWebCommandService {
             const oneHost = rules[0].host;      //NOTE: 如果要兼容单文件多个配置的情况...
             await this.deleteRulesByHost(oneHost, { transaction: trans });
 
-            const timeoutRule = rules.find(r => r.ruleName == "Timeout");
+            const timeoutRule = rules.find(r => r.ruleName == RuleCommon.Timeout);
             if (timeoutRule && timeoutRule.selector != DEFAULT_TIME_OUT) {
                 await this.#sysConfig.setConfig(WEBSITE_TIMEOUT, oneHost, timeoutRule.selector, { transaction: trans });
             }
-            rules = rules.filter(r => r.ruleName != "Timeout");
-            const userAgentRule = rules.find(r => r.ruleName == "UserAgent");
+            rules = rules.filter(r => r.ruleName != RuleCommon.Timeout);
+            const userAgentRule = rules.find(r => r.ruleName == RuleCommon.UserAgent);
             if (userAgentRule) {
                 await this.#sysConfig.setConfig(WEBSITE_USERAGENT, oneHost, userAgentRule.selector, { transaction: trans });
-                rules = rules.filter(r => r.ruleName != "UserAgent");
+                rules = rules.filter(r => r.ruleName != RuleCommon.UserAgent);
             }
-            const scraping = rules.find(r => r.ruleName == "Scraping");
+            const scraping = rules.find(r => r.ruleName == RuleCommon.Scraping);
             if (scraping && scraping.selector != DEFAULT_SCRAPING) {
                 await this.#sysConfig.setConfig(WEBSITE_SCRAPING, oneHost, scraping.selector, { transaction: trans });
             }
-            rules = rules.filter(r => r.ruleName != "Scraping");
-            const dict = rules.find(d => d.ruleName == "Dictionary");
+            rules = rules.filter(r => r.ruleName != RuleCommon.Scraping);
+            const dict = rules.find(d => d.ruleName == RuleCommon.Dictionary);
             if (dict && dict.data) {
                 await this.#reviewDictionaryService.saveDictionaries(oneHost, dict.data, { transaction: trans });
-                rules = rules.filter(r => r.ruleName != "Dictionary");
+                rules = rules.filter(r => r.ruleName != RuleCommon.Dictionary);
             }
             for (let p of rules) {
                 let rule = {

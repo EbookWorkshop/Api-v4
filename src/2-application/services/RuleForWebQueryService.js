@@ -1,4 +1,5 @@
 import { getHost } from "../../5-shared/utils/site.js";
+import { RULE_GROUP, RULE_GROUP_SETTING, RuleCommon } from "../../3-domain/constants/Rule.js"
 import { WEBSITE_TIMEOUT, WEBSITE_SCRAPING, WEBSITE_USERAGENT } from "../../3-domain/constants/SystemConfigGroup.js";
 import { RuleForWebRepository } from '../../4-infrastructure/repositories/RuleForWebRepository.js';
 import { AppError, UserInputError } from "../../5-shared/errors/index.js"
@@ -79,6 +80,20 @@ export class RuleForWebQueryService {
                 data: dict
             });
         return rsl;
+    }
+
+    /**
+     * 
+     * @param {string} urlOrHost 
+     * @param {RULE_GROUP} group 
+     */
+    async getRulesWithGroup(urlOrHost, group) {
+        const rules = await this.getRulesByHost(urlOrHost);
+        const ruleCommon = rules.filter(r => Object.keys(RuleCommon).includes(r.ruleName));
+
+        const ruleNameArr = RULE_GROUP_SETTING[group];
+        const result = rules.filter(r => ruleNameArr.includes(r.ruleName));
+        return [...result, ...ruleCommon];
     }
 
     async getDictionaryByURL(host) {

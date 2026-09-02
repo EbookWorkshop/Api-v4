@@ -48,7 +48,15 @@ export class ChapterCommandService {
      * @param {number} [chapter.OrderNum] 章节排序号
      */
     async upsertChapter(chapter) {
-        return await this.#chapterRepository.upsertChapter(chapter);
+        const { IndexId, ...chp } = chapter;
+        const id = IndexId * 1;
+        if ((isNaN(id) || id <= 0) && chapter.BookId > 0)
+            return await this.#chapterRepository.addChapter(chp);
+        else if (id > 0) {
+            chp.id = id;
+            return await this.#chapterRepository.updateChapter(chp);
+        }
+        return false;
     }
 
     /**

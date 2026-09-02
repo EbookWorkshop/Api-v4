@@ -13,4 +13,8 @@ export class FileCollector extends ICollector{
         this.#rules = rules;
         this.#fetcher = fetcher;
     }
+
+    fetch(setting) {
+        console.log(setting);
+    }
 }

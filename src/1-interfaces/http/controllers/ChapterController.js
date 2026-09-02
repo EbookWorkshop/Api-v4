@@ -374,7 +374,7 @@ export class ChapterController {
      */
     async upsertChapter(ctx) {
         const chapter = ChapterUpsertRequest.fromBody(ctx.request.body);
-        ctx.body = await this.#chapterCommandService.upsertChapter(chapter);
+        ctx.body = await this.#chapterCommandService.updateChapter(chapter);
     }
 
     /**

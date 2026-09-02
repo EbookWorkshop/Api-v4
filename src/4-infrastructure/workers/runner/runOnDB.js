@@ -9,9 +9,9 @@ let sequelize = null;
 //创建线程资源
 async function CreateRepo() {
     const core = await createMiniCore(config);
-    const { repositories } = core;
+    const { repositories, transactionManager } = core;
     sequelize = core.sequelize;
-    return repositories;
+    return { repositories, transactionManager };
 }
 async function close() {
     console.log(`线程【${workerId}】关闭，已运行${performance.now() / 60_000}分。`)
@@ -24,10 +24,10 @@ async function close() {
 
 
 //实际交给各个任务执行器的资源
-const repositories = await CreateRepo();
+const resources = await CreateRepo();
 
 // 启动子线程
-initWorker(repositories, close).catch((err) => {
+initWorker(resources, close).catch((err) => {
     console.error('线程初始化失败:', err);
     process.exit(1);
 });
