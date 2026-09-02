@@ -32,7 +32,11 @@ export class RuleForWebQueryService {
         return this.#ruleForWebRepository.listHosts();
     }
 
-
+    /**
+     * 通过网址/主机名获取对应的规则
+     * @param {*} urlOrHost 
+     * @returns 
+     */
     async getRulesByHost(urlOrHost) {
         let host = getHost(urlOrHost);
         const rules = await this.#ruleForWebRepository.finByHost(host);

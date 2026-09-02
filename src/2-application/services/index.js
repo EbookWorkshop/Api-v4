@@ -72,16 +72,18 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
     const task = new TaskSchedulerService(workerPool);
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
 
+    const webBookQueryService = new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository);
+
     return {
         bookQuery: new BookQueryService(ebookRepository),
         bookDetailQuery: bookDetailQueryService,
         bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction),
 
-        webBookQuery: new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository),
+        webBookQuery: webBookQueryService,
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
         webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction),
         webBookSourceURL: new WebBookSourceURLService(repositories.webBookSourceURLRepository, repositories.webBookChapterURLRepository, databaseTransaction),
-        webBookChapterURL: new WebBookChapterURLService(repositories.webBookChapterURLRepository),
+        webBookChapterURL: new WebBookChapterURLService(repositories.webBookChapterURLRepository, webBookQueryService),
 
         volumeQuery: new VolumeQueryService(volumeRepository),
         volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),

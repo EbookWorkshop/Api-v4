@@ -24,7 +24,7 @@ async function close() {
 
 
 //实际交给各个任务执行器的资源
-const repositories = CreateRepo();
+const repositories = await CreateRepo();
 
 // 启动子线程
 initWorker(repositories, close).catch((err) => {

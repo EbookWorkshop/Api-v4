@@ -83,3 +83,20 @@
  *         id: 332
  *         url: "https://www.aa.bb/page/to/read_new"
  */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     DefaultChapterSourceResponse:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ApiResponse'
+ *         - type: object
+ *           properties:
+ *             data:
+ *               type: string
+ *               description: 默认章节源 URL
+ *               example: "https://aaa.bb.com/page/to/show/"
+ *       required:
+ *         - data
+ */

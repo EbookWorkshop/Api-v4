@@ -6,8 +6,8 @@
  * 依赖：puppeteer Page 或 cheerio 文档（可设计为适配器模式）
  */
 export class RuleEngine {
-    constructor(options = { debug: false }) {
-        this.debug = options.debug;
+    constructor() {
+        this.debug = false;
     }
 
     /**

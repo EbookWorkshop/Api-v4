@@ -1,5 +1,6 @@
 
 import { WebBookChapterURLService } from "../../../2-application/services/WebBookChapterURLService.js";
+import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js";
 import { ChapterRequest } from "../dtos/components/Chapter.dto.js";
 
 export class WebBookChapterURLController {
@@ -15,7 +16,7 @@ export class WebBookChapterURLController {
      * @swagger
      * /library/webbook/chapter/sources:
      *   get:
-     *     summary: 获取网页图书章节的源列表
+     *     summary: 获取网文章节的源列表
      *     description: 返回所有或指定图书的章节源（如有参数可扩展，此处为无参数版本）（统一包装格式）
      *     tags:
      *       - Library - WebBook —— 网文图书馆
@@ -44,9 +45,63 @@ export class WebBookChapterURLController {
 
     /**
      * @swagger
+     * /library/webbook/chapter/source/default:
+     *   get:
+     *     summary: 获取默认章节源 URL
+     *     description: 根据章节 ID 或图书 ID 获取对应的默认章节源地址。`chapterid`必须提供。（统一包装格式）
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *       - WebBook
+     *     parameters:
+     *       - $ref: '#/components/parameters/ChapterIdQuery'
+     *       - $ref: '#/components/parameters/BookIdQuery'
+     *     responses:
+     *       200:
+     *         description: 成功返回默认源 URL
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/DefaultChapterSourceResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-09-02T10:00:00.000Z"
+     *               data: "https://aaa.bb.com/page/to/show/"
+     *       400:
+     *         description: 参数错误（chapterId 和 bookId 均未提供或无效）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "请提供 chapterId 或 bookId"
+     *               timestamp: "2026-09-02T10:00:00.000Z"
+     *       404:
+     *         description: 未找到对应的默认源
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到默认章节源"
+     *               timestamp: "2026-09-02T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async getDefaultChapterSource(ctx) {
+        const chapterId = ChapterRequest.fromQueryId(ctx.query);
+        const bookId = BookIdRequest.fromQuery(ctx.query);
+        const result = await this.#webBookChapterURLService.getDefaultChapterSource(chapterId, bookId);
+        ctx.body = result;
+    }
+
+    /**
+     * @swagger
      * /library/webbook/chapter/sources:
      *   post:
-     *     summary: 更新网页章节源
+     *     summary: 更新网文章节源
      *     description: 更新已有源的 URL
      *     tags:
      *       - Library - WebBook —— 网文图书馆

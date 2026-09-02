@@ -1,4 +1,3 @@
-import { Op } from "sequelize";
 export class WebBookChapterURLRepository {
     #WebBookChapterURLModel;
     #WebBookChapterModel;
@@ -24,6 +23,11 @@ export class WebBookChapterURLRepository {
         })
     }
 
+    /**
+     * 根据章节ID获取来源网址信息
+     * @param {*} chapterId 
+     * @returns 
+     */
     async queryURLByChapterId(chapterId) {
         return this.#WebBookChapterURLModel.findAll({
             include: [{
