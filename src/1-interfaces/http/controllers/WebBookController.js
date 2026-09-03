@@ -282,7 +282,7 @@ export class WebBookController {
     }
 
     async updateWebBookIndex(ctx) {
-        const bookId = BookIdRequest.fromQueryCamelCase(ctx.query);
+        const bookId = BookIdRequest.fromBody(ctx.request.body);
         ctx.body = await this.#taskSchedulerService.submitUpdateIndex({ bookId });
     }
 

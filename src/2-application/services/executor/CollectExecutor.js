@@ -4,7 +4,7 @@ import { TASK_TYPES } from '../../../3-domain/constants/Task.js';
 import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
 import { WebBookCollector, ChapterCollector, FileCollector, ICollector } from "../collectors/index.js";
-import { HttpDataFetcher, PuppeteerDataFetcher, RuleEngine, IDataFetcher } from "../../../4-infrastructure/fetchers/index.js";
+import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine, IDataFetcher } from "../../../4-infrastructure/fetchers/index.js";
 import { EventManager, COLLECT_EVENTS } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
 
@@ -12,7 +12,11 @@ import { ChapterQueryService } from "../ChapterQueryService.js";
 import { ChapterCommandService } from "../ChapterCommandService.js";
 
 import { WebBookQueryService } from "../WebBookQueryService.js";
-import { WebBookCommandService } from "../WebBookCommandService.js"
+import { WebBookCommandService } from "../WebBookCommandService.js";
+
+import { CoverService } from "../CoverService.js"
+
+import { FileSystemWriter } from "../../../4-infrastructure/server/adapters/FileSystemWriter.js"
 
 export class CollectExecutor extends ITaskExecutor {
     #config;
@@ -22,6 +26,7 @@ export class CollectExecutor extends ITaskExecutor {
     #transactionManager;
     #chapService;
     #eventManager;
+    #fileWriter;
     constructor(config, ruleService, resources, chapService) {
         super();
         this.#config = config;
@@ -29,15 +34,17 @@ export class CollectExecutor extends ITaskExecutor {
         this.#repositories = resources.repositories;
         this.#transactionManager = resources.transactionManager;
         this.#chapService = chapService;
+
         this.#eventManager = new EventManager(new EventEmitter());
+        this.#fileWriter = new FileSystemWriter(this.#config.repository.path);
     }
 
     async execute(taskType, payload) {
         let msgEvent = null;
+        let fetcher = IDataFetcher;
         try {
             let pageURL = await this.#getPageURL(taskType, payload);
             let Collector = ICollector;
-            let fetcher = IDataFetcher;
             let ruleGroup = COLLECT_EVENTS.UNKNOW;
             let services = { eventManager: this.#eventManager };
             switch (taskType) {
@@ -48,6 +55,7 @@ export class CollectExecutor extends ITaskExecutor {
                     payload.mode = "create";
 
                     services = {
+                        ...services,
                         ...this.#createWebBookServices(),
                     }
                     break;
@@ -59,6 +67,7 @@ export class CollectExecutor extends ITaskExecutor {
                     payload.mode = "update";
                     payload.sourcePage = pageURL;
                     services = {
+                        ...services,
                         ...this.#createWebBookServices(),
                     }
                     break;
@@ -87,8 +96,9 @@ export class CollectExecutor extends ITaskExecutor {
             const ruleEngine = new RuleEngine({ debug: false });
             const scraper = rules.find(({ ruleName }) => ruleName === RuleCommon.Scraping);
             switch (scraper.selector) {
-                case "puppeteer": fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine); break;
-                case "http": fetcher = new HttpDataFetcher(this.#config, ruleEngine); break;
+                case "http": fetcher = new AxiosDataFetcher(this.#config, ruleEngine); break;
+                case "puppeteer":
+                default: fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine, true); break;
             }
 
             const setting = this.#rangeSetting(rules, payload);
@@ -104,6 +114,8 @@ export class CollectExecutor extends ITaskExecutor {
                 }
             });
             throw error;
+        } finally {
+            await fetcher.close();
         }
     }
 
@@ -157,6 +169,7 @@ export class CollectExecutor extends ITaskExecutor {
         const { ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository } = this.#repositories;
         return {
             webBookService: new WebBookCommandService(this.#repositories.webBookRepository, this.#transactionManager, ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository),
+            coverService: new CoverService(this.#fileWriter, null, this.#config),
         }
     }
 }

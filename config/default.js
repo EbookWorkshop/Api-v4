@@ -4,6 +4,7 @@ export default {
         path: "../MyLibrary"
     },
     archive: { path: "/Books" },
+    cover: { path: "/Cover" },
     font: {
         path: "/font"
     },

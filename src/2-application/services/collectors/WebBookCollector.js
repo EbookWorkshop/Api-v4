@@ -11,6 +11,7 @@ export class WebBookCollector extends ICollector {
     #setting;
     #eventManager;
     #webBookService;
+    #coverService;
 
     /**
      * 
@@ -23,6 +24,8 @@ export class WebBookCollector extends ICollector {
         this.#fetcher = fetcher;
         this.#eventManager = services.eventManager;
         this.#webBookService = services.webBookService;
+        this.#coverService = services.coverService;
+        this.#coverService.dataFetcher = fetcher;
     }
 
     /**
@@ -59,18 +62,18 @@ export class WebBookCollector extends ICollector {
         const result = await this.#fetcher.fetch(urlPage, this.#setting);
         const info = new Map();
         RULE_INFO.map(r => info.set(r, result.get(r)));
-        const infoResult = this.#handleInfo(info);
+        const infoResult = await this.#handleInfo(info, isEmbedBookName);
         if (!infoResult) {
-            console.log("书籍信息处理失败：", infoResult, info);
-            return this.#resultHandle(payload, false, "书籍信息处理失败");
+            // console.log("书籍信息处理失败：", infoResult, info);
+            return this.#resultHandle(payload, false, `书籍信息采集失败：${urlPage}`);
         }
 
+        //采集/提取章节列表
         let cpl = new Map();
         RULE_INDEX.map(r => cpl.set(r, result.get(r)));
         if (infoPage) cpl = await this.#fetcher.fetch(sourcePage, this.#setting);
-
         const chapList = cpl.get(RuleName.ChapterList);
-        if (!chapList || chapList.length <= 0) return this.#resultHandle(payload, false, "书籍采集失败，没有章节信息。");
+        if (!chapList || chapList.length <= 0) return this.#resultHandle(payload, false, "章节列表采集失败，没有章节信息：" + sourcePage);
 
         const chapterList = await this.#getChapterList(sourcePage, cpl);
 
@@ -81,7 +84,7 @@ export class WebBookCollector extends ICollector {
 
         this.#fixData(bookResult);
 
-        //TODO: 存储到数据库
+        //存储到数据库
         const bookId = await this.#save(bookResult, { isEmbedBookName, sourcePage, infoPage });
 
         this.#resultHandle(payload, bookId > 0, `已创建书籍《${bookResult.BookName}》`);
@@ -107,7 +110,7 @@ export class WebBookCollector extends ICollector {
      * @param {*} infoResult 
      * @returns 
      */
-    #handleInfo(infoResult) {
+    async #handleInfo(infoResult,embedBookName) {
         const bn = infoResult.get(RuleName.BookName);
         if (!bn || !bn[0].text) return false;
         const bookInfo = {};
@@ -120,6 +123,12 @@ export class WebBookCollector extends ICollector {
         if (bookInfo[RuleName.Author]?.startsWith("作者")) bookInfo[RuleName.Author] = bookInfo[RuleName.Author].replace(/作者[:：]/, "");
         if (bookInfo[RuleName.Introduction]?.startsWith("简介")) bookInfo[RuleName.Introduction] = bookInfo[RuleName.Introduction].replace(/简介[:：]/, "");
 
+        //处理封面
+        if (bookInfo[RuleName.BookCover]) {
+            const coverRsl = await this.#coverService.storeCover({ source: bookInfo[RuleName.BookCover], embedBookName, bookName: bookInfo[RuleName.BookName] });
+            bookInfo.CoverImg = coverRsl.coverValue;
+            delete infoResult[RuleName.BookCover];
+        }
         return bookInfo;
     }
 

@@ -39,16 +39,16 @@ export class WorkerPool {
      */
     #workerQueueWithDB;
 
-    /** @type {WeakMap<Worker,Object>} 当前进程附带数据*/
+    /** @type {WeakMap<Worker,Object>} 当前线程附带数据*/
     #workerData;
 
     /**
-     * @type {Map<string,Array<Task>>} 排队中的任务/按进程类型分组
+     * @type {Map<string,Array<Task>>} 排队中的任务/按线程类型分组
      */
     #waitingTask;
 
     /**
-     * @type {Map<string,number>} 需要按类型限制总运行数量的线程运行数统计/按进程类型分组
+     * @type {Map<string,number>} 需要按类型限制总运行数量的线程运行数统计/按线程类型分组
      */
     #runningThreadCountByType;
 
@@ -102,11 +102,11 @@ export class WorkerPool {
     /**
      * 扫描线程池，以完成下列任务：
      * ### 运行任务
-     * ### 回收闲置进程
+     * ### 回收闲置线程
      */
     #scanPool() {
         const fwNum = this.feeWorkerNum;
-        if (fwNum <= 0) return;//无闲置进程，直接退出
+        if (fwNum <= 0) return;//无闲置线程，直接退出
 
         if (this.allTaskNum > 0 && this.#runTask()) return;     //有闲置线程、有排队任务、成功安排了一个任务 直接退出
 
@@ -118,7 +118,7 @@ export class WorkerPool {
             if (oldestAge >= this.#poolConfig.idle) {
                 const old = wq.getFeeWorker();
                 if (!old) return;
-                // console.log("将回收进程：", old.workerId)
+                // console.log("将回收线程：", old.workerId)
                 this.#closeWorker(old);
             }
         });
@@ -247,7 +247,7 @@ export class WorkerPool {
     }
 
     /**
-     * 回收进程-销毁
+     * 回收线程-销毁
      * @param {Worker} worker 
      */
     async #closeWorker(worker) {
@@ -272,7 +272,7 @@ export class WorkerPool {
                 curTask = tl[0];
                 if (curTask) {
                     runningTask = this.#runningThreadCountByType.get(curTask.taskType) || 0;
-                    if (curTask.taskType && curTask.maxTaskNum > 0) {//需要限制最大数量的进程
+                    if (curTask.taskType && curTask.maxTaskNum > 0) {//需要限制最大数量的线程
                         if (runningTask >= curTask.maxTaskNum) continue;//当前k（taskType）的正在运行数达到最大值，换下一个任务类型尝试。
                     }
                     break;
@@ -306,8 +306,8 @@ export class WorkerPool {
     }
 
     /**
-     * 闲置一个进程
-     * #### 当任务执行过后，将进程转为闲置、清理状态、资源等。
+     * 闲置一个线程
+     * #### 当任务执行过后，将线程转为闲置、清理状态、资源等。
      * @param {Worker} worker 
      * @param {TASK_STATUS} resule 
      */
@@ -327,7 +327,7 @@ export class WorkerPool {
         this.#workersQueue(worker.withDB).free(worker);
 
         if (this.workerDebug) {
-            console.log(`进程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。`);
+            console.log(`线程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。`);
             if (resule === TASK_STATUS.REJECTED) console.warn("失败回收，原因：", error || data);
         }
     }

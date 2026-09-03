@@ -1,6 +1,6 @@
 
 
-export { HttpDataFetcher } from "./HttpDataFetcher.js";
+export { AxiosDataFetcher } from "./AxiosDataFetcher.js";
 export { PuppeteerDataFetcher } from "./PuppeteerDataFetcher.js";
 
 export { RuleEngine } from "./engines/RuleEngine.js"

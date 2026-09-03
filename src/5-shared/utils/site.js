@@ -18,3 +18,11 @@ export function getHost(urlString) {
         // console.error(err);
     }
 }
+
+/**
+ * NOTE: 注意：是从网址推断扩展名
+ * @param {string} urlString 网址
+ */
+export function eXtname(urlString, def = "") {
+    return urlString?.match(/(?<=\.)[^.]+$/)?.[0] || def;
+}

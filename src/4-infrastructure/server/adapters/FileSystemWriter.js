@@ -12,7 +12,7 @@ export class FileSystemWriter extends IFileWriter {
      * @param {string|Array<string>} filePath 存储路径，若为数组则是路径目录
      * @param {*} data 写入数据
      * @param {*} format 写入格式，如 base64
-     * @returns {string} 实际存储路径
+     * @returns {string} 实际存储的相对路径——相对仓库
      */
     async saveFile(filePath, data, format = "") {
         let pathArray = [this.#repositoryPath];
@@ -20,7 +20,7 @@ export class FileSystemWriter extends IFileWriter {
         else if (Array.isArray(filePath)) pathArray.push(...filePath);
         const tempFile = path.join(...pathArray);
         await saveFile(tempFile, data, format);
-        return tempFile;
+        return path.relative(this.#repositoryPath, tempFile);
     }
 
     /**

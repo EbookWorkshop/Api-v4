@@ -63,10 +63,6 @@ export class WebBookCommandService {
                     Type: "info"
                 }, { transaction });
 
-            if (book.BookCover?.startsWith("http")) {                //TODO: 存储封面
-
-            }
-
             //处理章节
             if (Introduction) await this.#chapterRepository.updateIntroduction({ bookId, content: Introduction }, { transaction });
 
