@@ -54,4 +54,8 @@ export class WebBookChapterURLRepository {
             where: { id: id }
         });
     }
+
+    async add(data, option) {
+        return this.#WebBookChapterURLModel.create(data, option);
+    }
 }

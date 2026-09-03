@@ -19,6 +19,7 @@ export async function assignTasks(taskType, config, resources) {
             createTask = "exportBook.assembler.js";
             break;
         case TASK_TYPES.WEB_BOOK_COLLECT:
+        case TASK_TYPES.WEB_BOOK_UPDATE_INDEX:
         case TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT:
         case TASK_TYPES.SINGLE_CHAPTER_COLLECT:
             createTask = "collect.assembler.js";

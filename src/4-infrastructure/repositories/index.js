@@ -6,6 +6,7 @@ import { IndexRepository } from "./IndexRepository.js";
 import { ChapterRepository } from "./ChapterRepository.js";
 import { VolumeRepository } from "./VolumeRepository.js";
 import { WebBookRepository } from './WebBookRepository.js';
+import { WebBookChapterRepository } from './WebBookChapterRepository.js';
 import { WebBookSourceURLRepository } from './WebBookSourceURLRepository.js';
 import { WebBookChapterURLRepository } from './WebBookChapterURLRepository.js';
 import { BookmarkRepository } from './BookmarkRepository.js';
@@ -43,6 +44,7 @@ export function createRepositories(sequelize) {
         volumeRepository: new VolumeRepository(sequelize),
 
         webBookRepository: new WebBookRepository(sequelize),
+        webBookChapterRepository: new WebBookChapterRepository(sequelize),
         webBookSourceURLRepository: new WebBookSourceURLRepository(sequelize),
         webBookChapterURLRepository: new WebBookChapterURLRepository(sequelize),
         bookmarkRepository: new BookmarkRepository(sequelize),

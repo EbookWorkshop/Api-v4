@@ -232,8 +232,8 @@ export class ChapterRepository {
         return result;
     }
 
-    async addChapter(chapter) {
-        return this.#ChapterModel.add(chapter);
+    async addChapter(chapter, option) {
+        return this.#ChapterModel.create(chapter, option);
     }
 
     /**

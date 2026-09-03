@@ -113,4 +113,26 @@ export class TaskSchedulerService {
         }
     }
 
+    /**
+     * 更新章节——合并章节目录
+     * @param {*} setting 
+     * @returns 
+     */
+    async submitUpdateIndex(setting) {
+        try {
+            const task = new Task({
+                taskId: crypto.randomUUID(),
+                param: setting,
+                taskType: TASK_TYPES.WEB_BOOK_UPDATE_INDEX,
+                useDB: true,
+                maxTaskNum: 8,
+            })
+
+            this.#workerPool.addTask(task);
+            return `已添加到任务：${task.taskId}` //{ taskId: task.taskId };
+        } catch (error) {
+            throw new AppError("添加采集任务失败：" + error.message);
+        }
+    }
+
 }

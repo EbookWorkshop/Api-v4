@@ -44,14 +44,15 @@ export class WebBookRepository {
     }
 
 
-    // async create(data) {
-    //   return await this.#WebBookModel.create(data);
-    // }
-
-    // async bulkCreate(books) {
-    //   return await this.#WebBookModel.bulkCreate(books);
-    // }
-
+    /**
+     * 创建一本书
+     * @param {*} data 
+     * @param {Object} setting 
+     * @returns 
+     */
+    async create(data, { transaction }) {
+        return await this.#WebBookModel.create(data, { transaction });
+    }
 
     async update(bookId, data) {
         return this.#WebBookModel.update({

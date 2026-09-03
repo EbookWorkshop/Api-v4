@@ -11,6 +11,9 @@ import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
 import { ChapterQueryService } from "../ChapterQueryService.js";
 import { ChapterCommandService } from "../ChapterCommandService.js";
 
+import { WebBookQueryService } from "../WebBookQueryService.js";
+import { WebBookCommandService } from "../WebBookCommandService.js"
+
 export class CollectExecutor extends ITaskExecutor {
     #config;
     /** @type {RuleForWebQueryService} */
@@ -37,12 +40,27 @@ export class CollectExecutor extends ITaskExecutor {
             let fetcher = IDataFetcher;
             let ruleGroup = COLLECT_EVENTS.UNKNOW;
             let services = { eventManager: this.#eventManager };
-
             switch (taskType) {
                 case TASK_TYPES.WEB_BOOK_COLLECT: {
                     Collector = WebBookCollector;
                     ruleGroup = RULE_GROUP.INFO_INDEX_PAGE;
                     msgEvent = COLLECT_EVENTS.CREATE_BOOK;
+                    payload.mode = "create";
+
+                    services = {
+                        ...this.#createWebBookServices(),
+                    }
+                    break;
+                }
+                case TASK_TYPES.WEB_BOOK_UPDATE_INDEX: {
+                    Collector = WebBookCollector;
+                    ruleGroup = RULE_GROUP.INDEX_PAGE;
+                    msgEvent = COLLECT_EVENTS.UPDATE_INDEX;
+                    payload.mode = "update";
+                    payload.sourcePage = pageURL;
+                    services = {
+                        ...this.#createWebBookServices(),
+                    }
                     break;
                 }
                 case TASK_TYPES.SINGLE_CHAPTER_COLLECT: {
@@ -93,13 +111,18 @@ export class CollectExecutor extends ITaskExecutor {
         switch (taskType) {
             case TASK_TYPES.WEB_BOOK_COLLECT: return payload.sourcePage;
             case TASK_TYPES.SINGLE_CHAPTER_COLLECT: return payload.url;
+            case TASK_TYPES.WEB_BOOK_UPDATE_INDEX: {
+                const bookQuery = new WebBookQueryService(this.#repositories.webBookRepository, this.#repositories.webBookSourceURLRepository);
+                const urlInfo = await bookQuery.getDefSources(payload.bookId);
+                return urlInfo.Path;
+            }
             case TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT: {
                 const { chapterId, bookId } = payload;
                 const urlInfo = await this.#chapService.getDefaultChapterSource(chapterId, bookId);
                 return urlInfo.Path;
             }
             default:
-                throw new AppError('未知任务类型！');
+                throw new AppError('未知任务类型，未能获取采集主机！');
         }
     }
 
@@ -127,6 +150,13 @@ export class CollectExecutor extends ITaskExecutor {
         return {
             chapQueryServices: new ChapterQueryService(this.#repositories.chapterRepository),
             chapCommaServices: new ChapterCommandService(this.#repositories.chapterRepository, this.#transactionManager)
+        }
+    }
+
+    #createWebBookServices() {
+        const { ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository } = this.#repositories;
+        return {
+            webBookService: new WebBookCommandService(this.#repositories.webBookRepository, this.#transactionManager, ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository),
         }
     }
 }

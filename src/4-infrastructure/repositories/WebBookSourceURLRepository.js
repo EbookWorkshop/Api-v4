@@ -48,4 +48,7 @@ export class WebBookSourceURLRepository {
             transaction
         })
     }
+    async add(data, option) {
+        return this.#WebBookSourceURLModel.create(data, option);
+    }
 }

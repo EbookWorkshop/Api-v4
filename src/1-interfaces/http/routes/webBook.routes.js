@@ -18,7 +18,7 @@ export function createWebBookRoutes(bookController) {
     router.post('/singlechapter', (ctx) => bookController.collectSingleChapter(ctx));
     router.post('/addnewsource', (ctx) => ctx.body = "TODO: /addnewsource");
 
-    router.patch('/mergeindex', (ctx) => ctx.body = "TODO: /mergeindex");
+    router.patch('/mergeindex', (ctx) => bookController.updateWebBookIndex(ctx));
     router.patch('/updatechapter', (ctx) => bookController.updateWebBookChapters(ctx));
 
     router.delete('/', (ctx) => bookController.deleteBook(ctx));

@@ -281,6 +281,11 @@ export class WebBookController {
         ctx.body = await this.#taskSchedulerService.submitCollectSingleChapterTask(setting);
     }
 
+    async updateWebBookIndex(ctx) {
+        const bookId = BookIdRequest.fromQueryCamelCase(ctx.query);
+        ctx.body = await this.#taskSchedulerService.submitUpdateIndex({ bookId });
+    }
+
     /**
      * @swagger
      * /library/webbook/updatechapter:
