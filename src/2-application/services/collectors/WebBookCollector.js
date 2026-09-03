@@ -1,6 +1,7 @@
 import { ICollector } from "../../ports/ICollector.js";
 import { RULE_INDEX, RULE_INFO, RuleName } from "../../../3-domain/constants/Rule.js"
 import { COLLECT_EVENTS } from "../../../3-domain/constants/Event.js";
+import { AppError } from "../../../5-shared/errors/index.js";
 
 
 
@@ -110,7 +111,7 @@ export class WebBookCollector extends ICollector {
      * @param {*} infoResult 
      * @returns 
      */
-    async #handleInfo(infoResult,embedBookName) {
+    async #handleInfo(infoResult, embedBookName) {
         const bn = infoResult.get(RuleName.BookName);
         if (!bn || !bn[0].text) return false;
         const bookInfo = {};
@@ -195,6 +196,8 @@ export class WebBookCollector extends ICollector {
     #resultHandle(payload, result, message) {
         const eventType = payload.mode == "create" ? COLLECT_EVENTS.CREATE_BOOK : COLLECT_EVENTS.UPDATE_INDEX;
         this.#eventManager.emitToMain(eventType, { result, message });
+
+        if (!result) throw new AppError(`执行失败：${message}`);
         return result;
     }
 }

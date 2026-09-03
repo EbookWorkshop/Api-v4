@@ -94,12 +94,12 @@ export class TaskSchedulerService {
      */
     async submitUpdateChapters(chapterIds, setting) {
         try {
+            const { bookId, isUpdate } = setting;
             const taskIds = [];
             for (const cid of chapterIds) {
-                setting.chapterId = cid;
                 const task = new Task({
                     taskId: crypto.randomUUID(),
-                    param: setting,
+                    param: { bookId, isUpdate, chapterId: cid },
                     taskType: TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT,
                     useDB: true,
                     maxTaskNum: 5,
