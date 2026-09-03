@@ -42,6 +42,7 @@ export class CollectExecutor extends ITaskExecutor {
                 case TASK_TYPES.WEB_BOOK_COLLECT: {
                     Collector = WebBookCollector;
                     ruleGroup = RULE_GROUP.INFO_INDEX_PAGE;
+                    msgEvent = COLLECT_EVENTS.CREATE_BOOK;
                     break;
                 }
                 case TASK_TYPES.SINGLE_CHAPTER_COLLECT: {

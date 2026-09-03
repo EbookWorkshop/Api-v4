@@ -47,7 +47,7 @@ export class ChapterCollector extends ICollector {
             const { Rule: rule, text, url } = pg[0];
             if (text === rule.checkSetting) urlPage = url;
             else break;
-        } while (urlPage || runTime >= 15);//最大重试次数
+        } while (urlPage && runTime <= 15);//最大重试次数
 
         const result = await this.#chapterCommandService.upsertChapter({
             IndexId: chapterId,

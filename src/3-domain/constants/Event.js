@@ -48,5 +48,6 @@ export const EXPORT_EVENTS = {
  */
 export const COLLECT_EVENTS = {
     UNKNOW: "Unknow.Task",      //未定义任务类型
+    CREATE_BOOK: "Create.Book",
     UPDATE_CHAPTER: "Update.Chapter",       //章节采集
 }
