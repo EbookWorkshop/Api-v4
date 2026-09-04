@@ -142,51 +142,92 @@ export class WebBookCollector extends ICollector {
     }
 
     /**
-     * 获取章节列表
-     * @param {string} sourcePage 来源网址
-     * @param {Map<string,Object>} cpl 章节信息
-     * @returns {Array<{text,url}>} 返回章节列表
+     * 获取书籍章节列表（支持分页）
+     * @param {string} sourcePage - 目录页 URL
+     * @param {Map} [initialMap] - 若已从信息页获取过数据，可传入初始结果 Map
+     * @returns {Promise<Array<{text: string, url: string}>>} 章节数组
      */
-    async #getChapterList(sourcePage, cpl = new Map()) {
-        const chapterList = [];
-        const getResult = (resultMap) => {
-            const __result = {
-                nextPage: null,
-                isRetry: false,
-            }
-            const cl = resultMap.get(RuleName.ChapterList);
-            if (Error.isError(cl[0])) {
-                __result.isRetry = true;
-                return __result;
-            }
-            if (Array.isArray(cl)) chapterList.push(...cl);
+    async #getChapterList(sourcePage, initialMap = new Map()) {
+        const chapters = [];
+        let nextPageUrl = null;
+        let currentUrl = sourcePage;
+        let pageCount = 0;
+        const MAX_PAGES = 50;           // 防止死循环
+        const MAX_RETRIES = 3;          // 单页最大重试次数
 
-            const np = resultMap.get(RuleName.IndexNextPage);
-            if (np && np[0]) for (const nxp of np) {
-                if (Error.isError(nxp)) {
-                    __result.isRetry = true;
-                    return __result;
+        // 提取单页数据（返回章节列表和下一页链接）
+        const extractPageData = (resultMap) => {
+            const pageChapters = [];
+            // 获取章节列表（过滤掉错误项）
+            const rawChapters = resultMap.get(RuleName.ChapterList) || [];
+            for (const item of rawChapters) {
+                if (!(item instanceof Error) && item.text) {
+                    pageChapters.push({ text: item.text, url: item.url });
                 }
-                if (nxp.text === nxp.Rule.checkSetting) __result.nextPage = nxp.url;
             }
-            return __result;
-        }
-        let nextPage = null;
-        if (cpl.size > 0) {
-            const _rsl_ = getResult(cpl);
-            if (_rsl_.isRetry) nextPage = sourcePage;
-            else nextPage = _rsl_.nextPage;
-        } else nextPage = sourcePage;
 
-        let runTime = 0;
-        while (nextPage && runTime <= 15) {
-            const rslMap = await this.#fetcher.fetch(nextPage, this.#setting);
-            const cycleRsl = getResult(rslMap);
-            if (cycleRsl.isRetry) { runTime++; console.log(`获取内容失败，已重试：${runTime}。`, nextPage); continue; }
-            nextPage = cycleRsl.nextPage;
+            let nextUrl = null;
+            const nextResults = resultMap.get(RuleName.IndexNextPage) || [];
+            for (const item of nextResults) {
+                if (item instanceof Error) continue;
+                if (item.text === item.Rule?.checkSetting) {
+                    nextUrl = item.url;
+                    break;
+                }
+            }
+            return { chapters: pageChapters, nextUrl };
+        };
+
+        // 处理初始传入的数据（如果有）
+        if (initialMap.size > 0) {
+            const { chapters: initChaps, nextUrl } = extractPageData(initialMap);
+            chapters.push(...initChaps);
+            nextPageUrl = nextUrl;
+            // 若初始页无有效章节，则回退到 sourcePage 重新抓取
+            if (initChaps.length === 0) {
+                currentUrl = sourcePage;
+            } else {
+                currentUrl = nextPageUrl;   // 继续从下一页开始
+            }
+        } else {
+            currentUrl = sourcePage;
         }
 
-        return chapterList;
+        // 循环爬取后续页面
+        while (currentUrl && pageCount < MAX_PAGES) {
+            pageCount++;
+            let success = false;
+            let retries = 0;
+
+            while (!success && retries < MAX_RETRIES) {
+                try {
+                    const resultMap = await this.#fetcher.fetch(currentUrl, this.#setting);
+                    const { chapters: newChaps, nextUrl } = extractPageData(resultMap);
+
+                    // 只要有新章节就算成功
+                    if (newChaps.length > 0) {
+                        chapters.push(...newChaps);
+                        success = true;
+                        nextPageUrl = nextUrl;
+                    } else {
+                        // 无章节数据，视为失败，重试
+                        retries++;
+                        console.warn(`页面 ${currentUrl} 未提取到章节，重试 ${retries}/${MAX_RETRIES}`);
+                    }
+                } catch (err) {
+                    retries++;
+                    console.warn(`抓取页面失败 ${currentUrl}，重试 ${retries}/${MAX_RETRIES}，错误：${err.message}`);
+                }
+            }
+            // 若重试耗尽仍未成功，终止循环
+            if (!success) {
+                console.warn(`放弃页面 ${currentUrl}，已重试 ${MAX_RETRIES} 次`);
+                break;
+            }
+            currentUrl = nextPageUrl;   // 移动到下一页
+        }
+
+        return chapters;
     }
 
     /**
