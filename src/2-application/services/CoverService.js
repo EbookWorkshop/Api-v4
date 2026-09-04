@@ -43,11 +43,11 @@ export class CoverService {
         // } else 
         if (this.#isUrl(source)) {            // 从 URL 下载
             const buffer = await this.#dataFetcher.download(source);
-            const savedPath = await this.#fileWriter.saveFile([this.#config.cover.path, `${bookName}_${randomBytes(3).toString('hex')}.${eXtname(source, "jpg")}`], buffer);
+            const savedPath = await this.#fileWriter.saveFile([this.#config.cover.path, `${bookName}_${randomBytes(2).toString('hex')}.${eXtname(source, "jpg")}`], buffer);
             finalPath = savedPath;
             coverValue = savedPath;
 
-            console.debug(`已下载图片[${source}]，已写入[${savedPath}]`);
+            // console.debug(`已下载图片[${source}]，已写入[${savedPath}]`);
 
             // 如果需要嵌入书名，且当前是图片文件，则需要在 coverValue 后面附加 #showname
             if (embedBookName && finalPath && !finalPath.startsWith('#')) {
@@ -103,9 +103,4 @@ export class CoverService {
     #isUrl(str) {
         return /^https?:\/\//i.test(str);
     }
-
-    // async #generateSolidColorImage(color, { bookName, embedBookName }) {
-    //     // 调用 imageProcessor 生成纯色图片（可能包含书名）
-    //     return this.#imageProcessor.generateSolidColor(color, bookName, embedBookName);
-    // }
 }

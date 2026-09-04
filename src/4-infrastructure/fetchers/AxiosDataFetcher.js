@@ -1,17 +1,22 @@
 import axios from 'axios';
 import puppeteer from 'puppeteer'
-// import Iconv from 'iconv-lite';
 import { IDataFetcher } from '../../2-application/ports/IDataFetcher.js';
 import { RuleEngine } from './engines/RuleEngine.js';
+import { AppError } from '../../5-shared/errors/index.js';
 
 export class AxiosDataFetcher extends IDataFetcher {
     #config;
     /** @type {RuleEngine} */
     #ruleEngine;
-    constructor(config, ruleEngine) {
+    #browser;
+    /** 是否保持资源（一直打开浏览器模式）注意： 保持模式下需要手动关闭！ */
+    #keep;
+    constructor(config, ruleEngine, isKeep = false) {
         super();
         this.#config = config;
         this.#ruleEngine = ruleEngine;
+        this.#browser = null;
+        this.#keep = isKeep;
     }
 
     async fetch(url, options) {
@@ -31,23 +36,27 @@ export class AxiosDataFetcher extends IDataFetcher {
      * @returns result<Map>
      */
     async #parseHtmlString(htmlString, url, setting) {
-        const browser = await puppeteer.launch({ headless: "new" });
-        const page = await browser.newPage();
+        const browser = await this.#getBrowser(setting);
+        let page = {};
+        try {
+            page = await browser.newPage();
+            // 将传入的 HTML 字符串设置为页面内容
+            //    'about:blank' 是目标URL，核心是 setContent 方法
+            await page.setContent(htmlString, {
+                waitUntil: 'networkidle2' // 等待到网络和脚本加载 <= 2   —— 可能有部分CDN一直请求不到，留2个
+                // waitUntil: 'networkidle0' // 等待到网络和脚本加载 == 0
+            });
 
-        // 将传入的 HTML 字符串设置为页面内容
-        //    'about:blank' 是目标URL，核心是 setContent 方法
-        await page.setContent(htmlString, {
-            waitUntil: 'networkidle0' // 等待网络和脚本加载完成
-        });
-
-        const { rules, dictionaries } = setting;
-        let result = await this.#ruleEngine.extract(page, rules, dictionaries || []);
-        await browser.close();
-
-        return result;
+            const { rules, dictionaries } = setting;
+            let result = await this.#ruleEngine.extract(page, rules, dictionaries || []);
+            await page.close();
+            if (!this.#keep && browser) await browser.close();
+            return result;
+        } catch (error) {
+            try { await page.close() } catch (err) { }
+            throw new AppError(`Puppeteer加载源代码失败，原因：${error.message}`);
+        }
     }
-
-
 
     /**
      * 通过 URL 获取的 Buffer
@@ -89,6 +98,22 @@ export class AxiosDataFetcher extends IDataFetcher {
                 // 请求配置出错
                 throw new Error(`下载图片失败: ${error.message}`);
             }
+        }
+    }
+
+    async #getBrowser(setting) {
+        if (!this.#browser) this.#browser = await puppeteer.launch({
+            timeout: setting.timeout,
+            headless: false
+        });
+        return this.#browser;
+    }
+
+    async close() {
+        if (this.#browser) {
+            await this.#browser.close();
+            this.#browser = null;
+            console.debug("浏览器已关闭。");
         }
     }
 }

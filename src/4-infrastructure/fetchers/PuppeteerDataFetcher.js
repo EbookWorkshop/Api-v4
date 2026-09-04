@@ -38,7 +38,6 @@ export class PuppeteerDataFetcher extends IDataFetcher {
 
             // 配置需要访问网址
             await page.goto(url, { timeout: setting.timeout, waitUntil: 'networkidle2' });
-            //await page.exposeFunction('ActionHandle',DoAction); //在页面注册全局函数
 
             //数据分析采集
             const { rules, dictionaries } = setting;
@@ -136,7 +135,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
         if (this.#browser) {
             await this.#browser.close();
             this.#browser = null;
-            console.debug("浏览器已关闭。");
+            // console.debug("浏览器已关闭。");
         }
     }
 }

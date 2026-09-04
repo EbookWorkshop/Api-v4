@@ -13,6 +13,7 @@ import { ChapterCommandService } from "../ChapterCommandService.js";
 
 import { WebBookQueryService } from "../WebBookQueryService.js";
 import { WebBookCommandService } from "../WebBookCommandService.js";
+import { WebBookChapterService } from "../WebBookChapterService.js"
 
 import { CoverService } from "../CoverService.js"
 
@@ -96,7 +97,7 @@ export class CollectExecutor extends ITaskExecutor {
             const ruleEngine = new RuleEngine({ debug: false });
             const scraper = rules.find(({ ruleName }) => ruleName === RuleCommon.Scraping);
             switch (scraper.selector) {
-                case "http": fetcher = new AxiosDataFetcher(this.#config, ruleEngine); break;
+                case "http": fetcher = new AxiosDataFetcher(this.#config, ruleEngine, true); break;
                 case "puppeteer":
                 default: fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine, true); break;
             }
@@ -115,7 +116,7 @@ export class CollectExecutor extends ITaskExecutor {
             });
             throw error;
         } finally {
-            await fetcher.close();
+            await fetcher?.close?.();
         }
     }
 
@@ -166,9 +167,10 @@ export class CollectExecutor extends ITaskExecutor {
     }
 
     #createWebBookServices() {
-        const { ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository } = this.#repositories;
+        const { webBookRepository, ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository } = this.#repositories;
+        const webBookChapterService = new WebBookChapterService(this.#transactionManager, chapterRepository, webBookChapterRepository, webBookChapterURLRepository);
         return {
-            webBookService: new WebBookCommandService(this.#repositories.webBookRepository, this.#transactionManager, ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository),
+            webBookService: new WebBookCommandService(webBookRepository, this.#transactionManager, ebookRepository, chapterRepository, webBookSourceURLRepository, webBookChapterService),
             coverService: new CoverService(this.#fileWriter, null, this.#config),
         }
     }

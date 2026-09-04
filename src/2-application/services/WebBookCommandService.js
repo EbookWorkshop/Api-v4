@@ -11,24 +11,19 @@ export class WebBookCommandService {
     #ebookRepository;
     /** @type {ChapterRepository} */
     #chapterRepository;
-
-    #webBookChapterRepository;
     #webBookSourceURLRepository;
-    #webBookChapterURLRepository;
+    #webBookChapterService;
 
     /**
      * @param {WebBookRepository} webBookRepository 
      */
-    constructor(webBookRepository, transaction, ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository) {
+    constructor(webBookRepository, transaction, ebookRepository, chapterRepository, webBookSourceURLRepository, webBookChapterService) {
         this.#webBookRepository = webBookRepository;
         this.#transaction = transaction;
         this.#ebookRepository = ebookRepository;
         this.#chapterRepository = chapterRepository;
-
-        this.#webBookChapterRepository = webBookChapterRepository;
         this.#webBookSourceURLRepository = webBookSourceURLRepository;
-        this.#webBookChapterURLRepository = webBookChapterURLRepository;
-
+        this.#webBookChapterService = webBookChapterService;
     }
 
     async setAutoSync(bookId, autoSyncEnabled) {
@@ -66,13 +61,8 @@ export class WebBookCommandService {
             //处理章节
             if (Introduction) await this.#chapterRepository.updateIntroduction({ bookId, content: Introduction }, { transaction });
 
-            let OrderNum = 1;
-            for (const cp of ChapterList) {
-                const cpModel = await this.#chapterRepository.addChapter({ BookId: bookId, Title: cp.text, OrderNum }, { transaction });
-                OrderNum++;
-                const wcpModel = await this.#webBookChapterRepository.addChapter({ IndexId: cpModel.id, WebTitle: cp.text }, { transaction });
-                const cpUrlModel = await this.#webBookChapterURLRepository.add({ Path: cp.url, WebBookChapterId: wcpModel.id }, { transaction });
-            }
+            await this.#webBookChapterService.batchCreate(bookId, ChapterList, { transaction });
+
             return bookId;
         });
     }

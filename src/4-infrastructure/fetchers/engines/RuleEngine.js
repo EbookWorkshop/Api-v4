@@ -55,9 +55,9 @@ export class RuleEngine {
                         case "attr": result = myNode[acExp[1]]; break;
                         case "fun": result = myNode[acExp[1]](...acExp.slice(2)); break;  //执行节点上的方法
                         case "cache": result = "cache::" + myNode[acExp[1]]; break;       //缓存的
-                        case "reg": result = "ToDo"; break;
+                        case "reg": result = "ToDo:RegExp"; break;
                     }
-                    return result;
+                    return result?.trim();
                 }
 
                 let myRsl = [];
@@ -149,7 +149,7 @@ export class RuleEngine {
         return result;
     }
 
-    // 私有辅助：检查选择器是否存在
+    // 私有辅助：检查选择器的条件是否存在
     async checkSelectorExists(pageObj, selector) {
         return await pageObj.$$eval.call(pageObj, selector, (node) => { return node.length > 0; });
     }

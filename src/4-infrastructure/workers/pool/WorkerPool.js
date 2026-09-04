@@ -327,7 +327,7 @@ export class WorkerPool {
         this.#workersQueue(worker.withDB).free(worker);
 
         if (this.workerDebug) {
-            console.log(`线程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。`);
+            console.log(`线程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。\n`, task.param, data, error);
             if (resule === TASK_STATUS.REJECTED) console.warn("失败回收，原因：", error || data);
         }
     }

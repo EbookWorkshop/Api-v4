@@ -366,27 +366,24 @@ export class RuleForWebController {
      *       - BotRule
      *     summary: 存储指定站点的字典
      *     description: 存储指定站点的翻译字典
-     *     parameters:
-     *       - in: body
-     *         name: data
-     *         description: 站点字典数据
-     *         required: true
-     *         schema:
-     *           type: object
-     *           required:
-     *             - host
-     *             - data
-     *           properties:
-     *             host:
-     *               type: string
-     *               description: 站点host标识
-     *             data:
-     *               type: array
-     *               description: 字典条目列表
-     *               items:
-     *                 $ref: '#/components/schemas/DictionaryItem'
-     *     consumes:
-     *       - application/json
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - host
+     *               - data
+     *             properties:
+     *               host:
+     *                 type: string
+     *                 description: 站点host标识
+     *               data:
+     *                 type: array
+     *                 description: 字典条目列表
+     *                 items:
+     *                   $ref: '#/components/schemas/DictionaryItem'
      *     responses:
      *       200:
      *         description: 请求成功

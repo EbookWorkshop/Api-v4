@@ -88,6 +88,22 @@ export class ChapterRepository {
     }
 
     /**
+     * 找到章节ID的序号
+     * 应用场景：批量插入时，用于通过序号反查对应章节的ID
+     * @param {*} bookId 
+     * @returns 
+     */
+    async findIdOrderByBookId(bookId, { transaction }) {
+        return this.#ChapterModel.findAll({
+            attributes: ["id", "OrderNum"],
+            where: { BookId: bookId },
+            transaction,
+            raw: true
+        });
+    }
+
+
+    /**
       * 读取简介章
       * @param {*}bookId 
       */
@@ -294,7 +310,7 @@ export class ChapterRepository {
         let order = maxOrderNum + 1;
         const processedChapters = chapters.map(({ VolumeId, ...cp }) => ({
             ...cp,
-            OrderNum: cp.OrderNum ? (cp.OrderNum + order++) : order++,
+            OrderNum: cp.OrderNum ? cp.OrderNum : order++,
             BookId: bookId,
             VolumeId: (volumeId || VolumeId || null)
         }));

@@ -66,7 +66,8 @@ export class WebBookCollector extends ICollector {
         const infoResult = await this.#handleInfo(info, isEmbedBookName);
         if (!infoResult) {
             // console.log("书籍信息处理失败：", infoResult, info);
-            return this.#resultHandle(payload, false, `书籍信息采集失败：${urlPage}`);
+            // console.log(result)
+            return this.#resultHandle(payload, false, `书籍信息采集失败(一般是目标网站返回超时页)：${urlPage}`);
         }
 
         //采集/提取章节列表
@@ -88,7 +89,7 @@ export class WebBookCollector extends ICollector {
         //存储到数据库
         const bookId = await this.#save(bookResult, { isEmbedBookName, sourcePage, infoPage });
 
-        this.#resultHandle(payload, bookId > 0, `已创建书籍《${bookResult.BookName}》`);
+        return this.#resultHandle(payload, bookId > 0, `已创建书籍《${bookResult.BookName}》`);
     }
 
     /**
@@ -99,11 +100,13 @@ export class WebBookCollector extends ICollector {
         const { sourcePage, infoPage, isEmbedBookName } = option;
         let chapterList = await this.#getChapterList(sourcePage);
         const bookResult = { [RuleName.ChapterList]: chapterList };
-        this.#fixData(bookResult);//采集数据去重
+        this.#fixData(bookResult);//已采集数据去重
 
         //TODO: 更新合并章节,存储
         //根据默认源获取所有对应的一套目录，与采集信息交集合并
         //注意多来源的情况
+
+        return { result: "todo" }
     }
 
     /**
@@ -197,7 +200,7 @@ export class WebBookCollector extends ICollector {
         const eventType = payload.mode == "create" ? COLLECT_EVENTS.CREATE_BOOK : COLLECT_EVENTS.UPDATE_INDEX;
         this.#eventManager.emitToMain(eventType, { result, message });
 
-        if (!result) throw new AppError(`执行失败：${message}`);
-        return result;
+        // if (!result) throw new AppError(`执行失败：${message}`);
+        return { ...payload, result, message };
     }
 }

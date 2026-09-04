@@ -281,6 +281,54 @@ export class WebBookController {
         ctx.body = await this.#taskSchedulerService.submitCollectSingleChapterTask(setting);
     }
 
+    /**
+     * @swagger
+     * /library/webbook/mergeindex:
+     *   patch:
+     *     summary: 🧵更新目录
+     *     description: 尝试更新目录章节
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *       - WebBook
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/BookIdRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/BookIdRequestExample'
+     *     responses:
+     *       200:
+     *         description: 热度更新成功，返回统一成功信息
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 请求参数错误（如 bookId 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookId 必须为有效整数"
+     *               timestamp: "2026-08-19T12:00:00.000Z"
+     *       404:
+     *         description: 图书不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该图书"
+     *               timestamp: "2026-08-19T12:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
     async updateWebBookIndex(ctx) {
         const bookId = BookIdRequest.fromBody(ctx.request.body);
         ctx.body = await this.#taskSchedulerService.submitUpdateIndex({ bookId });
