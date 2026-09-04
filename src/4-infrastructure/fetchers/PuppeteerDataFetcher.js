@@ -34,6 +34,11 @@ export class PuppeteerDataFetcher extends IDataFetcher {
         try {
             let page = await browser.newPage();
 
+            // {
+            //     // DEBUG: 接管console 网站在浏览器上发的空调信息转发到服务器控台
+            //     page.on("console", msg => { console.log(`[浏览器]:${msg.text()}`) });
+            // }
+
             if (setting.userAgent) await page.setUserAgent({ userAgent: setting.userAgent });//设置用户代理
 
             // 配置需要访问网址
@@ -49,7 +54,8 @@ export class PuppeteerDataFetcher extends IDataFetcher {
                     message: "请求地址与实际地址不一致，发生过重定向。",
                 });
             }
-
+            // await fs.writeFile(`/temp/html/${randomBytes(6).toString("hex")}.html`, await page.content());
+            if (this.#keep) await page.close();
         } catch (err) {
             console.warn("[执行失败]PuppeteerDataFetcher::fetch", err.message, `\t耗时：${(performance.now() - startTime) / 1000}秒`, url);
             throw err;
@@ -94,21 +100,17 @@ export class PuppeteerDataFetcher extends IDataFetcher {
                 waitUntil: 'load', // 等待加载完成
             });
 
-            if (!response) {
-                throw new Error('未收到响应');
-            }
+            if (!response) throw new Error('未收到响应');
 
-            // 检查 HTTP 状态码
-            if (!response.ok()) {
-                throw new Error(`HTTP 请求失败，状态码: ${response.status()}`);
-            }
+            // 检查 HTTP 状态码 //不检查状态码，
+            // if (!response.ok()) {
+            //     throw new Error(`HTTP 请求失败，状态码: ${response.status()}`);
+            // }
 
             // 获取资源二进制数据 Buffer
-            const buffer = await response.buffer();
-
-            return buffer;
+            return await response.buffer();
         } catch (error) {
-            throw new Error(`Puppeteer 获取资源 Buffer 失败: ${error.message}`);
+            throw new Error(`Puppeteer::download 下载资源 Buffer 失败: ${error.message}`);
         } finally {
             if (!this.#keep && browser) await browser.close();
         }

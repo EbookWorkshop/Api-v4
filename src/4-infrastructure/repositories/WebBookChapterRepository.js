@@ -2,10 +2,12 @@ import { Op } from "sequelize";
 export class WebBookChapterRepository {
     #WebBookChapterModel;
     #ChapterModel;
+    #WebBookChapterURLModel;
 
     constructor(sequelize) {
         this.#WebBookChapterModel = sequelize.models.WebBookChapter;
         this.#ChapterModel = sequelize.models.EbookChapter;
+        this.#WebBookChapterURLModel = sequelize.models.WebBookChapterURL;
     }
 
     async addChapter(chapter, option) {
@@ -45,6 +47,30 @@ export class WebBookChapterRepository {
             }],
             transaction,
             raw: true
+        });
+    }
+
+    /**
+     * 获取章节标题-网址集合
+     * @param {*} bookId 
+     * @param {*} host 
+     * @returns 
+     */
+    async getWebChapterURL(bookId, host) {
+        return await this.#WebBookChapterModel.findAll({
+            include: [{
+                model: this.#ChapterModel, as: "EbookChapter",
+                require: true,
+                attributes: [],
+                where: { BookId: bookId }
+            }, {
+                model: this.#WebBookChapterURLModel, as: "WebBookChapterURLs",
+                require: true,
+                attributes: ["Path"],
+                where: { Path: { [Op.like]: `%${host}%` } }//兼容多源的情况
+            }],
+            attributes: ["WebTitle"],
+            raw: true,
         });
     }
 }

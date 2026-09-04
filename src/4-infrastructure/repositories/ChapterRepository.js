@@ -286,6 +286,10 @@ export class ChapterRepository {
         return await this.#ChapterModel.destroy({ where: { id: chapterId } });
     }
 
+    async getMaxOrder(bookId) {
+        return this.#ChapterModel.max('OrderNum', { where: { BookId: bookId } }) || 1;
+    }
+
     /**
      * 批量插入章节
      * @param {number} bookId 将插入的书籍
@@ -297,9 +301,7 @@ export class ChapterRepository {
         const { sequelize } = this.#ChapterModel;
         const trans = transaction ? transaction : await sequelize.transaction();
 
-        let maxOrderNum = await this.#ChapterModel.max('OrderNum', {
-            where: { BookId: bookId }
-        }) || 1;
+        let maxOrderNum = await this.getMaxOrder(bookId);
         if (volumeId == -1) volumeId = null;
         else if (volumeId) {
             const volume = await this.#VolumeModel.findByPk(volumeId);

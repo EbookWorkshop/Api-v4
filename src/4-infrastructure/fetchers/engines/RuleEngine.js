@@ -1,6 +1,7 @@
 // import { EventManager } from '../../event/EventManager.js';
 
 import { RuleName } from "../../../3-domain/constants/Rule.js"
+import { AppError } from "../../../5-shared/errors/index.js";
 
 /**
  * 规则执行引擎（基础设施层）
@@ -31,13 +32,13 @@ export class RuleEngine {
                 }, isVis);
             } catch (err) { }//尝试删除干扰元素，失败不管
 
-        if (rule.selector === "") return [];
-        let querySelector = pageObj.$eval;
-        if (rule.type === "List") querySelector = pageObj.$$eval;
+        if (rule.selector === "") return [new AppError("当前规则还没设置选择器。")];
+        let querySelector = (rule.type === "List") ? pageObj.$$eval : pageObj.$eval;
 
         try {
             //注意：下述代码块运行在浏览器端
             let rsl = await querySelector.call(pageObj, rule.selector, (node, option, isVis) => {
+                if (!node || node?.length == 0) { return []; }      //没命中元素
                 /**
                  * 动作表达式解释处理器 
                  * 只能定义在浏览器端，对象不能序列化

@@ -172,6 +172,7 @@ export class CollectExecutor extends ITaskExecutor {
         return {
             webBookService: new WebBookCommandService(webBookRepository, this.#transactionManager, ebookRepository, chapterRepository, webBookSourceURLRepository, webBookChapterService),
             coverService: new CoverService(this.#fileWriter, null, this.#config),
+            webBookChapterService,
         }
     }
 }

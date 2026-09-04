@@ -19,7 +19,7 @@ INSERT into  ReviewRuleUsings select u.* from old.ReviewRuleUsings u INNER JOIN 
 INSERT into  RuleForWebs select * from old.RuleForWebs;
 
 -- 书本目录页
-INSERT into  WebBookChapterURLs select b.* from old.WebBookChapterURLs b INNER JOIN old.WebBookChapters a on a.id = b.WebBookIndexId;
+INSERT into  WebBookChapterURLs select b.* from old.WebBookIndexURLs b INNER JOIN old.WebBookChapters a on a.id = b.WebBookIndexId;
  
 INSERT into  Tags select * from old.Tags;
 INSERT into  EBookTags select * from old.EBookTags;

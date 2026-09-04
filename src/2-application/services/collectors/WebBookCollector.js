@@ -2,6 +2,7 @@ import { ICollector } from "../../ports/ICollector.js";
 import { RULE_INDEX, RULE_INFO, RuleName } from "../../../3-domain/constants/Rule.js"
 import { COLLECT_EVENTS } from "../../../3-domain/constants/Event.js";
 import { AppError } from "../../../5-shared/errors/index.js";
+import { getHost } from "../../../5-shared/utils/site.js";
 
 
 
@@ -12,6 +13,7 @@ export class WebBookCollector extends ICollector {
     #setting;
     #eventManager;
     #webBookService;
+    #webBookChapterService;
     #coverService;
 
     /**
@@ -25,6 +27,7 @@ export class WebBookCollector extends ICollector {
         this.#fetcher = fetcher;
         this.#eventManager = services.eventManager;
         this.#webBookService = services.webBookService;
+        this.#webBookChapterService = services.webBookChapterService;
         this.#coverService = services.coverService;
         this.#coverService.dataFetcher = fetcher;
     }
@@ -97,16 +100,18 @@ export class WebBookCollector extends ICollector {
      * @param {*} option 
      */
     async updateChapter(option) {
-        const { sourcePage, infoPage, isEmbedBookName } = option;
+        const { sourcePage, infoPage, isEmbedBookName, bookId } = option;
+        //从页面获取的章节
         let chapterList = await this.#getChapterList(sourcePage);
+        //已在数据库的章节
+        const hasChaptList = await this.#webBookChapterService.getWebChapterURL(bookId, getHost(sourcePage));
+        const keyDic = hasChaptList.map(t => `${t.WebTitle}${t["WebBookChapterURLs.Path"]}`);
         const bookResult = { [RuleName.ChapterList]: chapterList };
-        this.#fixData(bookResult);//已采集数据去重
+        this.#fixData(bookResult, new Set(keyDic));
+        chapterList = bookResult[RuleName.ChapterList]
+        if (chapterList.length > 0) await this.#saveBatchChapter(bookId, chapterList);
 
-        //TODO: 更新合并章节,存储
-        //根据默认源获取所有对应的一套目录，与采集信息交集合并
-        //注意多来源的情况
-
-        return { result: "todo" }
+        return this.#resultHandle(option, true, `已完成章节合并，新增章节：${chapterList.length}`);
     }
 
     /**
@@ -144,27 +149,43 @@ export class WebBookCollector extends ICollector {
      */
     async #getChapterList(sourcePage, cpl = new Map()) {
         const chapterList = [];
-        let nextPage = sourcePage;
-        let result = cpl;
-        let runTime = 0;
-
-        if (cpl.size == 0) cpl.set(RuleName.IndexNextPage, [{ url: sourcePage, Rule: { checkSetting: "" }, text: "" }]);
-
-        do {
-            const cl = result.get(RuleName.ChapterList);
+        const getResult = (resultMap) => {
+            const __result = {
+                nextPage: null,
+                isRetry: false,
+            }
+            const cl = resultMap.get(RuleName.ChapterList);
+            if (Error.isError(cl[0])) {
+                __result.isRetry = true;
+                return __result;
+            }
             if (Array.isArray(cl)) chapterList.push(...cl);
-            const np = result.get(RuleName.IndexNextPage);
-            if (np && np[0]) {
-                if (Error.isError(np[0])) { runTime++; console.log(`更新章节目录失败，重试：`, nextPage); continue; }
-                nextPage = false;
-                for (let i = 0; i < np.length; i++) {   //同时命中多个下一页按钮，找到下一个
-                    const { text, Rule: rule, url } = np[i];
-                    if (text === rule.checkSetting) nextPage = url;
+
+            const np = resultMap.get(RuleName.IndexNextPage);
+            if (np && np[0]) for (const nxp of np) {
+                if (Error.isError(nxp)) {
+                    __result.isRetry = true;
+                    return __result;
                 }
-                if (!nextPage) break;
-                result = await this.#fetcher.fetch(nextPage, this.#setting);
-            } else nextPage = false;
-        } while (nextPage & runTime <= 15);
+                if (nxp.text === nxp.Rule.checkSetting) __result.nextPage = nxp.url;
+            }
+            return __result;
+        }
+        let nextPage = null;
+        if (cpl.size > 0) {
+            const _rsl_ = getResult(cpl);
+            if (_rsl_.isRetry) nextPage = sourcePage;
+            else nextPage = _rsl_.nextPage;
+        } else nextPage = sourcePage;
+
+        let runTime = 0;
+        while (nextPage && runTime <= 15) {
+            const rslMap = await this.#fetcher.fetch(nextPage, this.#setting);
+            const cycleRsl = getResult(rslMap);
+            if (cycleRsl.isRetry) { runTime++; console.log(`获取内容失败，已重试：${runTime}。`, nextPage); continue; }
+            nextPage = cycleRsl.nextPage;
+        }
+
         return chapterList;
     }
 
@@ -173,11 +194,10 @@ export class WebBookCollector extends ICollector {
      * 检查章节是否重复
      * @param {*} bookData 
      */
-    #fixData(bookData) {
+    #fixData(bookData, chapSet = new Set()) {
         //检查章节重复——依据【标题、网址】同时重复
         if (bookData[RuleName.ChapterList]) {
             const newChap = [];
-            const chapSet = new Set();
             for (const c of bookData[RuleName.ChapterList]) {
                 const key = `${c.text}${c.url}`;
                 if (chapSet.has(key)) continue;
@@ -194,6 +214,10 @@ export class WebBookCollector extends ICollector {
      */
     async #save(bookData, option) {
         return await this.#webBookService.createBook(bookData, option);
+    }
+
+    async #saveBatchChapter(bookId, chapterList) {
+        return this.#webBookChapterService.batchCreate(bookId, chapterList);
     }
 
     #resultHandle(payload, result, message) {

@@ -78,14 +78,15 @@ export class AxiosDataFetcher extends IDataFetcher {
                 ...options,
             });
 
-            // 检查 HTTP 状态码是否成功 (2xx)
-            if (response.status >= 200 && response.status < 300) {
-                // response.data 在 responseType 为 'arraybuffer' 时是一个 ArrayBuffer
-                // 将其转换为 Node.js 的 Buffer 并返回
-                return Buffer.from(response.data);
-            } else {
-                throw new Error(`HTTP 请求失败，状态码: ${response.status}`);
-            }
+            // 检查 HTTP 状态码是否成功 (2xx)       //不检查
+            // if (response.status >= 200 && response.status < 300) {
+            //     // response.data 在 responseType 为 'arraybuffer' 时是一个 ArrayBuffer
+            //     // 将其转换为 Node.js 的 Buffer 并返回
+            //     return Buffer.from(response.data);
+            // } else {
+            //     throw new Error(`HTTP 请求失败，状态码: ${response.status}`);
+            // }
+            return Buffer.from(response.data);
         } catch (error) {
             // 增强错误信息，方便调试
             if (error.response) {
