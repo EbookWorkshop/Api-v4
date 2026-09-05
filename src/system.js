@@ -7,7 +7,6 @@ import { EventManager } from './4-infrastructure/event/EventManager.js';
 import { WorkerPool } from "./4-infrastructure/workers/index.js"
 import { loadConfig } from './4-infrastructure/config/index.js';
 import { createMiniCore } from './4-infrastructure/container/miniCore.js';
-import { ServiceServer } from './4-infrastructure/server/ServiceServer.js';
 import { createServices } from './2-application/services/index.js';
 import { createControllers } from './1-interfaces/http/controllers/index.js';
 import { setupHttpServer } from './1-interfaces/http/index.js';
@@ -53,7 +52,7 @@ app.use(koaBody({
 // 4.2 装配 HTTP 层（返回原生 Server）
 const httpServer = setupHttpServer(app, config, controllers);
 // 4.3 装配 WebSocket 层（挂载到同一个原生 Server）
-const io = setupWebsocket(httpServer, services, config);
+const io = setupWebsocket(httpServer, services, eventManager);
 
 
 // ============================================================
