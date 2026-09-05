@@ -36,7 +36,7 @@ export class RuleForWebQueryService {
     /**
      * 通过网址/主机名获取对应的规则
      * @param {*} urlOrHost 
-     * @returns 
+     * @returns 全套规则
      */
     async getRulesByHost(urlOrHost) {
         let host = getHost(urlOrHost);
@@ -83,14 +83,24 @@ export class RuleForWebQueryService {
     }
 
     /**
-     * 
+     * 按组获取规则
      * @param {string} urlOrHost 
-     * @param {RULE_GROUP} group 
+     * @param {RULE_GROUP} group 规则组，按页类型划分的规则组
+     * @returns 公共规则+按页划分的规则
      */
     async getRulesWithGroup(urlOrHost, group) {
         const rules = await this.getRulesByHost(urlOrHost);
-        const ruleCommon = rules.filter(r => Object.keys(RuleCommon).includes(r.ruleName));
+        return this.divideRulesWithGroup(rules, group);
+    }
 
+    /**
+     * 将全套规则按规则组划分
+     * @param {*} rules 全套规则
+     * @param {*} group  规则组，按页类型划分的规则组
+     * @returns  公共规则+按页划分的规则
+     */
+    async divideRulesWithGroup(rules, group) {
+        const ruleCommon = rules.filter(r => Object.keys(RuleCommon).includes(r.ruleName));
         const ruleNameArr = RULE_GROUP_SETTING[group];
         const result = rules.filter(r => ruleNameArr.includes(r.ruleName));
         return [...result, ...ruleCommon];

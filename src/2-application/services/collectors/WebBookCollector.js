@@ -16,12 +16,7 @@ export class WebBookCollector extends ICollector {
     #webBookChapterService;
     #coverService;
 
-    /**
-     * 
-     * @param {Array<Object>} rules 
-     * @param {IDataFetcher} fetcher 
-     */
-    constructor(rules, fetcher, services) {
+    constructor(config, rules, fetcher, services) {
         super();
         this.#rules = rules;
         this.#fetcher = fetcher;

@@ -3,10 +3,12 @@ import { AppError } from "../../5-shared/errors/index.js";
 export class ICollector {
     /**
      * 
+     * @param {*} config 
      * @param {Array<Object>} rules 
-     * @param {IDataFetcher} fetcher 
+     * @param {IDataFetcher} fetcher 抓取服务
+     * @param {object} services 注入的服务
      */
-    constructor(rules, fetcher, services) { }
+    constructor(config, rules, fetcher, services) { }
 
     /**
      * 进行采集

@@ -41,6 +41,7 @@ export class CollectExecutor extends ITaskExecutor {
     }
 
     async execute(taskType, payload) {
+        const ruleEngine = new RuleEngine({ debug: false });
         let msgEvent = null;
         let fetcher = IDataFetcher;
         try {
@@ -76,6 +77,7 @@ export class CollectExecutor extends ITaskExecutor {
                 case TASK_TYPES.SINGLE_CHAPTER_COLLECT: {
                     Collector = FileCollector;
                     ruleGroup = RULE_GROUP.CHAPTER_PAGE;
+                    services.fileWriter = this.#fileWriter;
                     break;
                 }
                 case TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT: {
@@ -94,16 +96,15 @@ export class CollectExecutor extends ITaskExecutor {
             }
 
             const rules = await this.#ruleService.getRulesWithGroup(pageURL, ruleGroup);
-            const ruleEngine = new RuleEngine({ debug: false });
             const scraper = rules.find(({ ruleName }) => ruleName === RuleCommon.Scraping);
             switch (scraper.selector) {
                 case "http": fetcher = new AxiosDataFetcher(this.#config, ruleEngine, true); break;
                 case "puppeteer":
                 default: fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine, true); break;
             }
+            const collector = new Collector(this.#config, rules, fetcher, services);
 
             const setting = this.#rangeSetting(rules, payload);
-            const collector = new Collector(rules, fetcher, services);
             return await collector.fetch(setting, payload);
         } catch (error) {
             error.stack = `CollectExecutor::execute: ${import.meta.filename}\n${error.stack}`;
@@ -140,7 +141,7 @@ export class CollectExecutor extends ITaskExecutor {
     }
 
     /**
-     * 
+     * 包装抓取规则、设置
      * @param {*} rules 
      * @returns {{ timeout, userAgent, dictionaries, rules }}
      */

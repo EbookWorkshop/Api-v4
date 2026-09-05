@@ -1,3 +1,6 @@
+/**
+ * 按页划分的规则组
+ */
 export const RULE_GROUP = {
     /** 书籍信息页 */
     INFO_PAGE: Symbol("INFO_PAGE"),

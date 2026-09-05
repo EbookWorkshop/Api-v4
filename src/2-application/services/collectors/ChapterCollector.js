@@ -9,13 +9,8 @@ export class ChapterCollector extends ICollector {
     /** @type{ChapterCommandService} */
     #chapterCommandService;
     #eventManager;
-    /**
-     * 
-     * @param {Array<Object>} rules 
-     * @param {IDataFetcher} fetcher 
-     * @param {*} services 
-     */
-    constructor(rules, fetcher, services) {
+
+    constructor(config, rules, fetcher, services) {
         super();
         this.#rules = rules;
         this.#fetcher = fetcher;

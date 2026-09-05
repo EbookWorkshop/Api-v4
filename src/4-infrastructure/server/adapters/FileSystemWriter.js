@@ -1,6 +1,6 @@
 import path from "node:path";
 import sharp from "sharp";     //提供图像格式转换
-import { saveFile, accessDir, mapPath, deleteFile, renameFile } from '../drivers/fileSystemDriver.js';
+import { saveFile, saveArrayToFile, accessDir, mapPath, deleteFile, renameFile } from '../drivers/fileSystemDriver.js';
 import { IFileWriter } from '../../../2-application/ports/IFileWriter.js';
 
 export class FileSystemWriter extends IFileWriter {
@@ -10,7 +10,7 @@ export class FileSystemWriter extends IFileWriter {
     /**
      * 写入文件——以仓库为基础路径
      * @param {string|Array<string>} filePath 存储路径，若为数组则是路径目录
-     * @param {*} data 写入数据
+     * @param {*} data 写入数据，当为字符数组时，将会自动调整背压
      * @param {*} format 写入格式，如 base64
      * @returns {string} 实际存储的相对路径——相对仓库
      */
@@ -19,7 +19,10 @@ export class FileSystemWriter extends IFileWriter {
         if (typeof (filePath) === "string") pathArray.push(filePath);
         else if (Array.isArray(filePath)) pathArray.push(...filePath);
         const tempFile = path.join(...pathArray);
-        await saveFile(tempFile, data, format);
+
+        if (Array.isArray(data)) await saveArrayToFile(tempFile, data, format);
+        else await saveFile(tempFile, data, format);
+
         return path.relative(this.#repositoryPath, tempFile);
     }
 

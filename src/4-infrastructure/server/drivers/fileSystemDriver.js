@@ -1,6 +1,8 @@
 // src/4-infrastructure/server/fileSystemUtils.js
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
 import { AppError } from '../../../5-shared/errors/index.js';
 
 /**
@@ -81,18 +83,42 @@ export async function listFiles(sourcePath, options = { filetype: null, detail: 
 
 /**
  * 写入文件
- * @param {string|Array<string>} filePath 存储路径，若为数组则是路径目录
+ * @param {string|Array<string>} filePath 存储路径
  * @param {*} data 写入数据
  * @param {*} format 传入数据格式，如 base64
  * @returns 
  */
-export async function saveFile(filePath, data, format = "") {
+export async function saveFile(filePath, data, setting = { encoding: 'utf8' }) {
+    const { format, ...writeOption } = setting;
     if (format == "base64") data = Buffer.from(data, 'base64');
 
     //确保文件夹存在
     await fs.mkdir(path.dirname(filePath), { recursive: true });
-    return fs.writeFile(filePath, data);//writeFile的 { recursive: true } 设置不生效，不知为什么
+    return fs.writeFile(filePath, data, writeOption);//writeFile的 { recursive: true } 设置不生效，不知为什么
 }
+
+/**
+ * 
+ * @param {string|Array<string>} filePath 存储路径
+ * @param {Array<string>} arr 
+ */
+export async function saveArrayToFile(filePath, arr, setting = { encoding: 'utf8' }) {
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+
+    const fileHandle = await fs.open(filePath, 'w');
+    const writeStream = fileHandle.createWriteStream(setting);
+    const readable = Readable.from(arr);//将数组转换为流
+
+    try {
+        await pipeline(readable, writeStream);
+        return true;        // console.log('写入完成');
+    } catch (err) {
+        return err;        // console.error('写入失败:', err);
+    } finally {
+        await fileHandle.close();        // 确保关闭文件句柄
+    }
+}
+
 
 /**
  * 确保路径存在
