@@ -46,7 +46,7 @@ export function createControllers(services, config) {
         email: new EmailController(services.email),
 
         export: new ExportController(services.task),
-        service: new ServiceController(services.serviceQuery),
+        service: new ServiceController(services.serviceQuery, services.task),
 
         swagger: new SwaggerController(config),
     };

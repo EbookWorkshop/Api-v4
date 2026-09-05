@@ -11,13 +11,13 @@ const files = readdirSync(__dirname).filter(f => f.endsWith('.handler.js'));
 export async function registerAllClientEvents(socket, services, eventManager) {
     for (const file of files) {
         const module = await import(`./${file}`);
-        module?.registerSocketEvents(socket, services, eventManager);
+        module.registerSocketEvents?.(socket, services, eventManager);
     }
 }
 
 export async function registerAllGlobalBroadcasts(io, services, eventManager) {
     for (const file of files) {
         const module = await import(`./${file}`);
-        module?.registerGlobalBroadcasts(io, services, eventManager);
+        module.registerGlobalBroadcasts?.(io, services, eventManager);
     }
 }

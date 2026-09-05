@@ -4,11 +4,13 @@ import { getHost } from "../../../5-shared/utils/site.js"
 
 export class ServiceController {
     #serviceQueryService;
+    #taskSchedulerService;
     /**
      * @param {ServiceQueryService} serviceQueryService 
      */
-    constructor(serviceQueryService) {
+    constructor(serviceQueryService, taskSchedulerService) {
         this.#serviceQueryService = serviceQueryService;
+        this.#taskSchedulerService = taskSchedulerService;
     }
 
     /**
@@ -35,6 +37,32 @@ export class ServiceController {
      */
     async getVersion(ctx) {
         ctx.body = await this.#serviceQueryService.getVersionInfo();
+    }
+    /**
+     * @swagger
+     * /services/version:
+     *   post:
+     *     summary: 更新系统各依赖版本信息
+     *     description: 更新系统各依赖版本信息
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *       - Service
+     *     responses:
+     *       200:
+     *         description: 任务提交即返回
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-30T18:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async updateVersion(ctx) {
+        ctx.body = await this.#taskSchedulerService.submitUpdateVersion();
     }
 
     /**

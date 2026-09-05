@@ -25,7 +25,7 @@ export class Task {
     /**
      * 创建一个 Task 实例。
      * @param {Object} options - 任务配置对象。
-     * @param {string} options.taskId - 任务ID
+     * @param {string} options.taskId - 任务ID 缺省会自动创建
      * @param {any} options.param - 线程执行的传入参数（需要可序列化）
      * @param {TASK_TYPES} [options.taskType] - 用于确认线程运行方式的标记
      * @param {number} [options.maxTaskNum] - 该类别允许的最大线程数，小于1则不限制
@@ -40,7 +40,7 @@ export class Task {
         this.maxTaskNum = maxTaskNum;
         this.callback = callback;
         this.highPriority = highPriority || false;
-        this.useDB = useDB;
+        this.useDB = useDB || false;
 
         this.status = TASK_STATUS.PENDING;
         this.useMS = 0;//耗时

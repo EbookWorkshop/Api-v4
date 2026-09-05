@@ -135,4 +135,17 @@ export class TaskSchedulerService {
         }
     }
 
+    /**
+     * 更新系统版本信息
+     * @returns 
+     */
+    async submitUpdateVersion() {
+        try {
+            const task = new Task({ taskType: TASK_TYPES.SYSTEM_VERSION });
+            this.#workerPool.addTask(task);
+            return `已添加到任务：${task.taskId}`
+        } catch (error) {
+            throw new AppError("添加任务失败：" + error.message);
+        }
+    }
 }

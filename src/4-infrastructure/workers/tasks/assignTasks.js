@@ -24,6 +24,9 @@ export async function assignTasks(taskType, config, resources) {
         case TASK_TYPES.SINGLE_CHAPTER_COLLECT:
             createTask = "collect.assembler.js";
             break;
+        case TASK_TYPES.SYSTEM_VERSION:
+            createTask = "version.assembler.js";
+            break;
         default:
             throw new AppError("尚未开发对接的任务类型：" + taskType);
     }

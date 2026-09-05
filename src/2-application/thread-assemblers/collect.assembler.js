@@ -13,7 +13,7 @@ import { WebBookChapterURLService } from "../services/WebBookChapterURLService.j
  * @param {Object} config 
  * @param {TASK_TYPES} taskType 
  * @param {Object} resources 
- * @returns 
+ * @returns {ITaskExecutor}
  */
 export function createCollectExecutor(config, taskType, resources) {
     const { repositories } = resources;
