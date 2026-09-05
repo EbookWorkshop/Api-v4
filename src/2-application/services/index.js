@@ -22,6 +22,7 @@ import { EmailService } from "./EmailService.js";
 import { NodemailerEmailSender } from '../../4-infrastructure/email/NodemailerEmailSender.js';
 
 import { FontService } from './FontService.js';
+import { ServiceServer } from "../../4-infrastructure/server/ServiceServer.js"
 import { FileSystemScanner } from '../../4-infrastructure/server/adapters/FileSystemScanner.js';
 import { FileSystemWriter } from '../../4-infrastructure/server/adapters/FileSystemWriter.js';
 
@@ -43,11 +44,11 @@ import { ServiceQueryService } from './ServiceQueryService.js';
  * @param {*} repositories 
  * @param {ITransaction} databaseTransaction 
  * @param {WorkerPool} workerPool 
- * @param {ServiceServer} svr 
+ * @param {EventManager} eventManager 
  * @param {Object} config 
  * @returns 
  */
-export function createServices(repositories, databaseTransaction, workerPool, svr, eventManager, config = {}) {
+export function createServices(repositories, databaseTransaction, workerPool, eventManager, config = {}) {
     const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
     const { tagRepository, systemConfigRepository, } = repositories;
 
@@ -55,11 +56,9 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
 
     // ========== 基础服务 ==========
     const systemConfigService = new SystemConfigService(systemConfigRepository);
-
-    // ========== 字体服务（依赖 systemConfigService + 配置路径） ==========
     const fileScanner = new FileSystemScanner(path.join(process.cwd(), config?.repository.path));
     const fileWriter = new FileSystemWriter(path.join(process.cwd(), config?.repository.path));
-
+    const emailSender = new NodemailerEmailSender();
     const fontService = new FontService(
         systemConfigService,
         fileScanner,
@@ -67,11 +66,9 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         config.font.path,        //字体目录路径
         '/font'
     );
-
-    const emailSender = new NodemailerEmailSender();
     const task = new TaskSchedulerService(workerPool);
+    
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
-
     const webBookQueryService = new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository);
 
     return {
@@ -108,7 +105,7 @@ export function createServices(repositories, databaseTransaction, workerPool, sv
         assets: new AssetsService(fileScanner, fileWriter, config),
 
         task,
-        serviceQuery: new ServiceQueryService(config, svr),
+        serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),
         // bookExport: bookExportService,
     };
 }
