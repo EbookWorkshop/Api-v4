@@ -1,77 +1,99 @@
-graph TD
-    %% 样式定义
-    classDef interface fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef application fill:#fff3e0,stroke:#e65100,stroke-width:2px;
-    classDef domain fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
-    classDef infrastructure fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
-    classDef shared fill:#fafafa,stroke:#616161,stroke-width:1px,stroke-dasharray: 5 5;
+flowchart TB
+%%    title: "EBook Workshop 系统逻辑架构图（依赖注入视角）"
 
-    subgraph "1-Interfaces 接口层"
+    subgraph L1["1-Interfaces 接口适配层"]
         direction TB
-        HTTP[HTTP 控制器<br/>BookController, ChapterController, ...]:::interface
-        WS[WebSocket 处理器<br/>实时事件广播]:::interface
-        DTO[DTO 请求/响应<br/>BookListRequest, ExportBookRequest]:::interface
-        MIDDLE[中间件<br/>CORS, 错误处理, 响应包装]:::interface
-        ROUTER[路由<br/>自动装载 .routes.js]:::interface
+        API["🌐 HTTP / WebSocket 网关<br/>路由 · 中间件 · 控制器<br/>+ DTO 契约"]
     end
 
-    subgraph "2-Application 应用层"
+    subgraph L2["2-Application 应用层"]
         direction TB
-        SVC[应用服务<br/>BookQueryService, BookCommandService,<br/>BookExportService, TagQueryService]:::application
-        PORT[端口接口<br/>IFileScanner, ITransaction, IGenerator]:::application
-        EXEC[任务执行器<br/>BookExportExecutor]:::application
+        APP["⚙️ 业务服务聚合<br/>图书 · 网文 · 校阅 · 导出 · 邮件"]
+        TASK["🧵 异步任务引擎<br/>任务调度 · 线程池 · 执行器"]
+        PORT["🔌 端口接口（SPI）<br/>应用层定义的<strong>行为契约</strong><br/>如：数据访问 · 文件操作 · 抓取 · 邮件"]
     end
 
-    subgraph "3-Domain 领域层"
+    subgraph L3["3-Domain 领域层"]
+        DOMAIN["📖 领域模型<br/>实体 · 值对象 · 常量 · 业务规则"]
+    end
+
+    subgraph L4["4-Infrastructure 基础设施层"]
         direction TB
-        ENT[实体定义<br/>Ebook, EbookChapter, Volume, Tag,<br/>WebBook, ReviewRule]:::domain
-        ASSOC[关联关系<br/>setupAssociations]:::domain
-        CONST[常量<br/>SystemConfigGroup, Task]:::domain
+        DB["🗄️ 持久化网关<br/>Repository 实现 · SQLite"]
+        EXTERNAL["🌍 外部服务适配器<br/>Puppeteer/Axios · Nodemailer · 生成器"]
+        FS["📁 文件系统网关<br/>目录扫描 · 读写 · 归档"]
+        EVENT["📡 事件总线<br/>跨线程事件发布/订阅"]
     end
 
-    subgraph "4-Infrastructure 基础设施层"
-        direction TB
-        DB[(SQLite 数据库<br/>Sequelize ORM)]:::infrastructure
-        REPO[仓储实现<br/>EbookRepository, ChapterRepository,<br/>TagRepository, WebBookRepository]:::infrastructure
-        GEN[生成器<br/>EpubGenerator, PdfGenerator]:::infrastructure
-        WORKER[线程池<br/>WorkerPool, WorkerQueue]:::infrastructure
-        FS[文件系统适配器<br/>FileSystemScanner, FileSystemWriter]:::infrastructure
-        CONFIG[配置加载器<br/>ConfigLoader]:::infrastructure
-    end
+    %% ===== 依赖关系（明确区分：依赖 vs. 实现） =====
+    %% 接口层 → 应用层（使用）
+    API --> APP
+    API --> TASK
 
-    subgraph "5-Shared 共享层"
-        ERR[自定义错误<br/>AppError, UserInputError]:::shared
-    end
+    %% 应用层内部（依赖抽象）
+    APP --> PORT
+    APP --> DOMAIN
+    TASK --> APP
+    TASK --> PORT
 
-    %% 依赖关系
-    HTTP --> SVC
-    HTTP --> DTO
-    HTTP --> MIDDLE
-    HTTP --> ROUTER
-    WS --> SVC
+    %% 基础设施层实现端口（供应方）
+    DB   -.->|供应| PORT
+    FS   -.->|供应| PORT
+    EXTERNAL -.->|供应| PORT
 
-    SVC --> PORT
-    SVC --> REPO
-    SVC --> CONST
+    %% 领域层独立（不依赖任何外部层）
+    %% DB 内部的 ORM 模型引用了领域实体定义（这是代码物理依赖，但逻辑上不画箭头）
 
-    EXEC --> SVC
-    EXEC --> GEN
+    %% 事件总线的横切依赖
+    EVENT -.->|发布/订阅| APP
+    EVENT -.->|发布/订阅| TASK
+    EVENT -.->|发布/订阅| API
 
-    REPO --> ENT
-    REPO --> DB
-    ASSOC --> ENT
+    %% ===== 共享工具（隐式） =====
+    API -.->|内部引用| SHARED["🛠️ 共享工具（隐式）<br/>错误定义 · 文件大小 · 站点工具"]
+    APP -.->|内部引用| SHARED
+    DB -.->|内部引用| SHARED
 
-    FS --> PORT
-    WORKER --> EXEC
+    %% ===== 样式 =====
+    style L1 fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    style L2 fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    style L3 fill:#e0f7fa,stroke:#00695c,stroke-width:2px,color:#000
+    style L4 fill:#efebe9,stroke:#4e342e,stroke-width:2px,color:#000
 
-    CONFIG --> DB
+    style API fill:#e3f2fd,stroke:#1565c0,stroke-width:1px
+    style APP fill:#fff3e0,stroke:#e65100,stroke-width:1px
+    style TASK fill:#fce4ec,stroke:#c62828,stroke-width:1px
+    style PORT fill:#f3e5f5,stroke:#6a1b9a,stroke-width:1px
+    style DOMAIN fill:#e0f7fa,stroke:#00695c,stroke-width:1px
+    style DB fill:#efebe9,stroke:#4e342e,stroke-width:1px
+    style EXTERNAL fill:#efebe9,stroke:#4e342e,stroke-width:1px
+    style FS fill:#efebe9,stroke:#4e342e,stroke-width:1px
+    style EVENT fill:#fff8e1,stroke:#f57f17,stroke-width:1px
+    style SHARED fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,stroke-dasharray:5 5
 
-    MIDDLE --> ERR
-    SVC --> ERR
-    REPO --> ERR
 
-    %% 数据流标注
-    HTTP -.->|HTTP 请求/响应| ROUTER
-    SVC -.->|事务管理| DB
-    GEN -.->|导出文件| FS
-    WORKER -.->|异步任务| EXEC
+%%   # 角色与目标
+%%   你是一位精通 C4 模型和软件架构文档的架构师。请根据我提供的系统变更信息，更新系统的“逻辑组件架构图（C4-Component Level）”。
+%%   
+%%   # 严格的绘图规则（请务必遵守，避免反复拉扯）
+%%   1. **图类型**：严格的“逻辑角色组件图”。
+%%      - 节点代表**职责聚合体**（如“HTTP 网关”、“任务引擎”），而不是具体类名或文件名。
+%%      - **不要**将初始化函数（如 `createMiniCore`）、工厂脚本（如 `*.assembler.js`）、子线程运行器（如 `run.js`）作为独立节点画出，它们属于“部署/构造细节”，应折叠进对应的逻辑组件中。
+%%   2. **粒度规则**：
+%%      - **节点总数**：严格控制在 8~12 个主要节点之间（不计子图），确保一屏可读。
+%%      - **命名风格**：使用“领域名词 + 组件后缀”（如“持久化网关”、“事件总线”）。
+%%   3. **依赖方向（核心）**：
+%%      - 必须体现**依赖倒置原则**（DIP）：接口层依赖应用层，应用层依赖领域层；基础设施层（具体实现）通过虚线箭头指向应用层的“端口接口”，表示“实现关系”。
+%%      - 箭头方向由外向内（高层指向低层），不得出现反向依赖。
+%%   4. **范围限定**：
+%%      - 仅关注核心业务逻辑和基础设施抽象。
+%%      - **忽略**纯工具函数（utils）、单纯的数据传输对象（DTO）细节（可合并到接口层子图内）。
+%%   5. **输出格式**：
+%%      - 输出 Mermaid 语法代码。
+%%      - 同时附带一份简短的“变更说明”，标注新增/移除/重命名的节点。
+%%   
+%%   # 本次代码迭代内容（请根据实际变更替换此部分）
+%%   [例如：新增了“AI 摘要服务”模块，移除了旧的 PDF 生成器，将导出功能拆分为“导出编排器”和“文档生成器”两个组件...]
+%%   
+%%   # 当前已有的架构图结构（供参考，若无可省略）
+%%   [此处可粘贴现有图的 Mermaid 代码，让 AI 在它基础上修改]

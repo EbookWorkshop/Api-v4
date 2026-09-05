@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Collector as 采集器<br/>(子线程)
+    participant Worker as WorkerPool<br/>(消息转发)
+    participant EventMgr as EventManager<br/>(主线程总线)
+    participant WS as WebSocket Handler<br/>(registerGlobalBroadcasts)
+    participant Client as 浏览器客户端
+
+    Note over Collector,Client: 异步任务实时推送流程
+
+    Collector->>Worker: ① emitToMain(eventName, payload)
+    Worker->>EventMgr: ② 反序列化并触发事件
+    EventMgr->>WS: ③ 触发监听器 (eventManager.on)
+    WS->>Client: ④ io.emit 广播
