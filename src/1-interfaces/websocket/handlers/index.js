@@ -21,3 +21,4 @@ export async function registerAllGlobalBroadcasts(io, services, eventManager) {
         module.registerGlobalBroadcasts?.(io, services, eventManager);
     }
 }
+

@@ -1,4 +1,5 @@
 import { AppError } from "../../../5-shared/errors/index.js";
+import { findFastestCDN } from "../../../5-shared/utils/site.js"
 
 export class SwaggerController {
     #config;
@@ -19,7 +20,6 @@ export class SwaggerController {
     }
 
     async getJSONFile(ctx) {
-        //TDOD：如果要自动生成json，需要将服务分派到swagger-jsdoc
         ctx.state.skipResponseWrapper = true;
         const isSafeHttpCode = ctx.query.safehttp == "1";//兼容部分不支持600的合同谈判编码的文档工具
 
@@ -232,24 +232,4 @@ export class SwaggerController {
   </body>
 </html>`;
     }
-}
-
-/**
- * 找到最快的CDN
- * @param {*} urls 
- * @returns 
- */
-function findFastestCDN(urls) {
-    return Promise.any(urls.map(url => {
-        const start = performance.now();
-        return fetch(`${url}/the-best-package/index.js?t=${start}`, {
-            method: 'HEAD',
-            signal: AbortSignal.timeout(30_000)
-        }).then(res => {
-            if (!res.ok) throw new Error('Bad status');
-            return { url, latency: performance.now() - start };
-        })
-    })).catch(error => {
-        return { url: urls[0] }
-    });
 }

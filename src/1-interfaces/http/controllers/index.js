@@ -7,7 +7,6 @@ import { FontController } from "./FontController.js";
 import { WebBookController } from "./WebBookController.js"
 import { WebBookSourceURLController } from "./WebBookSourceURLController.js"
 import { WebBookChapterURLController } from "./WebBookChapterURLController.js"
-import { SwaggerController } from "./SwaggerController.js"
 import { ReviewRuleController } from "./ReviewRuleController.js"
 import { ReviewRuleUsingController } from "./ReviewRuleUsingController.js"
 import { AssetsController } from "./AssetsController.js"
@@ -16,6 +15,9 @@ import { RuleForWebController } from "./RuleForWebController.js"
 import { ExportController } from './ExportController.js';
 import { ServiceController } from "./ServiceController.js"
 import { BookmarkController } from "./BookmarkController.js"
+//文档
+import { AsyncApiController } from "./AsyncApiController.js"
+import { SwaggerController } from "./SwaggerController.js"
 
 /**
  * 
@@ -48,6 +50,7 @@ export function createControllers(services, config) {
         export: new ExportController(services.task),
         service: new ServiceController(services.serviceQuery, services.task),
 
+        asyncApi: new AsyncApiController(config),
         swagger: new SwaggerController(config),
     };
 }

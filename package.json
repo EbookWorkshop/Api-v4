@@ -6,7 +6,7 @@
     "scripts": {
         "start": "node src/app.js",
         "dev": "node --watch src/app.js",
-        "swagger": "node scripts/generate-swagger.js",
+        "docs": "node scripts/generate-docs.js",
         "db": "cp -f data/latest.sqlite data/dev.sqlite"
     },
     "dependencies": {

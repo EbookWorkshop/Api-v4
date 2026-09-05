@@ -5,16 +5,46 @@ export function registerSocketEvents(socket, services) {
 
     /**
      * @asyncapi
-     * @channel Service:Runtime
-     * @subscribe
-     * @description 服务端监听客户端请求，获取服务运行时信息，并通过回调返回结果。
-     * @request
-     *   @payload {} – 客户端请求不携带任何数据负载。
-     * @response
-     *   @payload {object} – 服务端响应对象。
-     *   @property {boolean} success – 操作是否成功。
-     *   @property {object} [data] – 运行时信息对象，仅当 success 为 true 时存在。
-     *   @property {string} [message] – 错误描述信息，仅当 success 为 false 时存在。
+     * channels:
+     *   service-runtime:
+     *     address: Service:Runtime
+     *     messages:
+     *       runtimeRequest:
+     *         $ref: '#/components/messages/RuntimeRequest'
+     *       runtimeResponse:
+     *         $ref: '#/components/messages/RuntimeResponse'
+     * operations:
+     *   serviceRuntime:
+     *     action: receive
+     *     channel:
+     *       $ref: '#/channels/service-runtime'
+     *     reply:
+     *       channel:
+     *         $ref: '#/channels/service-runtime'
+     *       messages:
+     *         - $ref: '#/components/messages/RuntimeResponse'
+     * components:
+     *   messages:
+     *     RuntimeRequest:
+     *       summary: 客户端请求获取运行时信息，无负载数据。
+     *       payload:
+     *         type: object
+     *         properties: {}
+     *     RuntimeResponse:
+     *       summary: 服务端响应，包含服务器运行时长（毫秒）或错误信息。
+     *       payload:
+     *         type: object
+     *         properties:
+     *           success:
+     *             type: boolean
+     *           data:
+     *             type: number
+     *             description: 服务器启动至今的毫秒数，精确到微秒（浮点数）
+     *             example: 123456.789
+     *           message:
+     *             type: string
+     *         required:
+     *           - success
      */
     socket.on('Service:Runtime', async (callback) => {
         try {

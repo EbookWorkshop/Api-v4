@@ -26,3 +26,23 @@ export function getHost(urlString) {
 export function eXtname(urlString, def = "") {
     return urlString?.match(/(?<=\.)[^.]+$/)?.[0] || def;
 }
+
+/**
+ * 找到最快的CDN
+ * @param {*} urls 
+ * @returns 
+ */
+function findFastestCDN(urls) {
+    return Promise.any(urls.map(url => {
+        const start = performance.now();
+        return fetch(`${url}/the-best-package/index.js?t=${start}`, {
+            method: 'HEAD',
+            signal: AbortSignal.timeout(30_000)
+        }).then(res => {
+            if (!res.ok) throw new Error('Bad status');
+            return { url, latency: performance.now() - start };
+        })
+    })).catch(error => {
+        return { url: urls[0] }
+    });
+}
