@@ -7,6 +7,7 @@ import { FontController } from "./FontController.js";
 import { WebBookController } from "./WebBookController.js"
 import { WebBookSourceURLController } from "./WebBookSourceURLController.js"
 import { WebBookChapterURLController } from "./WebBookChapterURLController.js"
+import { ReviewBookController } from "./ReviewBookController.js"
 import { ReviewRuleController } from "./ReviewRuleController.js"
 import { ReviewRuleUsingController } from "./ReviewRuleUsingController.js"
 import { AssetsController } from "./AssetsController.js"
@@ -14,7 +15,7 @@ import { EmailController } from './EmailController.js';
 import { RuleForWebController } from "./RuleForWebController.js"
 import { ExportController } from './ExportController.js';
 import { ServiceController } from "./ServiceController.js"
-import { BookmarkController } from "./BookmarkController.js"
+import { BookmarkController } from "./BookmarkController.js";
 //文档
 import { AsyncApiController } from "./AsyncApiController.js"
 import { SwaggerController } from "./SwaggerController.js"
@@ -40,10 +41,10 @@ export function createControllers(services, config) {
         font: new FontController(services.font),
         bookmark: new BookmarkController(services.bookmark),
 
+        ruleForWeb: new RuleForWebController(services.ruleForWebQuery, services.ruleForWebCommand),
         reviewRule: new ReviewRuleController(services.reviewRuleQuery, services.reviewRuleCommand),
         reviewRuleUsing: new ReviewRuleUsingController(services.reviewRuleUsing),
-        ruleForWeb: new RuleForWebController(services.ruleForWebQuery, services.ruleForWebCommand),
-
+        reviewBook: new ReviewBookController(services.reviewBook),
         assets: new AssetsController(services.assets),
         email: new EmailController(services.email),
 

@@ -263,7 +263,7 @@ export class ChapterRepository {
      * @param {number} [chapter.OrderNum] 章节排序号
      * @returns {boolean}
      */
-    async updateChapter(chapter) {
+    async updateChapter(chapter, { transaction } = {}) {
         //校验卷需要属于同一本书
         if (chapter.VolumeId) {
             const volume = await this.#VolumeModel.findByPk(chapter.VolumeId);
@@ -272,7 +272,8 @@ export class ChapterRepository {
         if (!chapter.id) return false;
 
         const result = await this.#ChapterModel.update(chapter, {
-            where: { id: chapter.id }
+            where: { id: chapter.id },
+            transaction
         });
         return !!result;
     }

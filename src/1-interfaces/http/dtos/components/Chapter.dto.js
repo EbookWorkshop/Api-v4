@@ -101,6 +101,25 @@ export class ChapterRequest {
         if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
         return cpId;
     }
+    /**
+     * @swagger
+     * components:
+     *   parameters:
+     *     ChapterIdsQuery:
+     *       in: query
+     *       name: chapterids
+     *       schema:
+     *         type: integer
+     *         minimum: 1
+     *       required: true
+     *       description: 章节 ID（目录项 ID），必须为正整数，多个则用逗号分割
+     *       example: 53,403
+     */
+    static fromQueryIds(query) {
+        const cpId = query.chapterids?.split(",");
+        if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
+        return cpId;
+    }
 
     /**
      * @swagger

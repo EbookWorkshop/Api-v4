@@ -33,6 +33,7 @@ import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 import { RuleForWebCommandService } from './RuleForWebCommandService.js';
 import { ReviewDictionaryService } from "./ReviewDictionaryService.js";
 import { ReviewRuleUsingService } from './ReviewRuleUsingService.js';
+import { BookReviewService } from './BookReviewService.js';
 
 import { AssetsService } from './AssetsService.js';
 
@@ -67,7 +68,11 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         '/font'
     );
     const task = new TaskSchedulerService(workerPool);
-
+    const reviewBookService = new BookReviewService(
+        repositories.chapterRepository,
+        repositories.reviewRuleRepository,
+        databaseTransaction
+    );
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
     const webBookQueryService = new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository);
 
@@ -99,6 +104,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
         reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
         reviewRuleUsing: new ReviewRuleUsingService(repositories.reviewRuleUsingRepository),
+        reviewBook: reviewBookService,
         ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer, task),
         ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner),
 
