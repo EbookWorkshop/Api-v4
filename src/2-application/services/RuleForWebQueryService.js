@@ -47,11 +47,11 @@ export class RuleForWebQueryService {
             host: r.Host,
             ruleName: r.RuleName,
             selector: r.Selector,
+            type: r.Type,
             getContentAction: r.GetContentAction,
             getUrlAction: r.GetUrlAction,
             checkSetting: r.CheckSetting,
-            removeSelector: r.RemoveSelector ? r.RemoveSelector.split(",") : [],
-            type: r.Type
+            ...(r.RemoveSelector ? { removeSelector: r.RemoveSelector.split(",") } : {}),
         }));
 
         // //超时设置

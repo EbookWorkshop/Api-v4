@@ -17,6 +17,13 @@ export const MAIL_SENT = Symbol('mail.sent')
 
 
 /**
+ * 发送消息 
+ * 支持线程
+ */
+export const MESSAGE_SEND = "Send.Message";
+
+
+/**
  * 导出图书功能事件簇
  */
 export const EXPORT_EVENTS = {

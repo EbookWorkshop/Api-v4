@@ -37,14 +37,17 @@ export class WebBookCollector extends ICollector {
      * @param {create|update} [payload.mode] 信息页
      */
     async fetch(setting, payload) {
-        const { mode } = payload;
-        this.#setting = setting;
         let result = {};
-        if (mode === "create")
-            result = await this.createBook(payload);
-        else if (mode === "update")
-            result = await this.updateChapter(payload);
-
+        try {
+            const { mode } = payload;
+            this.#setting = setting;
+            if (mode === "create")
+                result = await this.createBook(payload);
+            else if (mode === "update")
+                result = await this.updateChapter(payload);
+        } catch (error) {
+            return this.#resultHandle(payload, { error, payload }, `采集执行失败`);
+        }
         return result;
     }
 
@@ -64,7 +67,6 @@ export class WebBookCollector extends ICollector {
         const infoResult = await this.#handleInfo(info, isEmbedBookName);
         if (!infoResult) {
             // console.log("书籍信息处理失败：", infoResult, info);
-            // console.log(result)
             return this.#resultHandle(payload, false, `书籍信息采集失败(一般是目标网站返回超时页)：${urlPage}`);
         }
 
@@ -117,12 +119,26 @@ export class WebBookCollector extends ICollector {
     async #handleInfo(infoResult, embedBookName) {
         const bn = infoResult.get(RuleName.BookName);
         if (!bn || !bn[0].text) return false;
+
         const bookInfo = {};
         for (const k of infoResult.keys()) {
             const rsl = infoResult.get(k);
             if (!rsl || !rsl[0].text) continue;
             bookInfo[k] = rsl[0].text;
         }
+        //书名删除括号部分
+        const indexOf = bookInfo[RuleName.BookName].search(/[（【『{\[(]/);
+        if (indexOf >= 0) {
+            let bookName = bookInfo[RuleName.BookName];
+            if (indexOf == 0) {//括号在开头部分
+                indexOf = bookName.search(/[）】』}\])]/);
+                if (indexOf >= 0) bookName = bookName.substring(indexOf);
+            } else {//左括号在中间
+                bookName = bookName.substring(0, indexOf);
+            }
+            bookInfo[RuleName.BookName] = bookName;
+        }
+
         //处理作者
         if (bookInfo[RuleName.Author]?.startsWith("作者")) bookInfo[RuleName.Author] = bookInfo[RuleName.Author].replace(/作者[:：]/, "");
         if (bookInfo[RuleName.Introduction]?.startsWith("简介")) bookInfo[RuleName.Introduction] = bookInfo[RuleName.Introduction].replace(/简介[:：]/, "");

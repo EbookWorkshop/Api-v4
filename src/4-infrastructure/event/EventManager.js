@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { isMainThread, parentPort } from 'node:worker_threads';
 import { TASK_MESSAGE_TYPE } from "../../3-domain/constants/Task.js";
+import { MESSAGE_SEND } from '../../3-domain/constants/Event.js';
 export * from "../../3-domain/constants/Event.js"
 
 export class EventManager {
@@ -65,5 +66,13 @@ export class EventManager {
     once(eventName, listener) {
         this.#emitter.once(eventName, listener);
         return this;
+    }
+
+    /**
+     * 发向前端的消息
+     * @param {Message} message 
+     */
+    messageToClient(message) {
+        return this.#emitter.emit(MESSAGE_SEND, message);
     }
 }

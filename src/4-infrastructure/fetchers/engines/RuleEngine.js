@@ -23,7 +23,7 @@ export class RuleEngine {
     async execRule(pageObj, rule, isVis = false) {
         //先尝试删除干扰元素
         if (typeof (rule.removeSelector) === "string") rule.removeSelector = [rule.removeSelector];
-        for (let sR of rule.removeSelector)
+        for (let sR of rule.removeSelector || [])
             try {
                 await pageObj.$$eval(sR, (node, isVis) => {
                     for (let nO of node)

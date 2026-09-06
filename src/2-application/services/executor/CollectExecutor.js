@@ -109,7 +109,7 @@ export class CollectExecutor extends ITaskExecutor {
         } catch (error) {
             error.stack = `CollectExecutor::execute: ${import.meta.filename}\n${error.stack}`;
             this.#eventManager.emitToMain(msgEvent, {
-                result: false, message: "采集任务执行失败", error: {
+                payload, message: "采集任务执行失败", error: {
                     name: error.name || `失败任务：${taskType}`,
                     message: error.message || '',
                     stack: error.stack || '',

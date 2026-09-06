@@ -1,4 +1,5 @@
 import { COLLECT_EVENTS } from '../../../3-domain/constants/Event.js';
+import { Message } from "../../../5-shared/dtos/Message.dto.js"
 
 /**
  * 注册客户端发起的请求（每个连接独立）
@@ -250,8 +251,16 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      *           - success
      */
     eventManager.on(COLLECT_EVENTS.CREATE_BOOK, (payload) => {
-        const { bookId, bookName } = payload.result;
-        // io.to(`book-${payload.bookId}`)
+        const { bookId, bookName, error, payload: param } = payload.result;
+
+        if (error) {
+            return eventManager.messageToClient(new Message(`${error.message}\n参数：${JSON.stringify(param)} `, "notice", {
+                title: payload.message,
+                avatar: "error",
+            }));
+        }
+
+        // io.to(`book - ${ payload.bookId } `)
         io.emit('WebBook.Create.Finish', {
             bookId,
             bookName,
@@ -295,7 +304,7 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      *           - success
      */
     eventManager.on(COLLECT_EVENTS.UPDATE_INDEX, (payload) => {
-        // io.to(`book-${payload.bookId}`).
+        // io.to(`book - ${ payload.bookId } `).
         io.emit('WebBook.UpdateIndex.Finish', {
             bookId: payload.bookId,
             bookName: payload.bookName,
@@ -306,7 +315,15 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
     });
 
     eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER, (payload) => {
-        const room = `book-${payload.bookId}`;
+        const { bookId, bookName, error, payload: param } = payload;
+        if (error) {
+            return eventManager.messageToClient(new Message(`${error.message}\n参数：${JSON.stringify(param)} `, "notice", {
+                title: payload.message,
+                avatar: "error",
+            }));
+        }
+
+        const room = `book - ${bookId} `;
         if (payload.isFinish !== undefined) {
             /**
              * @asyncapi
@@ -431,7 +448,7 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      *           - failNum
      */
     eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_BATCH_FINISH, (payload) => {
-        // io.to(`book-${payload.bookId}`)
+        // io.to(`book - ${ payload.bookId } `)
         io.emit(`WebBook.UpdateChapter.Finish`, {
             bookId: payload.bookId,
             bookName: payload.bookName,
