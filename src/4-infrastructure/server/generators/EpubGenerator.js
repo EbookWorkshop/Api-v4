@@ -24,7 +24,8 @@ export class EpubGenerator extends IGenerator {
                 description: ebook.introduction,
                 author: ebook.author || "佚名", // *必需，作者名字。
                 appendChapterTitles: embedTitle,//是否在章节内容前面添加章节标题
-                lang: "zh-CN",
+                lang: "zh",
+                // font:[],//自定义字体的绝对路径数组，这些字体将被包含在电子书中，以便在自定义 CSS 中使用。例如，若配置为 fonts: ['/path/to/Merriweather.ttf']，则可在自定义 CSS 中这样引用：src : url("./fonts/Merriweather.ttf")
                 css: enableIndent ? `\np,.rr{ text-indent: 2em;} \n` : "",//统一加入段落缩进
                 tocTitle: "目  录",//默认 Table Of Contents
                 publisher: setting.publisher,
@@ -32,6 +33,10 @@ export class EpubGenerator extends IGenerator {
                 content: [],
                 tempDir: outputPath || this.tempFolder,
                 verbose: false,//是否输出控制台日志
+
+                //PubliWrite 新增配置
+                assetFailureMode: "throw",       //内联文件报错时如何处理 throw:抛出、warn:输出带有损坏引用的清单`{warnings}`
+                allowFileUrls:true,              //默认 false。拒绝 file:// URL
             }
             // await accessDir(option.tempDir); //EPub底层有这个代码
 
@@ -73,6 +78,7 @@ export class EpubGenerator extends IGenerator {
 
             chapters.push({
                 title: chap.title,
+                //图片路径应为绝对路径（以 http 或 https 开头），以便下载。升级后也支持本地图片（路径必须以 file:// 开头）。
                 data: `<${mark}>${rows?.join(splitor)}</${mark}>`
             });
         }

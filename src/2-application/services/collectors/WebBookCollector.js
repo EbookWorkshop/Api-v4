@@ -87,7 +87,7 @@ export class WebBookCollector extends ICollector {
         //存储到数据库
         const bookId = await this.#save(bookResult, { isEmbedBookName, sourcePage, infoPage });
 
-        return this.#resultHandle(payload, bookId > 0, `已创建书籍《${bookResult.BookName}》`);
+        return this.#resultHandle(payload, { bookId, bookName: bookResult.BookName }, `已创建书籍《${bookResult.BookName}》`);
     }
 
     /**

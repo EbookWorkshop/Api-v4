@@ -250,11 +250,12 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      *           - success
      */
     eventManager.on(COLLECT_EVENTS.CREATE_BOOK, (payload) => {
+        const { bookId, bookName } = payload.result;
         // io.to(`book-${payload.bookId}`)
         io.emit('WebBook.Create.Finish', {
-            bookId: payload.bookId,
-            bookName: payload.bookName,
-            success: payload.success,
+            bookId,
+            bookName,
+            // success: payload.success,
             message: payload.message,
         });
     });

@@ -9,8 +9,8 @@ import { AppError } from "../../../5-shared/errors/index.js";
  * 依赖：puppeteer Page 或 cheerio 文档（可设计为适配器模式）
  */
 export class RuleEngine {
-    constructor() {
-        this.debug = false;
+    constructor({ isVis } = {}) {
+        this.isVis = isVis;
     }
 
     /**
@@ -72,7 +72,6 @@ export class RuleEngine {
 
                     if (isVis) {
                         n.style.border = "5px solid red";
-                        n.title = `${curObj.url}\n${curObj.text}`
                     }
                 }
                 return myRsl;
@@ -94,7 +93,7 @@ export class RuleEngine {
         const resultMap = new Map();
 
         for (const rule of rules) {
-            let ruleResult = await this.execRule(pageObj, rule, this.debug);
+            let ruleResult = await this.execRule(pageObj, rule, this.isVis);
 
             // 如果是 Content 规则，应用字典
             if (rule.ruleName === RuleName.Content && dictionaries.length > 0) {

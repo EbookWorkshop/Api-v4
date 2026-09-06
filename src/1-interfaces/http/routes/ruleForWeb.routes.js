@@ -14,6 +14,7 @@ export function createRuleForWebRoutes(ruleForWebController) {
     router.get('/registeredwebsites', (ctx) => ruleForWebController.listRegisteredWebsites(ctx));
 
     router.post('/', (ctx) => ruleForWebController.batchUpsertBotRules(ctx));
+    router.post('/vis', (ctx) => ruleForWebController.visualizeBotRule(ctx));
     router.post('/import', (ctx) => ruleForWebController.importBotRules(ctx));
     router.post('/dictionaries', (ctx) => ruleForWebController.saveDictionaries(ctx));
 

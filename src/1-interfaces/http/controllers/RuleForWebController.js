@@ -1,6 +1,7 @@
 import { HostRequest } from "../dtos/ruleForWeb/RuleForWebResponse.dto.js";
 import { RuleForWebQueryService } from "../../../2-application/services/RuleForWebQueryService.js";
 import { RuleForWebCommandService } from "../../../2-application/services/RuleForWebCommandService.js";
+import { VisRuleRequest } from "../dtos/ruleForWeb/VisRuleRequest.dto.js";
 
 export class RuleForWebController {
     #ruleForWebQueryService;
@@ -303,6 +304,54 @@ export class RuleForWebController {
     async batchUpsertBotRules(ctx) {
         const rules = ctx.request.body;//TODO: 接入DTO层
         const result = await this.#ruleForWebCommandService.batchUpsertRules(rules);
+        ctx.body = result;
+    }
+
+    /**
+     * @swagger
+     * /services/botrule/vis:
+     *   post:
+     *     summary: 可视化测试 Bot 规则    
+     *     description: 提交一个规则配置和测试 URL，返回模拟抓取结果，用于调试规则有效性（统一包装格式）
+     *     tags:
+     *       - Services - BotRule —— 系统服务：机器人爬网规则
+     *       - BotRule
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/VisRuleRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/VisRuleRequestExample'
+     *     responses:
+     *       200:
+     *         description: 测试成功，返回抓取结果（具体数据结构可能为实际抓取内容，但按用户要求统一返回 ApiSuccessResponse 表示调用成功）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-09-06T10:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如缺少必填字段或 URL 格式无效）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "testUrl 和 ruleName 等为必填字段"
+     *               timestamp: "2026-09-06T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async visualizeBotRule(ctx) {
+        const { testUrl, rule } = VisRuleRequest.fromBody(ctx.request.body);
+        const result = await this.#ruleForWebQueryService.visualizeRule(testUrl, rule);
         ctx.body = result;
     }
 

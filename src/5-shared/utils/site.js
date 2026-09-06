@@ -32,7 +32,7 @@ export function eXtname(urlString, def = "") {
  * @param {*} urls 
  * @returns 
  */
-function findFastestCDN(urls) {
+export function findFastestCDN(urls) {
     return Promise.any(urls.map(url => {
         const start = performance.now();
         return fetch(`${url}/the-best-package/index.js?t=${start}`, {

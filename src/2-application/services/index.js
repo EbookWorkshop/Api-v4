@@ -67,7 +67,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         '/font'
     );
     const task = new TaskSchedulerService(workerPool);
-    
+
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
     const webBookQueryService = new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository);
 
@@ -99,7 +99,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
         reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
         reviewRuleUsing: new ReviewRuleUsingService(repositories.reviewRuleUsingRepository),
-        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer),
+        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer, task),
         ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner),
 
         assets: new AssetsService(fileScanner, fileWriter, config),

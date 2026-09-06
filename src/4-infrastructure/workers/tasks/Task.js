@@ -29,8 +29,8 @@ export class Task {
      * @param {any} options.param - 线程执行的传入参数（需要可序列化）
      * @param {TASK_TYPES} [options.taskType] - 用于确认线程运行方式的标记
      * @param {number} [options.maxTaskNum] - 该类别允许的最大线程数，小于1则不限制
-     * @param {number} [options.highPriority] - 是否优先执行，默认为false
-     * @param {number} [options.useDB] - 是否需要数据库功能
+     * @param {number} [options.highPriority] - 是【否】优先执行，默认为false
+     * @param {number} [options.useDB] - 是【否】需要数据库功能
      * @param {undefined|function({error: Error, data: Object}): void} options.callback - 任务完成回调。
      */
     constructor({ taskId, param, taskType, maxTaskNum, highPriority, useDB, callback }) {

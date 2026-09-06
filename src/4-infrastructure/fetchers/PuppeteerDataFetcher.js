@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer';
 import { IDataFetcher } from "../../2-application/ports/IDataFetcher.js"
 import { RuleEngine } from './engines/RuleEngine.js';
+import { AppError } from '../../5-shared/errors/index.js';
 
 export class PuppeteerDataFetcher extends IDataFetcher {
     #config;
@@ -26,6 +27,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
      * @returns {Promise<Map<string, Array<{text, url}>>>}
      */
     async fetch(url, setting) {
+        const { isVis } = setting;
         const startTime = performance.now();
         let browser = await this.#getBrowser(setting);
 
@@ -42,7 +44,9 @@ export class PuppeteerDataFetcher extends IDataFetcher {
             if (setting.userAgent) await page.setUserAgent({ userAgent: setting.userAgent });//设置用户代理
 
             // 配置需要访问网址
-            await page.goto(url, { timeout: setting.timeout, waitUntil: 'networkidle2' });
+            const pageResult = await page.goto(url, { timeout: setting.timeout, waitUntil: 'networkidle2' });
+
+            if (pageResult.status() >= 400) throw new AppError(`目标地址访问出错：地址-${url};状态-${pageResult.status()}。`)
 
             //数据分析采集
             const { rules, dictionaries } = setting;
@@ -60,7 +64,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
             console.warn("[执行失败]PuppeteerDataFetcher::fetch", err.message, `\t耗时：${(performance.now() - startTime) / 1000}秒`, url);
             throw err;
         } finally {
-            if (!this.#keep && browser) await browser.close(); //确保关掉以免因失败耗费内存
+            if (!this.#keep && browser && !isVis) await browser.close(); //确保关掉以免因失败耗费内存
         }
 
         return result;        // 结束关闭
@@ -128,7 +132,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
             ignoreDefaultArgs: ['--enable-automation', '--no-sandbox', '--disable-setuid-sandbox'],      //去掉自动化提示-可能对部分反爬策略有帮助
             timeout: setting.timeout
         }
-
+        if (setting.isVis) options.headless = false;
         if (!this.#browser) this.#browser = await puppeteer.launch(options);
         return this.#browser;
     }

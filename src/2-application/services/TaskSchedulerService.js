@@ -148,4 +148,26 @@ export class TaskSchedulerService {
             throw new AppError("添加任务失败：" + error.message);
         }
     }
+
+    /**
+     * 执行规则可视化
+     * @param {*} testUrl 
+     * @param {*} rule 
+     * @returns 
+     */
+    async submitBotRuleVis(testUrl, rule) {
+        try {
+            const task = new Task({
+                taskType: TASK_TYPES.BOTRULE_VIS,
+                param: { testUrl, rule },
+                callback: ({ data, error }) => {
+                    console.log("任务已执行完成！", data);
+                }
+            });
+            this.#workerPool.addTask(task);
+            return `已添加到任务：${task.taskId}`
+        } catch (error) {
+            throw new AppError("添加任务失败：" + error.message);
+        }
+    }
 }

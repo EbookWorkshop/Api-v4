@@ -24,6 +24,7 @@ export class AxiosDataFetcher extends IDataFetcher {
             timeout: options.timeout,
             headers: { 'User-Agent': options.userAgent }
         });
+        //response.headers.getContentType()     //'text/html; charset=gbk'
 
         return await this.#parseHtmlString(response.data, url, options);
     }
@@ -105,7 +106,7 @@ export class AxiosDataFetcher extends IDataFetcher {
     async #getBrowser(setting) {
         if (!this.#browser) this.#browser = await puppeteer.launch({
             timeout: setting.timeout,
-            headless: false
+            headless: "new"
         });
         return this.#browser;
     }

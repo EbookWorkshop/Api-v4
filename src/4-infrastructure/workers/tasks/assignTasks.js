@@ -27,6 +27,9 @@ export async function assignTasks(taskType, config, resources) {
         case TASK_TYPES.SYSTEM_VERSION:
             createTask = "version.assembler.js";
             break;
+        case TASK_TYPES.BOTRULE_VIS:
+            createTask = "ruleVis.assembler.js";
+            break;
         default:
             throw new AppError("尚未开发对接的任务类型：" + taskType);
     }
