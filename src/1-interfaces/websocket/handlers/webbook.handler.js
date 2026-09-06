@@ -270,6 +270,9 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
 
     //更新合并目录
     eventManager.on(COLLECT_EVENTS.UPDATE_INDEX, (payload) => {
+        let { bookId, bookName, error, message, addedCount } = payload.result;
+        if (!message) message = payload.message;
+        if (error) return eventManager.messageToClient(new Message(message, "notice", { title: `书籍《${bookName}》更新目录失败！`, avatar: "error", }));
         /**
          * @asyncapi
          * channels:
@@ -296,8 +299,6 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
          *             type: string
          *           addedCount:
          *             type: number
-         *           success:
-         *             type: boolean
          *           message:
          *             type: string
          *         required:
@@ -306,11 +307,10 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
          */
         // io.to(`book - ${ payload.bookId } `).
         io.emit('WebBook.UpdateIndex.Finish', {
-            bookId: payload.bookId,
-            bookName: payload.bookName,
-            addedCount: payload.addedCount || 0,
-            success: payload.success,
-            message: payload.message,
+            bookId: bookId,
+            bookName: bookName,
+            addedCount: addedCount || 0,
+            message: message,
         });
     });
 

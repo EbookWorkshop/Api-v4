@@ -70,7 +70,7 @@ export class WorkerPool {
         const isDebug = false;// this.#config.debug;
         this.#event = eventSer;
         if (!numThreads) {
-            const cpuNum = os.availableParallelism();
+            const cpuNum = Math.floor(os.availableParallelism() * 1.5);
             numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
         }
         this.#maxThreadsNum = numThreads;

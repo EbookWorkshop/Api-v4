@@ -68,6 +68,7 @@ export class CollectExecutor extends ITaskExecutor {
                     msgEvent = COLLECT_EVENTS.UPDATE_INDEX;
                     payload.mode = "update";
                     payload.sourcePage = pageURL;
+                    payload.bookName = (await this.#repositories.ebookRepository.findById(payload.bookId))?.BookName;
                     services = {
                         ...services,
                         ...this.#createWebBookServices(),
@@ -121,6 +122,12 @@ export class CollectExecutor extends ITaskExecutor {
         }
     }
 
+    /**
+     * 根据任务类型，获取任务开始页面地址
+     * @param {*} taskType 
+     * @param {*} payload 
+     * @returns {string} 采集网址
+     */
     async #getPageURL(taskType, payload) {
         switch (taskType) {
             case TASK_TYPES.WEB_BOOK_COLLECT: return payload.sourcePage;

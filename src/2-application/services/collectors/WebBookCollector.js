@@ -97,9 +97,12 @@ export class WebBookCollector extends ICollector {
      * @param {*} option 
      */
     async updateChapter(option) {
-        const { sourcePage, infoPage, isEmbedBookName, bookId } = option;
+        const { sourcePage, infoPage, bookId, bookName } = option;
         //从页面获取的章节
         let chapterList = await this.#getChapterList(sourcePage);
+        if (chapterList.length === 0) {
+            return this.#resultHandle(option, { error: true, ...option }, `从地址采集数据失败：${sourcePage}。`);
+        }
         //已在数据库的章节
         const hasChaptList = await this.#webBookChapterService.getWebChapterURL(bookId, getHost(sourcePage));
         const keyDic = hasChaptList.map(t => `${t.WebTitle}${t["WebBookChapterURLs.Path"]}`);
@@ -108,7 +111,7 @@ export class WebBookCollector extends ICollector {
         chapterList = bookResult[RuleName.ChapterList]
         if (chapterList.length > 0) await this.#saveBatchChapter(bookId, chapterList);
 
-        return this.#resultHandle(option, true, `已完成章节合并，新增章节：${chapterList.length}`);
+        return this.#resultHandle(option, { ...option, addedCount: chapterList.length }, `已完成章节合并，新增章节：${chapterList.length}`);
     }
 
     /**
