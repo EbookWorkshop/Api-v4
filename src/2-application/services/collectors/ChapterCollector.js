@@ -24,8 +24,9 @@ export class ChapterCollector extends ICollector {
 
         if (!isUpdate) {    //检查是否已覆盖更新
             const chapt = await this.#chapterQueryService.getChapterById(chapterId);
-            if (chapt.Content?.length > 10) return this.#resultHandle(payload, false, `章节 ${chapterId} 已有内容，跳过更新。`);
+            if (chapt.Content?.length > 10) return this.#resultHandle(payload, true, `章节 ${chapterId} 已有内容，跳过更新。`);
         }
+        this.#eventManager.emitToMain(COLLECT_EVENTS.UPDATE_CHAPTER_START, { chapterId, bookId });
 
         const pageCtx = [];
         let urlPage = payload.url;
@@ -55,9 +56,9 @@ export class ChapterCollector extends ICollector {
     }
 
     #resultHandle(payload, result, message) {
-        const { bookId, chapterId, url } = payload;
-        this.#eventManager.emitToMain(COLLECT_EVENTS.UPDATE_CHAPTER, { bookId, chapterId, url, result, message });
-        return { ...payload, result, message };
+        const error = !result ? { message } : null;
+        this.#eventManager.emitToMain(COLLECT_EVENTS.UPDATE_CHAPTER, { payload, result, message, error });
+        return { payload, result, message };
     }
 }
 

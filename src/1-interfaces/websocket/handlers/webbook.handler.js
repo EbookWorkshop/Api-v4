@@ -260,7 +260,6 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
             }));
         }
 
-        // io.to(`book - ${ payload.bookId } `)
         io.emit('WebBook.Create.Finish', {
             bookId,
             bookName,
@@ -269,41 +268,42 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
         });
     });
 
-    /**
-     * @asyncapi
-     * channels:
-     *   web-book-update-index-finish:
-     *     address: WebBook.UpdateIndex.Finish
-     *     messages:
-     *       updateIndexFinish:
-     *         $ref: '#/components/messages/WebBookUpdateIndexFinish'
-     * operations:
-     *   webBookUpdateIndexFinish:
-     *     action: send
-     *     channel:
-     *       $ref: '#/channels/web-book-update-index-finish'
-     * components:
-     *   messages:
-     *     WebBookUpdateIndexFinish:
-     *       summary: 目录更新完成广播（全局）。
-     *       payload:
-     *         type: object
-     *         properties:
-     *           bookId:
-     *             type: string
-     *           bookName:
-     *             type: string
-     *           addedCount:
-     *             type: number
-     *           success:
-     *             type: boolean
-     *           message:
-     *             type: string
-     *         required:
-     *           - bookId
-     *           - success
-     */
+    //更新合并目录
     eventManager.on(COLLECT_EVENTS.UPDATE_INDEX, (payload) => {
+        /**
+         * @asyncapi
+         * channels:
+         *   web-book-update-index-finish:
+         *     address: WebBook.UpdateIndex.Finish
+         *     messages:
+         *       updateIndexFinish:
+         *         $ref: '#/components/messages/WebBookUpdateIndexFinish'
+         * operations:
+         *   webBookUpdateIndexFinish:
+         *     action: send
+         *     channel:
+         *       $ref: '#/channels/web-book-update-index-finish'
+         * components:
+         *   messages:
+         *     WebBookUpdateIndexFinish:
+         *       summary: 目录更新完成广播（全局）。
+         *       payload:
+         *         type: object
+         *         properties:
+         *           bookId:
+         *             type: string
+         *           bookName:
+         *             type: string
+         *           addedCount:
+         *             type: number
+         *           success:
+         *             type: boolean
+         *           message:
+         *             type: string
+         *         required:
+         *           - bookId
+         *           - success
+         */
         // io.to(`book - ${ payload.bookId } `).
         io.emit('WebBook.UpdateIndex.Finish', {
             bookId: payload.bookId,
@@ -314,100 +314,51 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
         });
     });
 
+    //单章更新任务-开始
+    eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_START, (payload) => {
+        const { bookId, chapterId } = payload;
+        const room = `book-${bookId}`;
+        return io.to(room).emit(`WebBook.UpdateOneChapter.Start`, { chapterId, bookId });
+    });
+
+    //单章节更新结果
     eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER, (payload) => {
-        const { bookId, bookName, error, payload: param } = payload;
+        const { error, payload: param } = payload;
+        const { bookId, chapterId, isUpdate, url } = param;
+        const room = `book-${bookId}`;
+
         if (error) {
-            return eventManager.messageToClient(new Message(`${error.message}\n参数：${JSON.stringify(param)} `, "notice", {
-                title: payload.message,
-                avatar: "error",
-            }));
+            return io.to(room).emit(`WebBook.UpdateOneChapter.Error`, { chapterId, err: error });
         }
 
-        const room = `book - ${bookId} `;
-        if (payload.isFinish !== undefined) {
-            /**
-             * @asyncapi
-             * channels:
-             *   web-book-chapter-update:
-             *     address: WebBook.Chapter.Update
-             *     messages:
-             *       chapterUpdate:
-             *         $ref: '#/components/messages/WebBookChapterUpdate'
-             * operations:
-             *   webBookChapterUpdate:
-             *     action: send
-             *     channel:
-             *       $ref: '#/channels/web-book-chapter-update'
-             * components:
-             *   messages:
-             *     WebBookChapterUpdate:
-             *       summary: 批量任务，单章更新完成广播（发送到对应书籍房间）。
-             *       payload:
-             *         type: object
-             *         properties:
-             *           chapterId:
-             *             type: string
-             *           title:
-             *             type: string
-             *           success:
-             *             type: boolean
-             *           message:
-             *             type: string
-             *         required:
-             *           - chapterId
-             *           - success
-             */
-            io.to(room).emit(`WebBook.Chapter.Update`, {
-                chapterId: payload.chapterId,
-                title: payload.title,
-                success: payload.success,
-                message: payload.message,
-            });
-        } else {
-            /**
-             * @asyncapi
-             * channels:
-             *   web-book-update-chapter-process:
-             *     address: WebBook.UpdateChapter.Process
-             *     messages:
-             *       updateChapterProcess:
-             *         $ref: '#/components/messages/WebBookUpdateChapterProcess'
-             * operations:
-             *   webBookUpdateChapterProcess:
-             *     action: send
-             *     channel:
-             *       $ref: '#/channels/web-book-update-chapter-process'
-             * components:
-             *   messages:
-             *     WebBookUpdateChapterProcess:
-             *       summary: 单章更新进度广播（发送到对应书籍房间）。
-             *       payload:
-             *         type: object
-             *         properties:
-             *           chapterId:
-             *             type: string
-             *           rate:
-             *             type: number
-             *             description: 进度百分比
-             *           done:
-             *             type: number
-             *             description: 已完成数量
-             *           total:
-             *             type: number
-             *             description: 总数量
-             *           message:
-             *             type: string
-             *         required:
-             *           - chapterId
-             */
-            io.to(room).emit(`WebBook.UpdateChapter.Process`, {
-                chapterId: payload.chapterId,
-                rate: payload.rate || 0,
-                done: payload.done || 0,
-                total: payload.total || 0,
-                message: payload.message,
-            });
-        }
+        /**
+         * @asyncapi
+         * channels:
+         *   web-book-chapter-update:
+         *     address: WebBook.Chapter.Update
+         *     messages:
+         *       chapterUpdate:
+         *         $ref: '#/components/messages/WebBookChapterUpdate'
+         * operations:
+         *   webBookChapterUpdate:
+         *     action: send
+         *     channel:
+         *       $ref: '#/channels/web-book-chapter-update'
+         * components:
+         *   messages:
+         *     WebBookChapterUpdate:
+         *       summary: 批量任务，单章更新完成广播（发送到对应书籍房间）。
+         *       payload:
+         *         type: object
+         *         properties:
+         *           chapterId:
+         *             type: number
+         *           bookId:
+         *             type: number
+         *         required:
+         *           - chapterId
+         */
+        io.to(room).emit(`WebBook.Chapter.Update`, { bookId, chapterId });
     });
 
     /**
@@ -457,4 +408,6 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
             failNum: payload.failNum || 0,
         });
     });
+
+
 }
