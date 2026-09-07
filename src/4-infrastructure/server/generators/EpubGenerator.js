@@ -10,10 +10,10 @@ export class EpubGenerator extends IGenerator {
     }
 
     /**
-     * 生成文件
-     * @param {BookExportData} ebook 
-     * @param {string} outputPath 文件输出地址
-     * @returns {{ path, filename }} 导出结果
+     * 生成电子书文件
+     * @param {BookExportData} ebook - 统一装配好的数据
+     * @param {string} outputPath - 输出文件路径（含后缀）
+     * @returns {Promise<{ path:string, filename:string, warnings:Array<string> }>} 导出结果
      */
     async generate(ebook, outputPath) {
         const { setting } = ebook;
@@ -36,7 +36,7 @@ export class EpubGenerator extends IGenerator {
 
                 //PubliWrite 新增配置
                 assetFailureMode: "throw",       //内联文件报错时如何处理 throw:抛出、warn:输出带有损坏引用的清单`{warnings}`
-                allowFileUrls:true,              //默认 false。拒绝 file:// URL
+                // allowFileUrls:true,              //默认 false。拒绝 file:// URL
             }
             // await accessDir(option.tempDir); //EPub底层有这个代码
 

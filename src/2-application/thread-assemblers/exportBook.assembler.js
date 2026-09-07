@@ -7,6 +7,7 @@ import { BookExportService } from "../services/BookExportService.js";
 import { BookQueryService } from "../services/BookQueryService.js";
 import { VolumeQueryService } from "../services/VolumeQueryService.js"
 import { ChapterQueryService } from "../services/ChapterQueryService.js";
+import { CoverService } from '../services/CoverService.js';
 import { SystemConfigService } from "../services/SystemConfigService.js";
 
 import { EventManager } from "../../4-infrastructure/event/EventManager.js";
@@ -33,14 +34,14 @@ export async function createExportBookTask(config, taskType, { repositories }) {
     const fileServ = new FileSystemWriter(config.repository?.path);
     const tempFolder = await fileServ.accessDir(config.tempDir?.path);
     const factory = new GeneratorFactory(tempFolder);
-
+    const coverService = new CoverService(fileServ, null, config);
     const eventMgr = new EventManager(new EventEmitter());
     const systemConfigService = new SystemConfigService(repositories.systemConfigRepository);
 
     //注册监听后处理事件
     eventMgr.on(EXPORT_EVENTS.TEMP_CLEANUP, (param) => {
         const { filePath, delay } = param;
-        if (filePath) setTimeout(() => { fileServ.deleteFile(filePath); console.log("已删除临时文件：", filePath) }, delay || 0);
+        if (filePath) setTimeout(() => { fileServ.deleteFile(filePath); }, delay || 0);
     })
     new EmailService(new NodemailerEmailSender(), systemConfigService, null, eventMgr);//注册邮件发送事件
     new ExportOrchestrator(eventMgr, config);//注册文件生成完成事件
@@ -49,7 +50,7 @@ export async function createExportBookTask(config, taskType, { repositories }) {
         book: bookServ,
         volume: volumeServ,
         chapter: chapServ,
-    }, factory, fileServ, eventMgr, config);
+    }, factory, fileServ, coverService, eventMgr, config);
     return new BookExportExecutor(bookExpServ);
 }
 export default createExportBookTask;

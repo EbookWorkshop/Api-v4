@@ -11,17 +11,18 @@ export class FileSystemWriter extends IFileWriter {
      * 写入文件——以仓库为基础路径
      * @param {string|Array<string>} filePath 存储路径，若为数组则是路径目录
      * @param {*} data 写入数据，当为字符数组时，将会自动调整背压
-     * @param {*} format 写入格式，如 base64
+     * @param {ObjectEncodingOptions} setting 传入接口的选项，如  { encoding: 'utf8' }
+     * @param {string} setting.format 传入数据格式，如 base64
      * @returns {string} 实际存储的相对路径——相对仓库
      */
-    async saveFile(filePath, data, format = "") {
+    async saveFile(filePath, data, option) {
         let pathArray = [this.#repositoryPath];
         if (typeof (filePath) === "string") pathArray.push(filePath);
         else if (Array.isArray(filePath)) pathArray.push(...filePath);
         const tempFile = path.join(...pathArray);
 
-        if (Array.isArray(data)) await saveArrayToFile(tempFile, data, format);
-        else await saveFile(tempFile, data, format);
+        if (Array.isArray(data)) await saveArrayToFile(tempFile, data, option);
+        else await saveFile(tempFile, data, option);
 
         return path.relative(this.#repositoryPath, tempFile);
     }

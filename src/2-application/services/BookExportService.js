@@ -1,6 +1,4 @@
 
-import { randomBytes } from "node:crypto";
-import { SHOW_BOOKNAME } from "../../3-domain/constants/BookConstants.js";
 import { EXPORT_EVENTS } from "../constants/Event.js";
 import { IFileWriter } from "../ports/IFileWriter.js"
 import { BookExportData } from '../dto/BookExportData.dto.js';
@@ -23,12 +21,16 @@ export class BookExportService {
 
     /** @type {IFileWriter} */
     #fileWriter;
+    /** @type {CoverService} */
+    #coverService;
 
     /** @type {GeneratorFactory} */
     #generatorFactory;
     /** @type {EventManager} */
     #eventManager;
     #config;
+    /** @type {Array<string>} 收集制作过程中的警告信息 */
+    #resultWarning;
 
     /**
      * @param {{book:BookQueryService,volume:VolumeQueryService,chapter:ChapterQueryService}} bookService 
@@ -37,7 +39,7 @@ export class BookExportService {
      * @param {EventManager} eventMgr 
      * @param {Object} config 
      */
-    constructor(bookService, generatorFactory, fileWriter, eventMgr, config) {
+    constructor(bookService, generatorFactory, fileWriter, coverService, eventMgr, config) {
         const { book, volume, chapter } = bookService;
         this.#bookQueryService = bookService.book;
         this.#volumeQueryService = bookService.volume;
@@ -47,8 +49,10 @@ export class BookExportService {
 
         this.#generatorFactory = generatorFactory;
         this.#fileWriter = fileWriter;
+        this.#coverService = coverService;
         this.#eventManager = eventMgr;
         this.#config = config;
+        this.#resultWarning = new Array();
     }
 
     /**
@@ -73,7 +77,7 @@ export class BookExportService {
      * @param {number} bookId 
      * @param {epub|pdf|txt} format 文件格式
      * @param {object} setting 
-     * @returns {{ path, filename }} 导出结果
+     * @returns {{ path, filename,warning }} 导出结果
      */
     async exportBook(bookId, format, setting) {
         let result = null;
@@ -105,7 +109,14 @@ export class BookExportService {
             const chapterAftTyp = this.#applyTypography(volumes, showChapters);
 
             let coverPath;
-            if (format != "txt") coverPath = await this.#setCover(book.CoverImg, embedBookName, coverImageData,);
+            if (format != "txt") {
+                const cvRsl = await this.#coverService.prepareCoverForExport(book.CoverImg, embedBookName, coverImageData);
+                coverPath = cvRsl.path;
+                if (cvRsl.temp) this.#eventManager.emit(EXPORT_EVENTS.TEMP_CLEANUP, {
+                    filePath: coverPath,
+                    delay: 600_000 // 10分钟后清理
+                })
+            }
             bookName = book.BookName;
             const exportData = new BookExportData({
                 title: book.BookName,
@@ -121,6 +132,7 @@ export class BookExportService {
 
             // // 执行生成
             result = await generator.generate(exportData);
+            result.warnings = this.#resultWarning.concat(result.warnings);
             return result;
         } catch (error) {
             error.stack = `BookExportService::exportBook: ${import.meta.filename}\n${error.stack}`;
@@ -142,7 +154,10 @@ export class BookExportService {
         let resultChapt = chapters.map(({ Title: title, Content: content, VolumeId }) => ({ title, content, VolumeId }));
 
         for (let chap of resultChapt) {
-            if (!chap.content) chap.content = "-= 章节内容缺失 =-";
+            if (!chap.content) {
+                chap.content = title + "\n\n-= 章节内容缺失 =-";
+                this.#resultWarning.push(`【缺失正文】：\t${title}`);
+            }
             let rows = chap.content?.split("\n");//正文按行分割
 
             //设置压缩——去除空行
@@ -174,30 +189,4 @@ export class BookExportService {
 
         return resultChapt;
     }
-
-    /**
-     * 配置封面
-     * # TODO: 封面逻辑较为复杂，考虑提取为 CoverService
-     * @param {*} coverImg 封面原设置
-     * @param {boolean} embedBookName 是否显示嵌入标题的封面
-     * @param {string} coverImageData Base64 格式的封面图片
-     * @returns {string} filePath 文件的绝对路径
-     */
-    async #setCover(coverImg, embedBookName, coverImageData) {
-        if (!coverImg) coverImg = "#线装本";
-        const tempDir = this.#config?.tempDir?.path;
-        let coverFilePath = "";
-        if (typeof (embedBookName) === "undefined" || embedBookName === null) embedBookName = coverImg?.includes(SHOW_BOOKNAME);
-        coverImg = coverImg.replace(SHOW_BOOKNAME, "");
-        let isUseImageData = false;
-        if (coverImg.startsWith("#")) isUseImageData = true;//线装本格式，直接采用图片
-        else if (embedBookName) isUseImageData = true;  //采用嵌入标题格式的封面
-        else coverFilePath = this.#fileWriter.mapPath(coverImg);      //直接使用图片文件
-
-        if (coverFilePath.endsWith(".webp") || coverFilePath.endsWith(".jpg")) coverFilePath = await this.#fileWriter.converToPNG(coverFilePath, tempDir);
-
-        if (isUseImageData && coverImageData.length > 0) coverFilePath = await this.#fileWriter.saveFile([tempDir, "cover", `cimg${randomBytes(3).toString('hex')}.png`], coverImageData, "base64");
-        return coverFilePath;
-    }
-
 }

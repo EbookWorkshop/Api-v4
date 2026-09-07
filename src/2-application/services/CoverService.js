@@ -1,6 +1,7 @@
+import path from "node:path"
+import { randomBytes } from "node:crypto";
 import { SHOW_BOOKNAME } from "../../3-domain/constants/BookConstants.js"
 import { eXtname } from "../../5-shared/utils/site.js"
-import { randomBytes } from "node:crypto";
 
 /**
  * 封面存储结果
@@ -14,9 +15,15 @@ class CoverStorageResult {
 
 export class CoverService {
     #fileWriter;      // 实现 IFileWriter
-    #dataFetcher;     // 实现 IDataFetcher
+    #dataFetcher;     // 实现 IDataFetcher fetch() ；需要下载图片时用。
     #config;
 
+    /**
+     * 
+     * @param {*} fileWriter 
+     * @param {IDataFetcher?} dataFetcher 仅当需要下载时提供
+     * @param {*} config 
+     */
     constructor(fileWriter, dataFetcher, config) {
         this.#fileWriter = fileWriter;
         this.#dataFetcher = dataFetcher;
@@ -62,34 +69,32 @@ export class CoverService {
     }
 
     /**
-     *  为导出准备封面文件（返回可用于导出的临时文件路径）
-     * TODO: 需要考虑上传base64文本串的情况
-     * @param {string} coverRecord - 数据库中读取的 Ebook.CoverImg 值
-     * @param {string} bookName - 书名（用于嵌入）
-     * @param {object} options - 如是否强制生成新图片
-     * @returns {Promise<string>} 临时图片文件路径
+     * 为导出准备封面文件（返回可用于导出的临时文件路径）
+     * @param {string} coverImg 
+     * @param {boolean} embedBookName 
+     * @param {Base64URLString} coverImageData 
+     * @returns {{path:string,temp:boolean}} 可以使用的图片实际路径，是否临时文件（需要自己删除
      */
-    async prepareCoverForExport(coverRecord, bookName, options = {}) {
-        return null;
-        // // 1. 解析标记
-        // const { path: rawPath, hasShowname } = this.#parseCoverRecord(coverRecord);
+    async prepareCoverForExport(coverImg, embedBookName, coverImageData) {
+        if (!coverImg) coverImg = "#线装本";
+        const tempDir = this.#config?.tempDir?.path;
+        let coverFilePath = "";
+        if (typeof (embedBookName) === "undefined" || embedBookName === null) embedBookName = coverImg?.includes(SHOW_BOOKNAME);
+        coverImg = coverImg.replace(SHOW_BOOKNAME, "");
+        let isUseImageData = false;
+        if (coverImg.startsWith("#")) isUseImageData = true;//线装本格式，直接采用图片
+        else if (embedBookName) isUseImageData = true;  //采用嵌入标题格式的封面
+        else coverFilePath = this.#fileWriter.mapPath(coverImg);      //直接使用图片文件
 
-        // let finalImagePath = null;
-        // if (rawPath.startsWith('#')) {
-        //     // 纯色生成
-        //     // finalImagePath = await this.#generateSolidColorImage(rawPath, { bookName, embedBookName: true });
-        // } else {
-        //     // 图片文件
-        //     const absolutePath = this.#fileWriter.mapPath(rawPath);
-        //     if (hasShowname) {
-        //         // 需要嵌入书名 → 在图片上绘制文字，生成临时文件
-        //         finalImagePath = await this.#imageProcessor.drawTextOnImage(absolutePath, bookName);
-        //     } else {
-        //         // 直接使用原图
-        //         finalImagePath = absolutePath;
-        //     }
-        // }
-        // return finalImagePath;
+        if (coverFilePath.endsWith(".webp") || coverFilePath.endsWith(".jpg")) coverFilePath = await this.#fileWriter.converToPNG(coverFilePath, tempDir);
+
+        let temp = false;
+        if (isUseImageData && coverImageData.length > 0) {
+            coverFilePath = await this.#fileWriter.saveFile([tempDir, "cover", `cimg${randomBytes(3).toString('hex')}.png`], coverImageData, { format: "base64" });
+            temp = true;
+        }
+        coverFilePath = path.join(this.#config.repository.path, coverFilePath);//相对仓库地址改为以仓库开始记录的地址
+        return { path: coverFilePath, temp };
     }
 
     // 内部辅助方法...

@@ -85,7 +85,8 @@ export async function listFiles(sourcePath, options = { filetype: null, detail: 
  * 写入文件
  * @param {string|Array<string>} filePath 存储路径
  * @param {*} data 写入数据
- * @param {*} format 传入数据格式，如 base64
+ * @param {ObjectEncodingOptions} setting 传入接口的选项，如  { encoding: 'utf8' }
+ * @param {string} setting.format 传入数据格式，如 base64
  * @returns 
  */
 export async function saveFile(filePath, data, setting = { encoding: 'utf8' }) {

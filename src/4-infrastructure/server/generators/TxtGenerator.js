@@ -14,10 +14,10 @@ export class TxtGenerator extends IGenerator {
     }
 
     /**
-     * 生成文件
-     * @param {BookExportData} ebook 
-     * @param {string} outputPath 文件输出地址
-     * @returns {{ path, filename }} 导出结果
+     * 生成电子书文件
+     * @param {BookExportData} ebook - 统一装配好的数据
+     * @param {string} outputPath - 输出文件路径（含后缀）
+     * @returns {Promise<{ path:string, filename:string, warnings:Array<string> }>} 导出结果
      */
     async generate(ebook, outputPath) {
         let writeStream = null;
