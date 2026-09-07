@@ -16,7 +16,7 @@ export class SwaggerController {
      */
     constructor(config) {
         this.#config = config;
-        this.#cdns = ["https://unpkg.com", "https://cdn.jsdelivr.net/npm"]
+        this.#cdns = ["https://unpkg.com", "https://cdn.jsdelivr.net/npm", "https://npm.onmicrosoft.cn", "https://s4.zstatic.net/npm"]
     }
 
     async getJSONFile(ctx) {
@@ -51,7 +51,7 @@ export class SwaggerController {
             'x-tagGroups': [
                 {
                     name: '新系统架构',
-                    tags: ['Book', 'WebBook', "Volume", "Chapter", "Review", "BotRule", 'Tag', 'Font', "Assets", "Export", "Email", "Service"],
+                    tags: ['Book', 'WebBook', "Volume", "Chapter", "Bookmark", "Review", "BotRule", 'Tag', 'Font', "Assets", "Export", "Email", "Service"],
                 },
                 {
                     name: '原风格排版',
@@ -59,6 +59,7 @@ export class SwaggerController {
                         'Library —— 图书馆',
                         'Library - WebBook —— 网文图书馆',
                         'Library - Tag —— 图书馆管理',
+                        'Library - Bookmark —— 图书馆书签',
                         "Review - Rule —— 自助校阅 - 规则库",
                         "Review - BookWithRule —— 自助校阅 - 书与规则绑定",
                         "Services - Services - 基础 —— 系统服务：基础",
@@ -117,10 +118,11 @@ export class SwaggerController {
     async getStoplight(ctx) {
         const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
         ctx.set('Content-Type', 'text/html');
+
         ctx.state.skipResponseWrapper = true;
         ctx.body = `
 <!doctype html>
-<html lang="zh-cn">
+<html lang="zh-cn" data-theme="${ctx.query?.theme ?? ""}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -134,7 +136,8 @@ export class SwaggerController {
       apiDescriptionUrl="/swagger.json"
       router="hash"
       layout="sidebar"
-    />
+      hideSchemas="true"
+       />
   </body>
 </html>`;
     }
@@ -146,7 +149,7 @@ export class SwaggerController {
         ctx.state.skipResponseWrapper = true;
         ctx.body = `
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -163,8 +166,9 @@ export class SwaggerController {
         const myCDN = ctx.query.cdn ? decodeURIComponent(ctx.query.cdn) : (await findFastestCDN(this.#cdns)).url;
         ctx.set('Content-Type', 'text/html');
         ctx.state.skipResponseWrapper = true;
+        const theme = ctx.query.theme === "dark" ? `class="dark-mode"` : ``;
         ctx.body = `<!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-CN" ${theme}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -182,10 +186,13 @@ export class SwaggerController {
         url: '/swagger.json',
         dom_id: '#swagger-ui',
         presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
+          SwaggerUIBundle.presets.apis,// 启用 API 相关的核心插件
+          SwaggerUIStandalonePreset,// 启用独立布局（Standalone Layout）的预设
         ],
         layout: "StandaloneLayout",
+        defaultModelsExpandDepth:-1,
+        docExpansion:"none",//全部折叠
+        //filter:true,      //只能过滤标签
       });
     };
   </script>
@@ -217,7 +224,7 @@ export class SwaggerController {
         ctx.set('Content-Type', 'text/html');
         ctx.state.skipResponseWrapper = true;
         ctx.body = `<!DOCTYPE html>
-<html>
+<html  data-theme="${ctx.query?.theme ?? ""}">
   <head>
     <title>ReDoc</title>
     <meta charset="utf-8"/>

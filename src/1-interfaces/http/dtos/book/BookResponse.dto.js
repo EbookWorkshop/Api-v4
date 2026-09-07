@@ -121,7 +121,7 @@
  *               OrderNum: 53
  *               BookId: 209
  *               VolumeId: 53
- *
+ *           Bookmark: []
  *     BookDetailNotFound:
  *       summary: 图书不存在时的错误响应示例
  *       value:
