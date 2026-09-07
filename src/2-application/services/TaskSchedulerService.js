@@ -58,7 +58,7 @@ export class TaskSchedulerService {
             })
 
             this.#workerPool.addTask(task);
-            return `已添加到任务：${task.taskId}` //{ taskId: task.taskId };
+            return `已添加任务：${task.taskId}` //{ taskId: task.taskId };
         } catch (error) {
             throw new AppError("添加采集任务失败：" + error.message);
         }
@@ -80,7 +80,7 @@ export class TaskSchedulerService {
             })
 
             this.#workerPool.addTask(task);
-            return `已添加到任务：${task.taskId}` //{ taskId: task.taskId };
+            return `已添加任务：${task.taskId}` //{ taskId: task.taskId };
         } catch (error) {
             throw new AppError("添加采集任务失败：" + error.message);
         }
@@ -107,7 +107,7 @@ export class TaskSchedulerService {
                 this.#workerPool.addTask(task);
                 taskIds.push(task.taskId);
             }
-            return { message: `已添加到任务x${chapterIds.lenngth}`, taskid: taskIds }
+            return { message: `已添加任务x${chapterIds.lenngth}`, taskid: taskIds }
         } catch (error) {
             throw new AppError("添加采集任务失败：" + error.message);
         }
@@ -129,7 +129,7 @@ export class TaskSchedulerService {
             })
 
             this.#workerPool.addTask(task);
-            return `已添加到任务：${task.taskId}` //{ taskId: task.taskId };
+            return `已添加任务：${task.taskId}` //{ taskId: task.taskId };
         } catch (error) {
             throw new AppError("添加采集任务失败：" + error.message);
         }
@@ -143,7 +143,7 @@ export class TaskSchedulerService {
         try {
             const task = new Task({ taskType: TASK_TYPES.SYSTEM_VERSION });
             this.#workerPool.addTask(task);
-            return `已添加到任务：${task.taskId}`
+            return `已添加任务：${task.taskId}`
         } catch (error) {
             throw new AppError("添加任务失败：" + error.message);
         }
@@ -161,11 +161,25 @@ export class TaskSchedulerService {
                 taskType: TASK_TYPES.BOTRULE_VIS,
                 param: { testUrl, rule },
                 callback: ({ data, error }) => {
-                    console.log("任务已执行完成！", data);
+                    console.log("【任务】规则预览已执行完成！，已采集数据：", data);
+                    //TODO: Socket 发消息展示采集结果
                 }
             });
             this.#workerPool.addTask(task);
-            return `已添加到任务：${task.taskId}`
+            return `已添加任务：${task.taskId}`
+        } catch (error) {
+            throw new AppError("添加任务失败：" + error.message);
+        }
+    }
+
+    async submitCompressDdatabase() {
+        try {
+            const task = new Task({
+                taskType: TASK_TYPES.COMPRESS_DATABASE,
+                useDB: true,
+            });
+            this.#workerPool.addTask(task);
+            return `已添加任务：${task.taskId}`
         } catch (error) {
             throw new AppError("添加任务失败：" + error.message);
         }

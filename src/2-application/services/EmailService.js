@@ -12,6 +12,7 @@ export class EmailService {
     #eventMgr;
 
     /**
+     * 初始化后即监听事件【MAIL_SENT】，可通过事件接收发邮件任务
      * @param {IEmailSender} emailSender - 依赖注入邮件发送适配器
      * @param {*} systemConfigService - 配置服务
      */

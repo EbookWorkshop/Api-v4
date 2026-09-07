@@ -2,6 +2,7 @@
 import { TASK_TYPES } from "../../../3-domain/constants/Task.js";
 import { ITaskExecutor } from "../../../2-application/ports/ITaskExecutor.js"
 import { AppError } from "../../../5-shared/errors/index.js";
+
 /**
  * 根据任务类型组装执行器
  * @param {TASK_TYPES} taskType 任务类型
@@ -30,13 +31,16 @@ export async function assignTasks(taskType, config, resources) {
         case TASK_TYPES.BOTRULE_VIS:
             createTask = "ruleVis.assembler.js";
             break;
+        case TASK_TYPES.COMPRESS_DATABASE:
+            createTask = "compressDB.assembler.js";
+            break;
         default:
-            throw new AppError("尚未开发对接的任务类型：" + taskType);
+            throw new AppError(`尚未开发对接的任务类型：${taskType}\n\n需要修改文件： ${import.meta.filename} \n\n`);
     }
 
     try {
         const creater = await import(assemblerDir + createTask);
-        executor = creater?.default(config, taskType, resources);
+        executor = await creater?.default(config, taskType, resources);
         if (!(executor instanceof ITaskExecutor)) throw new AppError(`线程执行逻辑需实现接口[ITaskExecutor]。模块：${assemblerDir + createTask}\n`);
     } catch (error) {
         console.warn("子线程执行失败-组装线程启动器失败：", createTask, "\n", error);

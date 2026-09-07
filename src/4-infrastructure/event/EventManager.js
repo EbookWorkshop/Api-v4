@@ -70,9 +70,11 @@ export class EventManager {
 
     /**
      * 发向前端的消息
+     * #### 支持在线程上发送
      * @param {Message} message 
      */
     messageToClient(message) {
+        if (!isMainThread) return this.emitToMain(MESSAGE_SEND, message);
         return this.#emitter.emit(MESSAGE_SEND, message);
     }
 }

@@ -4,7 +4,7 @@ import { ServiceServer } from "../../4-infrastructure/server/ServiceServer.js"
 
 
 /**
- * 创建采集执行器
+ * 创建执行器
  * @param {Object} config 
  * @param {TASK_TYPES} taskType 
  * @param {Object} resources 

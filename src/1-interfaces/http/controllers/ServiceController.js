@@ -105,4 +105,31 @@ export class ServiceController {
         let host = getHost(ctx.query.host);
         ctx.body = await this.#serviceQueryService.checkSiteAccessibility(host);
     }
+
+    /**
+     * @swagger
+     * /services/compress_db:
+     *   post:
+     *     summary: 压缩数据库
+     *     description: 压缩数据库
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *       - Service
+     *     responses:
+     *       200:
+     *         description: 任务提交即返回
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-30T18:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async compressDatabase(ctx) {
+        ctx.body = await this.#taskSchedulerService.submitCompressDdatabase();
+    }
 }

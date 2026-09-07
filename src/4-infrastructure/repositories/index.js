@@ -53,5 +53,7 @@ export function createRepositories(sequelize) {
         ruleForWebRepository: new RuleForWebRepository(sequelize),
         dictionaryRepository: new ReviewDictionaryRepository(sequelize),
         reviewRuleUsingRepository: new ReviewRuleUsingRepository(sequelize),
+
+        sequelize,
     };
 }
