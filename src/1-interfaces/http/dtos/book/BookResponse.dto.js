@@ -56,6 +56,11 @@
  *               items:
  *                 $ref: '#/components/schemas/BookVolumeItem'
  *               description: 图书分卷列表
+ *             Bookmark:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/BookmarkItem'
+ *               description: 书签
  *             Introduction:
  *               type: string
  *               description: 图书简介

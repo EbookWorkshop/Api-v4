@@ -18,6 +18,7 @@ export class BookmarkRepository {
                 model: this.#ChapterModel,
                 as: 'EbookChapter',
                 attributes: ['Title'],
+                where,
                 include: [{
                     model: this.#EbookModel,
                     attributes: ['BookName'],
@@ -29,7 +30,6 @@ export class BookmarkRepository {
                     as: 'Volume'
                 }]
             }],
-            where,
             order: [['createdAt', 'DESC']],
         })
         return bms.map(b => {

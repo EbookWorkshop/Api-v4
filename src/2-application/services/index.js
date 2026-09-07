@@ -50,10 +50,10 @@ import { ServiceQueryService } from './ServiceQueryService.js';
  * @returns 
  */
 export function createServices(repositories, databaseTransaction, workerPool, eventManager, config = {}) {
-    const { ebookRepository, volumeRepository, indexRepository, chapterRepository } = repositories;
+    const { ebookRepository, volumeRepository, indexRepository, chapterRepository, bookmarkRepository } = repositories;
     const { tagRepository, systemConfigRepository, } = repositories;
 
-    const bookDetailQueryService = new BookDetailQueryService(ebookRepository, volumeRepository, indexRepository, chapterRepository);
+    const bookDetailQueryService = new BookDetailQueryService(ebookRepository, volumeRepository, indexRepository, chapterRepository, bookmarkRepository);
 
     // ========== 基础服务 ==========
     const systemConfigService = new SystemConfigService(systemConfigRepository);
@@ -95,7 +95,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
 
         tagQuery: new TagQueryService(tagRepository),
         tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),
-        bookmark: new BookmarkService(repositories.bookmarkRepository),
+        bookmark: new BookmarkService(bookmarkRepository),
 
         systemConfig: systemConfigService,
         email: new EmailService(emailSender, systemConfigService, databaseTransaction, eventManager),

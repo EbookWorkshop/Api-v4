@@ -4,11 +4,13 @@ export class BookDetailQueryService {
     #indexRepo;
     #volumeRepo;
     #chapterRepo;
-    constructor(ebookRepo, volumeRepo, indexRepo, chapterRepo) {
+    #bookmarkRepo;
+    constructor(ebookRepo, volumeRepo, indexRepo, chapterRepo, bookmarkRepo) {
         this.#ebookRepo = ebookRepo;
         this.#indexRepo = indexRepo;
         this.#volumeRepo = volumeRepo;
         this.#chapterRepo = chapterRepo;
+        this.#bookmarkRepo = bookmarkRepo;
     }
 
     /**
@@ -18,11 +20,12 @@ export class BookDetailQueryService {
      */
     async getBookDetail(bookId) {
         // 并发查询三个表（充分利用 I/O 并行）
-        const [ebook, Index, Volumes, intro] = await Promise.all([
+        const [ebook, Index, Volumes, intro, Bookmark] = await Promise.all([
             this.#ebookRepo.findById(bookId),
             this.#indexRepo.findByBookId(bookId),
             this.#volumeRepo.findByBookId(bookId),
-            this.#chapterRepo.findIntroduction(bookId)
+            this.#chapterRepo.findIntroduction(bookId),
+            this.#bookmarkRepo.findAll(bookId),
         ]);
 
         if (!ebook) throw new AppError('书籍不存在', 404);
@@ -33,6 +36,7 @@ export class BookDetailQueryService {
             Introduction: intro?.Content,
             Index,
             Volumes,
+            Bookmark,
         };
     }
 
