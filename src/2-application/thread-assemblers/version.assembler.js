@@ -1,4 +1,4 @@
-import { TASK_TYPES } from "../../3-domain/constants/Task.js";
+import { TASK_TYPES } from "../constants/Task.js";
 import { UpdateVersionExecutor } from "../services/executor/UpdateVersionExecutor.js";
 import { ServiceServer } from "../../4-infrastructure/server/ServiceServer.js"
 

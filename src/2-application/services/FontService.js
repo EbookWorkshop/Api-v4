@@ -1,6 +1,6 @@
 // src/2-application/services/FontService.js
 import path from 'node:path';
-import { SYSTEM_DEFAULT_FONT } from '../../3-domain/constants/SystemConfigGroup.js';
+import { SYSTEM_DEFAULT_FONT } from '../constants/SystemConfigGroup.js';
 import { AppError, UserInputError } from '../../5-shared/errors/index.js';
 
 export class FontService {

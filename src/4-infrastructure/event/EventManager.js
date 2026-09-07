@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { isMainThread, parentPort } from 'node:worker_threads';
-import { TASK_MESSAGE_TYPE } from "../../3-domain/constants/Task.js";
-import { MESSAGE_SEND } from '../../3-domain/constants/Event.js';
-export * from "../../3-domain/constants/Event.js"
+import { TASK_MESSAGE_TYPE } from "../../2-application/constants/Task.js";
+import { MESSAGE_SEND } from '../../2-application/constants/Event.js';
+export * from "../../2-application/constants/Event.js"
 
 export class EventManager {
     /** @type {EventEmitter} */

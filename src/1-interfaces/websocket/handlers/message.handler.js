@@ -1,4 +1,4 @@
-import { MESSAGE_SEND } from '../../../3-domain/constants/Event.js';
+import { MESSAGE_SEND } from '../../../2-application/constants/Event.js';
 
 
 

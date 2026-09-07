@@ -6,8 +6,8 @@ import { Worker } from 'node:worker_threads';
 import { AsyncResource } from 'node:async_hooks';
 
 import { AppError } from "../../../5-shared/errors/index.js"
-import { TASK_MESSAGE_TYPE, TASK_STATUS } from "../../../3-domain/constants/Task.js"
-import { WORKERPOOL_ADD_TASK } from "../../../3-domain/constants/Event.js"
+import { TASK_MESSAGE_TYPE, TASK_STATUS } from "../../../2-application/constants/Task.js"
+import { WORKERPOOL_ADD_TASK } from "../../../2-application/constants/Event.js"
 import { Task } from "../tasks/Task.js";
 import { WorkerQueue } from "./WorkerQueue.js";
 import { EventManager } from "../../event/EventManager.js";

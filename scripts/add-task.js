@@ -37,7 +37,7 @@ console.warn("TODO:  修改安排任务执行器 //src/4-infrastructure/workers/
 const taskAssemblerFille = path.resolve(d2, "thread-assemblers", `${_taskName}.assembler.js`);
 try {
     fs.writeFileSync(taskAssemblerFille, `
-import { TASK_TYPES } from "../../3-domain/constants/Task.js";
+import { TASK_TYPES } from "../../2-application/constants/Task.js";
 import { ${_TaskName}Executor } from "../services/executor/${_TaskName}Executor.js";
 import { ServiceServer } from "../../4-infrastructure/server/ServiceServer.js"
 

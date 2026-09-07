@@ -1,6 +1,6 @@
 import { getHost } from "../../5-shared/utils/site.js";
 import { RULE_GROUP, RULE_GROUP_SETTING, RuleCommon } from "../../3-domain/constants/Rule.js"
-import { WEBSITE_TIMEOUT, WEBSITE_SCRAPING, WEBSITE_USERAGENT } from "../../3-domain/constants/SystemConfigGroup.js";
+import { WEBSITE_TIMEOUT, WEBSITE_SCRAPING, WEBSITE_USERAGENT } from "../constants/SystemConfigGroup.js";
 import { RuleForWebRepository } from '../../4-infrastructure/repositories/RuleForWebRepository.js';
 import { AppError, UserInputError } from "../../5-shared/errors/index.js"
 

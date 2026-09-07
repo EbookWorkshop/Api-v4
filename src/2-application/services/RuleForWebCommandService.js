@@ -3,7 +3,7 @@ import { RuleForWebRepository } from '../../4-infrastructure/repositories/RuleFo
 import { IFileScanner } from "../../2-application/ports/IFileScanner.js"
 import { ITransaction } from '../ports/ITransaction.js';
 import { AppError } from "../../5-shared/errors/index.js"
-import { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } from '../../3-domain/constants/SystemConfigGroup.js';
+import { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } from '../constants/SystemConfigGroup.js';
 
 const DEFAULT_TIME_OUT = 40_000;
 const DEFAULT_SCRAPING = "puppeteer";

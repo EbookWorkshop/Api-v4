@@ -1,5 +1,5 @@
-import { EMAIL_SETTING_GROUP, KINDLE_INBOX } from '../../3-domain/constants/SystemConfigGroup.js';
-import { MAIL_SENT } from '../../3-domain/constants/Event.js';
+import { EMAIL_SETTING_GROUP, KINDLE_INBOX } from '../constants/SystemConfigGroup.js';
+import { MAIL_SENT } from '../constants/Event.js';
 import { AppError, UserInputError } from '../../5-shared/errors/index.js';
 import { IEmailSender } from '../ports/IEmailSender.js';
 

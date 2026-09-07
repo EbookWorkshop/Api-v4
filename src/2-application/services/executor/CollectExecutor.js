@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events"
 import { ITaskExecutor } from '../../ports/ITaskExecutor.js';
-import { TASK_TYPES } from '../../../3-domain/constants/Task.js';
+import { TASK_TYPES } from '../../constants/Task.js';
 import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
 import { WebBookCollector, ChapterCollector, FileCollector, ICollector } from "../collectors/index.js";

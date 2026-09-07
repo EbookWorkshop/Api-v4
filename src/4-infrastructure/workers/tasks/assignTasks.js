@@ -1,5 +1,5 @@
 //根据任务类型分派任务
-import { TASK_TYPES } from "../../../3-domain/constants/Task.js";
+import { TASK_TYPES } from "../../../2-application/constants/Task.js";
 import { ITaskExecutor } from "../../../2-application/ports/ITaskExecutor.js"
 import { AppError } from "../../../5-shared/errors/index.js";
 

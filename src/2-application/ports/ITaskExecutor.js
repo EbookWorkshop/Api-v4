@@ -1,4 +1,4 @@
-import { TASK_TYPES } from "../../3-domain/constants/Task.js";
+import { TASK_TYPES } from "../constants/Task.js";
 /**
  * 任务执行
  */

@@ -1,7 +1,7 @@
 //带数据库的线程，可使用数据库的线程
 
 import { parentPort, workerData } from 'worker_threads';
-import { TASK_MESSAGE_TYPE as TMT } from "../../../3-domain/constants/Task.js";
+import { TASK_MESSAGE_TYPE as TMT } from "../../../2-application/constants/Task.js";
 import { assignTasks } from "../tasks/assignTasks.js"
 import { AppError } from '../../../5-shared/errors/index.js';
 

@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { RuleName } from "../../../3-domain/constants/Rule.js"
 import { ICollector } from "../../ports/ICollector.js";
-import { COLLECT_EVENTS } from "../../../3-domain/constants/Event.js";
+import { COLLECT_EVENTS } from "../../constants/Event.js";
 
 export class FileCollector extends ICollector {
     #config;

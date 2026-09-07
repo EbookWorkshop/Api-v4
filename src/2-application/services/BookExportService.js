@@ -1,7 +1,7 @@
 
 import { randomBytes } from "node:crypto";
 import { SHOW_BOOKNAME } from "../../3-domain/constants/BookConstants.js";
-import { EXPORT_EVENTS } from "../../3-domain/constants/Event.js";
+import { EXPORT_EVENTS } from "../constants/Event.js";
 import { IFileWriter } from "../ports/IFileWriter.js"
 import { BookExportData } from '../dto/BookExportData.dto.js';
 import { BookQueryService } from "../services/BookQueryService.js"

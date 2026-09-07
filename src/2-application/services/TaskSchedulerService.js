@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { TASK_TYPES } from '../../3-domain/constants/Task.js';
+import { TASK_TYPES } from '../constants/Task.js';
 import { WorkerPool, Task } from '../../4-infrastructure/workers/index.js';
 import { AppError } from "../../5-shared/errors/index.js";
 
@@ -89,6 +89,7 @@ export class TaskSchedulerService {
     /**
      * 提交更新章节任务
      * #### 会拆解为每章一个任务 
+     * TODO: 需要完成任务进度统计逻辑！
      * @param {*} chapterIds 
      * @param {*} setting 
      */

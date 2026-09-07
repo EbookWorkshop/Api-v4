@@ -1,6 +1,6 @@
 import { ICollector } from "../../ports/ICollector.js";
 import { RULE_INDEX, RULE_INFO, RuleName } from "../../../3-domain/constants/Rule.js"
-import { COLLECT_EVENTS } from "../../../3-domain/constants/Event.js";
+import { COLLECT_EVENTS } from "../../constants/Event.js";
 import { AppError } from "../../../5-shared/errors/index.js";
 import { getHost } from "../../../5-shared/utils/site.js";
 

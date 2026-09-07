@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { TASK_TYPES, TASK_STATUS } from "../../../3-domain/constants/Task.js";
+import { TASK_TYPES, TASK_STATUS } from "../../../2-application/constants/Task.js";
 /**
  * 表示一个可被线程池执行的任务。
  */

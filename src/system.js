@@ -2,7 +2,7 @@ import Koa from 'koa';
 import { koaBody } from 'koa-body';
 import { EventEmitter } from 'node:events';
 
-import { DATABASE_VERSION } from "./3-domain/constants/SystemConfigGroup.js"
+import { DATABASE_VERSION } from "./2-application/constants/SystemConfigGroup.js"
 import { EventManager } from './4-infrastructure/event/EventManager.js';
 import { WorkerPool } from "./4-infrastructure/workers/index.js"
 import { loadConfig } from './4-infrastructure/config/index.js';

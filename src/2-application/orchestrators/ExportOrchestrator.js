@@ -1,4 +1,4 @@
-import { EXPORT_EVENTS } from "../../3-domain/constants/Event.js";
+import { EXPORT_EVENTS } from "../constants/Event.js";
 import { Message } from "../../5-shared/dtos/Message.dto.js"
 
 /**
