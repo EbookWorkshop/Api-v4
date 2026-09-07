@@ -105,8 +105,8 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
         reviewRuleUsing: new ReviewRuleUsingService(repositories.reviewRuleUsingRepository),
         reviewBook: reviewBookService,
-        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer, task),
-        ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner),
+        ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer),
+        ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner, task),
 
         assets: new AssetsService(fileScanner, fileWriter, config),
 

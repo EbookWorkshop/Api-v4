@@ -13,18 +13,16 @@ export class RuleForWebQueryService {
     #systemConfigService;
     /** @type {ReviewDictionaryService} */
     #reviewDictionaryService;
-    #taskSchedulerService;
 
     /**
      * @param {RuleForWebRepository} ruleForWebRepository 
      * @param {SystemConfigService} systemConfigService 
      * @param {ReviewDictionaryService} reviewDictionaryService 
      */
-    constructor(ruleForWebRepository, systemConfigService, reviewDictionaryService, taskSchedulerService) {
+    constructor(ruleForWebRepository, systemConfigService, reviewDictionaryService) {
         this.#ruleForWebRepository = ruleForWebRepository;
         this.#systemConfigService = systemConfigService;
         this.#reviewDictionaryService = reviewDictionaryService;
-        this.#taskSchedulerService = taskSchedulerService;
     }
 
     /**
@@ -138,14 +136,5 @@ export class RuleForWebQueryService {
             });
         }
         return result;
-    }
-
-    /**
-     * 可视化-预览规则
-     * @param {string} testUrl 
-     * @param {object} rule 
-     */
-    async visualizeRule(testUrl, rule) {
-        return this.#taskSchedulerService.submitBotRuleVis(testUrl, rule)
     }
 }

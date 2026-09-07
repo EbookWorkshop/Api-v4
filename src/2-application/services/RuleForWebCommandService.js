@@ -18,17 +18,19 @@ export class RuleForWebCommandService {
     #transaction;
     /** @type {IFileScanner} */
     #fileScanner;
+    #taskSchedulerService;
 
     /**
      * @param {RuleForWebRepository} ruleForWebRepository 
      * @param {IFileScanner} fileScanner 
      */
-    constructor(ruleForWebRepository, reviewDictionaryService, systemConfigService, transaction, fileScanner) {
+    constructor(ruleForWebRepository, reviewDictionaryService, systemConfigService, transaction, fileScanner, taskSchedulerService) {
         this.#ruleForWebRepository = ruleForWebRepository;
         this.#reviewDictionaryService = reviewDictionaryService;
         this.#sysConfig = systemConfigService;
         this.#transaction = transaction;
         this.#fileScanner = fileScanner;
+        this.#taskSchedulerService = taskSchedulerService;
     }
 
     async importRulesFromFile(file) {
@@ -111,4 +113,12 @@ export class RuleForWebCommandService {
         return deleter.bind(this)(transaction);
     }
 
+    /**
+     * 可视化-预览规则
+     * @param {string} testUrl 
+     * @param {object} rule 
+     */
+    async visualizeRule(testUrl, rule) {
+        return this.#taskSchedulerService.submitBotRuleVis(testUrl, rule)
+    }
 }

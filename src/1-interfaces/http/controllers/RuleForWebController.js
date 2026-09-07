@@ -351,7 +351,7 @@ export class RuleForWebController {
      */
     async visualizeBotRule(ctx) {
         const { testUrl, rule } = VisRuleRequest.fromBody(ctx.request.body);
-        const result = await this.#ruleForWebQueryService.visualizeRule(testUrl, rule);
+        const result = await this.#ruleForWebCommandService.visualizeRule(testUrl, rule);
         ctx.body = result;
     }
 
