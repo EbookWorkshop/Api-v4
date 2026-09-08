@@ -8,15 +8,18 @@ import { BookQueryService } from "../services/BookQueryService.js";
 import { VolumeQueryService } from "../services/VolumeQueryService.js"
 import { ChapterQueryService } from "../services/ChapterQueryService.js";
 import { CoverService } from '../services/CoverService.js';
+import { TextCleanupService } from '../services/TextCleanupService.js';
 import { SystemConfigService } from "../services/SystemConfigService.js";
 
+import { MemoryCache } from '../../4-infrastructure/cache/MemoryCache.js';
 import { EventManager } from "../../4-infrastructure/event/EventManager.js";
 import { FileSystemWriter } from "../../4-infrastructure/server/adapters/FileSystemWriter.js";
 import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
 
 import { EmailService } from '../services/EmailService.js';
-import { NodemailerEmailSender } from "../../4-infrastructure/email/NodemailerEmailSender.js"
-import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js"
+import { NodemailerEmailSender } from "../../4-infrastructure/email/NodemailerEmailSender.js";
+import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js";
+
 
 /** 
  * 负责组装出导出器
@@ -26,7 +29,7 @@ import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js"
  * @returns {ITaskExecutor}
  */
 export async function createExportBookTask(config, taskType, { repositories }) {
-    const { ebookRepository, volumeRepository, chapterRepository } = repositories;
+    const { ebookRepository, volumeRepository, chapterRepository, reviewRuleRepository } = repositories;
     const bookServ = new BookQueryService(ebookRepository);
     const chapServ = new ChapterQueryService(chapterRepository);
     const volumeServ = new VolumeQueryService(volumeRepository);
@@ -36,6 +39,7 @@ export async function createExportBookTask(config, taskType, { repositories }) {
     const factory = new GeneratorFactory(tempFolder);
     const coverService = new CoverService(fileServ, null, config);
     const eventMgr = new EventManager(new EventEmitter());
+    const textCleanup = new TextCleanupService(reviewRuleRepository, new MemoryCache());
     const systemConfigService = new SystemConfigService(repositories.systemConfigRepository);
 
     //注册监听后处理事件
@@ -50,7 +54,7 @@ export async function createExportBookTask(config, taskType, { repositories }) {
         book: bookServ,
         volume: volumeServ,
         chapter: chapServ,
-    }, factory, fileServ, coverService, eventMgr, config);
+    }, factory, fileServ, coverService, textCleanup, eventMgr, config);
     return new BookExportExecutor(bookExpServ);
 }
 export default createExportBookTask;

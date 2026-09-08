@@ -28,6 +28,7 @@ import { FileSystemWriter } from '../../4-infrastructure/server/adapters/FileSys
 
 import { ReviewRuleQueryService } from './ReviewRuleQueryService.js';
 import { ReviewRuleCommandService } from './ReviewRuleCommandService.js';
+import { TextCleanupService } from "./TextCleanupService.js"
 
 import { RuleForWebQueryService } from './RuleForWebQueryService.js';
 import { RuleForWebCommandService } from './RuleForWebCommandService.js';
@@ -39,6 +40,8 @@ import { AssetsService } from './AssetsService.js';
 
 import { TaskSchedulerService } from "./TaskSchedulerService.js";
 import { ServiceQueryService } from './ServiceQueryService.js';
+
+import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js"
 
 /**
  * 服务层 组装所有 Service
@@ -67,6 +70,9 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         config.font.path,        //字体目录路径
         '/font'
     );
+    const memoryCache = new MemoryCache();
+    const textCleanup = new TextCleanupService(repositories.reviewRuleRepository, memoryCache);
+
     const task = new TaskSchedulerService(workerPool);
     const reviewBookService = new BookReviewService(
         repositories.chapterRepository,
@@ -90,7 +96,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         volumeQuery: new VolumeQueryService(volumeRepository),
         volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),
 
-        chapterQuery: new ChapterQueryService(chapterRepository),
+        chapterQuery: new ChapterQueryService(chapterRepository, textCleanup),
         chapterCommand: new ChapterCommandService(chapterRepository, databaseTransaction),
 
         tagQuery: new TagQueryService(tagRepository),
@@ -113,5 +119,6 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),
         task,
         workerPool,
+
     };
 }

@@ -31,7 +31,7 @@ export class ExportOrchestrator {
             return;
         }
 
-        const jobDone = [`已生成图书《${bookName}》`];
+        const jobDone = [`已生成图书《${bookName}》 `];
 
         // 1. 根据配置决定是否发邮件
         if (setting.sendByEmail) {
@@ -52,11 +52,11 @@ export class ExportOrchestrator {
             filePath: filepath,
             delay: 60_000 // 1分钟后清理
         });
-        jobDone.push("将进行临时文件清理。");
+        jobDone.push("将进行临时文件清理");
 
-        if (genRsl.warnings.length > 0) jobDone.push("以下为生成警告：", ...genRsl.warnings);
+        if (genRsl.warnings.length > 0) jobDone.push("\n以下为生成警告：", ...genRsl.warnings);
 
-        this.#eventMgr.messageToClient(new Message(jobDone.join("；\n"), "notice", {
+        this.#eventMgr.messageToClient(new Message(jobDone.join("…\n"), "notice", {
             title: `生成《${bookName}》成功`, avatar: "success", subTitle: format
         }));
     }

@@ -4,7 +4,7 @@
 export class ReviewString {
     /**
      * 应用单个规则到文本
-     * @param {Object} rule - { Rule: string, Replace: string }
+     * @param {Object} rule - { Rule: string|RegExp, Replace: string }
      * @param {string} text
      * @returns {string}
      */
@@ -16,7 +16,7 @@ export class ReviewString {
             rTarget = rTarget.replace(/\\n/g, '\n');
         }
         try {
-            const regex = new RegExp(rule.Rule, 'gm');
+            const regex = (rule.Rule instanceof RegExp) ? rule.Rule : new RegExp(rule.Rule, 'gm');
             return text.replace(regex, rTarget);
         } catch {
             return text;

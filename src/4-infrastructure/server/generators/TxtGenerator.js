@@ -21,6 +21,7 @@ export class TxtGenerator extends IGenerator {
      */
     async generate(ebook, outputPath) {
         let writeStream = null;
+        let warnings = [];
         try {
             let { embedTitle, enableIndent } = ebook.setting;
             outputPath = outputPath || this.tempFolder;
@@ -49,7 +50,7 @@ export class TxtGenerator extends IGenerator {
             writeStream.end()
             await finished(writeStream);//写入流Promise化，等待写入完成
 
-            return { path: outputPath, filename: outputFile };
+            return { path: outputPath, filename: outputFile, warnings };
         } catch (error) {
             if (writeStream) writeStream.destroy();
             throw error;

@@ -1,4 +1,4 @@
-class MemoryCache {
+export class MemoryCache {
     #cache;
     #timers;
     #defaultTTL;

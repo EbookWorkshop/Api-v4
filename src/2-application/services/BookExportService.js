@@ -26,6 +26,7 @@ export class BookExportService {
 
     /** @type {GeneratorFactory} */
     #generatorFactory;
+    #textCleanup;
     /** @type {EventManager} */
     #eventManager;
     #config;
@@ -39,7 +40,7 @@ export class BookExportService {
      * @param {EventManager} eventMgr 
      * @param {Object} config 
      */
-    constructor(bookService, generatorFactory, fileWriter, coverService, eventMgr, config) {
+    constructor(bookService, generatorFactory, fileWriter, coverService, textCleanup, eventMgr, config) {
         const { book, volume, chapter } = bookService;
         this.#bookQueryService = bookService.book;
         this.#volumeQueryService = bookService.volume;
@@ -50,6 +51,7 @@ export class BookExportService {
         this.#generatorFactory = generatorFactory;
         this.#fileWriter = fileWriter;
         this.#coverService = coverService;
+        this.#textCleanup = textCleanup;
         this.#eventManager = eventMgr;
         this.#config = config;
         this.#resultWarning = new Array();
@@ -77,7 +79,7 @@ export class BookExportService {
      * @param {number} bookId 
      * @param {epub|pdf|txt} format 文件格式
      * @param {object} setting 
-     * @returns {{ path, filename,warning }} 导出结果
+     * @returns {{ path, filename,warnings }} 导出结果
      */
     async exportBook(bookId, format, setting) {
         let result = null;
@@ -87,7 +89,6 @@ export class BookExportService {
             const { volumeIds, chapterIds, embedBookName, coverImageData, ...rest } = setting;
             let showChapters = chapterIds || [];
 
-            //获取章节——TODO: 应用字典校阅功能
             if (volumeIds && volumeIds.length > 0) {
                 showChapters = await this.#chapterQueryService.listChaptersByVolumes(bookId, volumeIds);
             } else if (chapterIds && chapterIds.length > 0) {
@@ -126,6 +127,8 @@ export class BookExportService {
                 chapters: chapterAftTyp,
                 setting: rest,           //格式、排版、字体等设置
             });
+
+            await this.#cleanupText(bookId, exportData);
 
             // 通过工厂接口，运行时获取对应的生成器实例
             const generator = this.#generatorFactory.create(format);
@@ -188,5 +191,17 @@ export class BookExportService {
         }
 
         return resultChapt;
+    }
+
+    /**
+     * 
+     * @param {BookExportData} bookData 
+     */
+    async #cleanupText(bookId, bookData) {
+        if (bookData.introduction) bookData.introduction = await this.#textCleanup.cleanup(bookId, bookData.introduction);
+        for (const c of bookData.chapters) {
+            c.title = await this.#textCleanup.cleanup(bookId, c.title);
+            c.content = await this.#textCleanup.cleanup(bookId, c.content);
+        }
     }
 }

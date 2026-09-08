@@ -32,6 +32,19 @@ export class ReviewRuleRepository {
         });
     }
 
+    async findRulesByBookId(bookId) {
+        const rules = await this.#ReviewRuleModel.findAll({
+            attributes: ["Rule", "Replace"],
+            include: [{
+                model: this.#ReviewRuleUsingModel, as: "ReviewRuleUsings",
+                attributes: [], // 不返回中间表字段
+                where: { BookId: bookId }
+            }],
+            raw: true,
+        });
+        return rules || [];
+    }
+
     /**
      * 新增或创建一条规则（如需要关联书本，并同时关联）
      * @param {*} rule 
@@ -61,4 +74,6 @@ export class ReviewRuleRepository {
         });
         return rules;
     }
+
+
 }
