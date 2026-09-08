@@ -61,7 +61,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
             // await fs.writeFile(`/temp/html/${randomBytes(6).toString("hex")}.html`, await page.content());
             if (this.#keep) await page.close();
         } catch (err) {
-            console.warn("[执行失败]PuppeteerDataFetcher::fetch", err.message, `\t耗时：${(performance.now() - startTime) / 1000}秒`, url);
+            // console.warn("[执行失败]PuppeteerDataFetcher::fetch", err.message, `\t耗时：${(performance.now() - startTime) / 1000}秒`, url);
             throw err;
         } finally {
             if (!this.#keep && browser && !isVis) await browser.close(); //确保关掉以免因失败耗费内存

@@ -15,6 +15,7 @@ export const TASK_TYPES = {
     SYSTEM_VERSION: "SYSTEM_VERSION",
     BOTRULE_VIS: "BOTRULE_VIS",//预览规则
     COMPRESS_DATABASE: "COMPRESS_DATABASE",//压缩数据库
+    COMMAND: "COMMAND", //控制命令
 };
 
 /**
@@ -38,4 +39,6 @@ export const TASK_STATUS = {
     FULFILLED: "fulfilled",
     /** 已拒绝 */
     REJECTED: "rejected",
+    /** 已重试 */
+    RETRY: "retry",
 }

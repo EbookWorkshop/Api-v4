@@ -12,4 +12,6 @@ export class ITaskExecutor {
     async execute(taskType, payload) {
         throw new Error('Method not implemented');
     }
+
+    async close() { throw new Error('ITaskExecutor::close 尚未实现！这可能会产生内存泄漏。'); }
 }

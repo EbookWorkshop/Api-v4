@@ -60,4 +60,5 @@ export class WorkerQueue {
     get hasFeeWorker() { return this.#freeWorkers.size > 0; }
     get feeWokerNum() { return this.#freeWorkers.size; }
     get workerNum() { return this.#workers.size; }
+    get entries(){return this.#workers.entries()}
 }

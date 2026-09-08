@@ -110,8 +110,8 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
 
         assets: new AssetsService(fileScanner, fileWriter, config),
 
-        task,
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),
-        // bookExport: bookExportService,
+        task,
+        workerPool,
     };
 }

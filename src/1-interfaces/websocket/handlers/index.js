@@ -22,3 +22,12 @@ export async function registerAllGlobalBroadcasts(io, services, eventManager) {
     }
 }
 
+/*
+//注册 客户端 -> 服务器的事件
+export function registerSocketEvents(socket, services, eventManager) {
+}
+
+//注册 服务器 -> 客户端 的广播
+export function registerGlobalBroadcasts(io, services, eventManager) {
+}
+*/

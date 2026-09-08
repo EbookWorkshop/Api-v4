@@ -6,7 +6,7 @@ import { Worker } from 'node:worker_threads';
 import { AsyncResource } from 'node:async_hooks';
 
 import { AppError } from "../../../5-shared/errors/index.js"
-import { TASK_MESSAGE_TYPE, TASK_STATUS } from "../../../2-application/constants/Task.js"
+import { TASK_MESSAGE_TYPE, TASK_STATUS, TASK_TYPES } from "../../../2-application/constants/Task.js"
 import { WORKERPOOL_ADD_TASK } from "../../../2-application/constants/Event.js"
 import { Task } from "../tasks/Task.js";
 import { WorkerQueue } from "./WorkerQueue.js";
@@ -19,6 +19,7 @@ const kTaskCallback = Symbol('kTaskCallback');
 const kTaskData = Symbol('kTaskData');
 const kTaskStartTime = Symbol("kTaskStartTime");
 const kWorkerFreeStart = Symbol("kWorkerFreeStart");//开始闲置时间
+const kServicedTask = Symbol("kServicedTask");
 
 /**
  * 线程池
@@ -82,6 +83,8 @@ export class WorkerPool {
         this.#runningThreadCountByType = new Map();
         this.#taskHistory = new Array();
 
+        this.debug_workerHistory = new Array();
+
         this.#init();
     }
 
@@ -104,24 +107,28 @@ export class WorkerPool {
      * ### 运行任务
      * ### 回收闲置线程
      */
-    #scanPool() {
+    async #scanPool() {
         const fwNum = this.feeWorkerNum;
-        if (fwNum <= 0) return;//无闲置线程，直接退出
+        if (fwNum <= 0 && this.#maxThreadsNum <= this.workerCount) return;//无闲置线程，直接退出
 
         if (this.allTaskNum > 0 && this.#runTask()) return;     //有闲置线程、有排队任务、成功安排了一个任务 直接退出
 
+        const flyTask = this.#taskHistory.find(t => t.status == TASK_STATUS.EXECUTING);
+        if (flyTask && performance.now() - flyTask.startTime > this.#poolConfig.idle * 3) {
+            console.debug("发现跑飞的任务：", JSON.stringify(flyTask));
+            this.restartTask(flyTask.taskId);
+        }
+
         if (fwNum <= this.#poolConfig.min) return;              //达到线程池最低驻留数
 
-        //比较最大空闲时，并清理超出线程
-        [this.#workerQueueNoDB, this.#workerQueueWithDB].forEach((wq) => {
-            const oldestAge = performance.now() - wq.getFeeWorkerParam(kWorkerFreeStart);
+        //比较每个空闲时，并清理超出线程
+        for (const [key, worker] of this.#allWorker) {
+            const oldestAge = performance.now() - worker[kWorkerFreeStart];
             if (oldestAge >= this.#poolConfig.idle) {
-                const old = wq.getFeeWorker();
-                if (!old) return;
-                // console.log("将回收线程：", old.workerId)
-                this.#closeWorker(old);
+                await this.#closeWorker(worker);  //
+                break;//每次只退出一个，梯度退场
             }
-        });
+        };
     }
 
     /**
@@ -140,8 +147,11 @@ export class WorkerPool {
                     config: this.#config,
                 }
             });
+            this.debug_workerHistory?.push(worker);
             worker.withDB = useDB;
             worker.workerId = workerId;
+            worker[kServicedTask] = [];
+            // console.debug("创建线程\t", worker.threadId, workerId);
 
             if (useDB) this.#workerQueueWithDB.add(worker);
             else this.#workerQueueNoDB.add(worker);
@@ -174,18 +184,22 @@ export class WorkerPool {
     async #messageHandler(message, worker) {
         const { type, error, data, taskId, workerId } = message;
         if (type === TASK_MESSAGE_TYPE.TASK_EVENT_ENVELOPE) return this.#remoteBroadcastEvent(message, worker);
-        // console.log(worker.workerId, type, error, data, taskId)
-        const callback = this.#workerData.get(worker)[kTaskCallback];
-        //线程完成后-执行回调
-        if (callback && typeof (callback) === "function") {
-            const aRunner = new AsyncResource(type);
-            try {
-                await aRunner.runInAsyncScope(callback, null, { data, error })
-            } catch (newerr) {
-                console.log("线程的回调执行出错：", newerr);
-                throw newerr;
-            } finally {
-                aRunner.emitDestroy();
+        if (!this.#workerData.has(worker)) {
+            console.warn("注意：线程数据已提前释放，但当前线程仍然活跃，需要确认调度逻辑。");
+            console.debug(worker, message, taskId, workerId, type);
+        } else {
+            const callback = this.#workerData.get(worker)[kTaskCallback];
+            //线程完成后-执行回调
+            if (callback && typeof (callback) === "function") {
+                const aRunner = new AsyncResource(type);
+                try {
+                    await aRunner.runInAsyncScope(callback, null, { data, error })
+                } catch (newerr) {
+                    console.log("线程的回调执行出错：", newerr);
+                    throw newerr;
+                } finally {
+                    aRunner.emitDestroy();
+                }
             }
         }
         //线程资源释放
@@ -214,7 +228,7 @@ export class WorkerPool {
         } catch (error) {
 
         } finally {
-            this.#closeWorker(worker);
+            await this.#closeWorker(worker);
         }
     }
 
@@ -230,18 +244,18 @@ export class WorkerPool {
         }
         if (worker) return worker;
 
-        if (useDB && this.#workerQueueNoDB.hasFeeWorker) {        //无数据库线程足够，但当前需要数据库，尝试回收一个然后重新创建
-            const tempWorker = this.#workerQueueNoDB.getFeeWorker();
-            this.#workerQueueNoDB.remove(tempWorker);
-            this.#addNewWorker(useDB);
-
-            worker = this.#workerQueueWithDB.getFeeWorker();
-        }
-
         if (this.workerCount < this.#maxThreadsNum) {
             worker = this.#addNewWorker(useDB);
             this.#workersQueue(useDB).use(worker);
         }
+
+        // if (useDB && this.#workerQueueNoDB.hasFeeWorker) {        //无数据库线程足够，但当前需要数据库，尝试回收一个然后重新创建
+        //     const tempWorker = this.#workerQueueNoDB.getFeeWorker();
+        //     await this.#workerQueueNoDB.#closeWorker(tempWorker);
+        //     this.#addNewWorker(useDB);
+
+        //     worker = this.#workerQueueWithDB.getFeeWorker();
+        // }
 
         return worker;
     }
@@ -252,9 +266,15 @@ export class WorkerPool {
      */
     async #closeWorker(worker) {
         if (!worker) return;
-        this.#workersQueue(worker.withDB).remove(worker);
-        await worker.removeAllListeners();
-        await worker.terminate();
+        this.#workersQueue(worker.withDB).use(worker);
+
+        // await worker.removeAllListeners();
+        // await worker.terminate();
+        worker.postMessage(new Task({ taskType: TASK_TYPES.COMMAND, param: { cmd: "shutdown" }, }));
+        worker.once("exit", async (eCode) => {
+            this.#workersQueue(worker.withDB).remove(worker);
+            await worker.removeAllListeners();
+        });
     }
 
     /**
@@ -286,6 +306,9 @@ export class WorkerPool {
             this.#runningThreadCountByType.set(curTask.taskType, runningTask + 1);
             let { callback, ...taskData } = curTask;//解构出callback，结构化克隆不支持函数。不能发送到线程
             curTask.status = TASK_STATUS.EXECUTING;
+            curTask.workerId = worker.workerId;
+            curTask.startTime = performance.now();
+            worker[kServicedTask].push(curTask.taskId);
             this.#workerData.set(worker, {
                 taskId: curTask.taskId,
                 [kTaskCallback]: callback,
@@ -328,8 +351,8 @@ export class WorkerPool {
 
         if (this.workerDebug) {
             console.log(`线程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。\n`, task.param, data, error);
+            if (resule === TASK_STATUS.REJECTED) console.warn("【线程执行失败】，原因：", error || data);
         }
-        if (resule === TASK_STATUS.REJECTED) console.warn("【线程执行失败】，原因：", error || data);
     }
 
     /**
@@ -361,9 +384,11 @@ export class WorkerPool {
      * @param {UUID} tid 
      */
     restartTask(tid) {
-        const { taskId, ...taskData } = this.#taskHistory.find(t => t.taskId === tid);
-        if (!taskId) return;
-        this.addTask(new Task(...taskData));
+        const oldTask = this.#taskHistory.find(t => t.taskId === tid);
+        if (!oldTask) return;
+        if (oldTask.status === TASK_STATUS.EXECUTING) oldTask.status = TASK_STATUS.RETRY;
+        const { taskId, ...taskData } = oldTask
+        this.addTask(new Task(taskData));
     }
 
     /**
@@ -375,14 +400,54 @@ export class WorkerPool {
         while (this.workerCount < this.#maxThreadsNum && --maxTry) this.#runTask();
     }
 
+    getInfo() {
+        const { interval, ...pool } = this.#poolConfig;
+        return {
+            pool: {
+                max: this.#maxThreadsNum,
+                ...pool
+            },
+            taskList: this.#taskHistory.map(t => { if (!t.useMS && t.startTime) t.useMS = performance.now() - t.startTime; return t; }),
+            worker: this.allWorkerInfo,
+            feeWorkerNum: this.feeWorkerNum,
+        };
+    }
+
+    get allWorkerInfo() {
+        const result = [];
+        for (const [key, worker] of this.#allWorker) {
+            const data = this.#workerData.get(worker);
+            if (data)
+                result.push({
+                    taskId: data.taskId,
+                    withDB: worker.withDB,
+                    workerId: worker.workerId,
+                    runTime: performance.now() - data[kTaskStartTime],
+                    task: data[kTaskData],
+                });
+            else
+                result.push({
+                    withDB: worker.withDB,
+                    workerId: worker.workerId,
+                    feeTime: performance.now() - worker[kWorkerFreeStart],
+                    history: worker[kServicedTask],
+                })
+        }
+        return result;
+    }
     get allTaskNum() {
         let allTaskNum = 0;
         for (let k of this.#waitingTask.keys()) allTaskNum += this.#waitingTask.get(k).length;
         return allTaskNum;
     }
+    get #allWorker() { return combineIterators(this.#workerQueueNoDB.entries, this.#workerQueueWithDB.entries); }
     get feeWorkerNum() { return this.#workerQueueWithDB.feeWokerNum + this.#workerQueueNoDB.feeWokerNum }
     get hasFeeWorker() { return this.#workerQueueWithDB.hasFeeWorker || this.#workerQueueNoDB.hasFeeWorker }
     get workerCount() { return this.#workerQueueNoDB.workerNum + this.#workerQueueWithDB.workerNum; }
     get workerDebug() { return this.#config?.debug?.mode && this.#config?.debug?.switch?.worker; }
     #workersQueue = (useDB) => useDB ? this.#workerQueueWithDB : this.#workerQueueNoDB;
+}
+
+function* combineIterators(...iterators) {
+    for (const iterator of iterators) yield* iterator;
 }

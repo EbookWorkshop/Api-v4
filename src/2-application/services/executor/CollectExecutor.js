@@ -1,11 +1,12 @@
 import { EventEmitter } from "node:events"
 import { ITaskExecutor } from '../../ports/ITaskExecutor.js';
 import { TASK_TYPES } from '../../constants/Task.js';
+import { COLLECT_EVENTS } from "../../constants/Event.js";
 import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
 import { WebBookCollector, ChapterCollector, FileCollector, ICollector } from "../collectors/index.js";
 import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine, IDataFetcher } from "../../../4-infrastructure/fetchers/index.js";
-import { EventManager, COLLECT_EVENTS } from "../../../4-infrastructure/event/EventManager.js"
+import { EventManager } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
 
 import { ChapterQueryService } from "../ChapterQueryService.js";
@@ -28,6 +29,7 @@ export class CollectExecutor extends ITaskExecutor {
     #chapService;
     #eventManager;
     #fileWriter;
+    #_fetcher;
     constructor(config, ruleService, resources, chapService) {
         super();
         this.#config = config;
@@ -38,12 +40,12 @@ export class CollectExecutor extends ITaskExecutor {
 
         this.#eventManager = new EventManager(new EventEmitter());
         this.#fileWriter = new FileSystemWriter(this.#config.repository.path);
+        this.#_fetcher = IDataFetcher;
     }
 
     async execute(taskType, payload) {
         const ruleEngine = new RuleEngine({ debug: false });
         let msgEvent = null;
-        let fetcher = IDataFetcher;
         try {
             let pageURL = await this.#getPageURL(taskType, payload);
             let Collector = ICollector;
@@ -99,11 +101,11 @@ export class CollectExecutor extends ITaskExecutor {
             const rules = await this.#ruleService.getRulesWithGroup(pageURL, ruleGroup);
             const scraper = rules.find(({ ruleName }) => ruleName === RuleCommon.Scraping);
             switch (scraper.selector) {
-                case "http": fetcher = new AxiosDataFetcher(this.#config, ruleEngine, true); break;
+                case "http": this.#_fetcher = new AxiosDataFetcher(this.#config, ruleEngine, true); break;
                 case "puppeteer":
-                default: fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine, true); break;
+                default: this.#_fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine, true); break;
             }
-            const collector = new Collector(this.#config, rules, fetcher, services);
+            const collector = new Collector(this.#config, rules, this.#_fetcher, services);
 
             const setting = this.#rangeSetting(rules, payload);
             return await collector.fetch(setting, payload);
@@ -118,8 +120,12 @@ export class CollectExecutor extends ITaskExecutor {
             });
             throw error;
         } finally {
-            await fetcher?.close?.();
+            await this.#_fetcher?.close?.();
         }
+    }
+
+    async close() {
+        await this.#_fetcher?.close?.();
     }
 
     /**
