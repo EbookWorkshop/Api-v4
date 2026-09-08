@@ -27,5 +27,6 @@ export class CompressDatabaseExecutor extends ITaskExecutor {
             throw error;
         }
     }
+    async close() { }
 }
 export default CompressDatabaseExecutor;

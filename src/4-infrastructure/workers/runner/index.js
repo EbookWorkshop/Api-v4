@@ -59,7 +59,6 @@ async function runTask(task, config, resources) {
         const taskExe = await assignTasks(taskType, config, resources);
         if (!taskExe) throw new AppError(`任务类型【${taskType}】未分配到执行器！`);
         result = await taskExe.execute(taskType, param);
-        await taskExe.close();
 
         parentPort.postMessage({
             type: TMT.TASK_COMPLETED,
@@ -67,6 +66,7 @@ async function runTask(task, config, resources) {
             workerId,
             data: result,
         });
+        await taskExe.close();
     } catch (error) {
         throwError(error, taskId, param);
     } finally {
@@ -91,9 +91,7 @@ function throwError(error, taskId, data) {
 }
 
 async function closeMe() {
-    if (isrunning) console.warn("警告：正在尝试关闭一个正在执行任务中的线程！");
-    console.assert(!isrunning);
-    console.log('🛑 [exit]子线程在关闭...');
+    console.assert(!isrunning, "警告：正在尝试关闭一个正在执行任务中的线程！");
     await beforeClose?.();
     process.exit(0);
 }

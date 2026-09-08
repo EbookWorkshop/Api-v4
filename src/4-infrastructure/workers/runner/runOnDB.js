@@ -14,7 +14,7 @@ async function CreateRepo() {
     return { repositories, transactionManager };
 }
 async function close() {
-    console.log(`线程【${workerId}】关闭，已在线${performance.now() / 60_000}分。`)
+    console.log(`🛑\t\t线程【${workerId}】关闭，已在线${performance.now() / 60_000}分。`)
     if (sequelize) {
         await sequelize.close();
         // console.log(`[Worker ${workerId}] Database connection closed.`);

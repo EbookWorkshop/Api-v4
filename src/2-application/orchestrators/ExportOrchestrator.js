@@ -54,8 +54,12 @@ export class ExportOrchestrator {
         });
         jobDone.push("将进行临时文件清理。");
 
+        if (genRsl.warnings.length > 0) jobDone.push("以下为生成警告：", ...genRsl.warnings);
+
         this.#eventMgr.messageToClient(new Message(jobDone.join("；\n"), "notice", {
             title: `生成《${bookName}》成功`, avatar: "success", subTitle: format
         }));
     }
+
+    async close() { }
 }

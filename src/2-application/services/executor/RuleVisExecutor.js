@@ -37,5 +37,6 @@ export class RuleVisExecutor extends ITaskExecutor {
             throw error;
         }
     }
+    async close() {  }
 }
 export default RuleVisExecutor;

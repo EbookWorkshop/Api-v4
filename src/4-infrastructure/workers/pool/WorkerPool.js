@@ -122,7 +122,7 @@ export class WorkerPool {
         if (fwNum <= this.#poolConfig.min) return;              //达到线程池最低驻留数
 
         //比较每个空闲时，并清理超出线程
-        for (const [key, worker] of this.#allWorker) {
+        for (const [key, worker] of this.#allFeeWorker) {
             const oldestAge = performance.now() - worker[kWorkerFreeStart];
             if (oldestAge >= this.#poolConfig.idle) {
                 await this.#closeWorker(worker);  //
@@ -151,6 +151,7 @@ export class WorkerPool {
             worker.withDB = useDB;
             worker.workerId = workerId;
             worker[kServicedTask] = [];
+            worker[kWorkerFreeStart] = performance.now();
             // console.debug("创建线程\t", worker.threadId, workerId);
 
             if (useDB) this.#workerQueueWithDB.add(worker);
@@ -224,9 +225,10 @@ export class WorkerPool {
     async #errorHandler(error, worker) {
         try {
             console.warn("线程执行出错：", error);
+            console.log(error.stack);
             this.#freeAWorker(worker, TASK_STATUS.REJECTED, { error });//释放线程计数
         } catch (error) {
-
+            console.warn("新错误：", error)
         } finally {
             await this.#closeWorker(worker);
         }
@@ -440,6 +442,7 @@ export class WorkerPool {
         for (let k of this.#waitingTask.keys()) allTaskNum += this.#waitingTask.get(k).length;
         return allTaskNum;
     }
+    get #allFeeWorker() { return combineIterators(this.#workerQueueNoDB.feeEntries, this.#workerQueueWithDB.feeEntries); }
     get #allWorker() { return combineIterators(this.#workerQueueNoDB.entries, this.#workerQueueWithDB.entries); }
     get feeWorkerNum() { return this.#workerQueueWithDB.feeWokerNum + this.#workerQueueNoDB.feeWokerNum }
     get hasFeeWorker() { return this.#workerQueueWithDB.hasFeeWorker || this.#workerQueueNoDB.hasFeeWorker }

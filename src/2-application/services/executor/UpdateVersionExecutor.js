@@ -27,5 +27,6 @@ export class UpdateVersionExecutor extends ITaskExecutor {
             throw error;
         }
     }
+    async close() { }
 }
 export default UpdateVersionExecutor;

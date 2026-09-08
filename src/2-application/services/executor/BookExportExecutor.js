@@ -31,5 +31,8 @@ export class BookExportExecutor extends ITaskExecutor {
             throw error;
         }
     }
+
+    async close() { }
+
 }
 export default BookExportExecutor;

@@ -1,6 +1,6 @@
 import { initWorker } from "./index.js"
 function close() {
-    console.log(`线程【${workerId}】关闭，已在线${performance.now() / 60000}分。`)
+    console.log(`🛑\t\t线程【${workerId}】关闭，已在线${performance.now() / 60000}分。`)
 }
 
 
