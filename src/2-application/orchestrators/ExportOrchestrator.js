@@ -21,8 +21,6 @@ export class ExportOrchestrator {
      */
     async #onFileGenerated(event) {
         const { bookId, bookName, format, setting, result: genRsl, error } = event.payload;
-        const { filename, path: filepath, result, warnings } = genRsl;
-        const files = [{ filename: filename, originalFilename: `${bookName}.${format}`, filepath }];
 
         if (error) {            //生成失败了
             this.#eventMgr.messageToClient(new Message("生成书籍任务失败，原因：" + error.message, "notice", {
@@ -30,7 +28,8 @@ export class ExportOrchestrator {
             }));
             return;
         }
-
+        const { filename, path: filepath, result, warnings } = genRsl;
+        const files = [{ filename: filename, originalFilename: `${bookName}.${format}`, filepath }];
         const jobDone = [`已生成图书《${bookName}》 `];
 
         // 1. 根据配置决定是否发邮件
@@ -59,6 +58,7 @@ export class ExportOrchestrator {
         this.#eventMgr.messageToClient(new Message(jobDone.join("…\n"), "notice", {
             title: `生成《${bookName}》成功`, avatar: "success", subTitle: format
         }));
+
     }
 
     async close() { }

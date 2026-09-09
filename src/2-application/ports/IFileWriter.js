@@ -16,6 +16,13 @@ export class IFileWriter {
     async saveFile(path, data, format = "") { throw new Error('接口方法尚未实现'); }
 
     /**
+     * 移动文件——地址基于仓库为基础
+     * @param {string} oldPath 源地址
+     * @param {string} newPath 新地址
+     */
+    async moveFile(oldPath, newPath) { throw new Error('接口方法尚未实现'); }
+
+    /**
      * 转换为PNG格式
      * @param {string} filePath 
      * @returns {string} newFilePath

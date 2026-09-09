@@ -113,6 +113,7 @@ export class BookExportService {
             if (format != "txt") {
                 const cvRsl = await this.#coverService.prepareCoverForExport(book.CoverImg, embedBookName, coverImageData);
                 coverPath = cvRsl.path;
+                if (cvRsl.warnings?.length) this.#resultWarning.push(...cvRsl.warnings);
                 if (cvRsl.temp) this.#eventManager.emit(EXPORT_EVENTS.TEMP_CLEANUP, {
                     filePath: coverPath,
                     delay: 600_000 // 10分钟后清理

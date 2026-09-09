@@ -42,11 +42,15 @@ export async function createExportBookTask(config, taskType, { repositories }) {
     const textCleanup = new TextCleanupService(reviewRuleRepository, new MemoryCache());
     const systemConfigService = new SystemConfigService(repositories.systemConfigRepository);
 
+
     //注册监听后处理事件
-    eventMgr.on(EXPORT_EVENTS.TEMP_CLEANUP, (param) => {
+    eventMgr.on(EXPORT_EVENTS.INVENTORY_ARCHIVE, async ({ files }) => {   //转存
+        for (const ff of files) await fileServ.moveFile(ff.filepath, [config.archive.path, ff.originalFilename]);
+    });
+    eventMgr.on(EXPORT_EVENTS.TEMP_CLEANUP, (param) => {    //清理文件
         const { filePath, delay } = param;
-        if (filePath) setTimeout(() => { fileServ.deleteFile(filePath); }, delay || 0);
-    })
+        if (filePath) setTimeout(async () => { try { await fileServ.deleteFile(filePath); } catch (e) { } }, delay || 0);
+    });
     new EmailService(new NodemailerEmailSender(), systemConfigService, null, eventMgr);//注册邮件发送事件
     new ExportOrchestrator(eventMgr, config);//注册文件生成完成事件
 

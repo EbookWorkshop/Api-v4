@@ -189,13 +189,13 @@ export async function writeOnStream(stream, chunk) {
 
 export async function deleteFile(filePath, basePath) {
     const full = path.join(basePath, filePath);
-    await fs.unlink(full);
+    return fs.unlink(full);
 }
 
 export async function renameFile(oldPath, newPath, basePath) {
     const fullOld = path.join(basePath, oldPath);
     const fullNew = path.join(basePath, newPath);
-    await fs.rename(fullOld, fullNew);
+    return fs.rename(fullOld, fullNew);
 }
 
 export async function readFileData(file, { encoding, format } = {}) {

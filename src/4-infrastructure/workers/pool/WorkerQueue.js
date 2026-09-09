@@ -51,6 +51,7 @@ export class WorkerQueue {
 
     free(worker) { this.#freeWorkers.add(worker); }
     use(worker) { this.#freeWorkers.delete(worker); }
+    isFree(worker) { return this.#freeWorkers.has(worker); }
 
 
     /**
@@ -60,6 +61,6 @@ export class WorkerQueue {
     get hasFeeWorker() { return this.#freeWorkers.size > 0; }
     get feeWokerNum() { return this.#freeWorkers.size; }
     get workerNum() { return this.#workers.size; }
-    get entries(){return this.#workers.entries()}
-    get feeEntries(){return this.#freeWorkers.entries()}
+    get entries() { return this.#workers.entries() }
+    get feeEntries() { return this.#freeWorkers.entries() }
 }

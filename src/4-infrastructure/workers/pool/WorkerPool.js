@@ -20,6 +20,7 @@ const kTaskData = Symbol('kTaskData');
 const kTaskStartTime = Symbol("kTaskStartTime");
 const kWorkerFreeStart = Symbol("kWorkerFreeStart");//开始闲置时间
 const kServicedTask = Symbol("kServicedTask");
+const kIsDead = Symbol("kIsDead")
 
 /**
  * 线程池
@@ -152,6 +153,7 @@ export class WorkerPool {
             worker.workerId = workerId;
             worker[kServicedTask] = [];
             worker[kWorkerFreeStart] = performance.now();
+            worker[kIsDead] = false;
             // console.debug("创建线程\t", worker.threadId, workerId);
 
             if (useDB) this.#workerQueueWithDB.add(worker);
@@ -159,6 +161,7 @@ export class WorkerPool {
 
             worker.on("message", (message) => this.#messageHandler(message, worker));
             worker.on("error", (error) => this.#errorHandler(error, worker));
+            worker.on("exit", (eCode) => this.#closedWorker(eCode, worker));
 
             return worker;
         } catch (error) {
@@ -230,7 +233,9 @@ export class WorkerPool {
         } catch (error) {
             console.warn("新错误：", error)
         } finally {
-            await this.#closeWorker(worker);
+            // //NOTE: 注意，线程上的程序通过定时器，存在多次触发错误消息的可能。
+            // 如果源任务结果已经提交，线程已被安排新任务，这时的线程关闭会导致正在进行的任务丢失。
+            // await this.#closeWorker(worker);     
         }
     }
 
@@ -273,10 +278,13 @@ export class WorkerPool {
         // await worker.removeAllListeners();
         // await worker.terminate();
         worker.postMessage(new Task({ taskType: TASK_TYPES.COMMAND, param: { cmd: "shutdown" }, }));
-        worker.once("exit", async (eCode) => {
-            this.#workersQueue(worker.withDB).remove(worker);
-            await worker.removeAllListeners();
-        });
+    }
+
+    async #closedWorker(exitCode, worker) {
+        worker[kIsDead] = true;
+        this.#workersQueue(worker.withDB).remove(worker);
+        await worker.removeAllListeners();
+        await worker.terminate();
     }
 
     /**
@@ -336,8 +344,9 @@ export class WorkerPool {
      * @param {Worker} worker 
      * @param {TASK_STATUS} resule 
      */
-    #freeAWorker(worker, resule, { data, error }) {
+    async #freeAWorker(worker, resule, { data, error }) {
         const tData = this.#workerData.get(worker);
+        if (!tData && this.#workersQueue(worker.withDB).isFree(worker)) return;  //已经是闲置线程，出现了重复置闲。
         const task = tData[kTaskData];
         task.status = resule;
         task.useMS = performance.now() - tData[kTaskStartTime];
@@ -404,12 +413,18 @@ export class WorkerPool {
 
     getInfo() {
         const { interval, ...pool } = this.#poolConfig;
+        const taskList = this.#taskHistory.map(t => {
+            if (!t.useMS && t.startTime) t.useMS = performance.now() - t.startTime;
+            //格式化参数
+            if (t.param.coverImageData) t.param.coverImageData = t.param.coverImageData.substring(0, 13) + "..."
+            return t;
+        });
         return {
             pool: {
                 max: this.#maxThreadsNum,
                 ...pool
             },
-            taskList: this.#taskHistory.map(t => { if (!t.useMS && t.startTime) t.useMS = performance.now() - t.startTime; return t; }),
+            taskList,
             worker: this.allWorkerInfo,
             feeWorkerNum: this.feeWorkerNum,
         };

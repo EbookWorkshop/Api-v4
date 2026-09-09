@@ -35,7 +35,7 @@ export class FileSystemWriter extends IFileWriter {
     async converToPNG(filePath, tempDir) {
         try {
             const finfo = path.parse(filePath);
-            const tempFile = path.join(tempDir, finfo.name + ".png");
+            const tempFile = path.join(this.#repositoryPath, tempDir, finfo.name + ".png");
             await sharp(filePath).png().toFile(tempFile);
             return tempFile;
         } catch (error) {
@@ -62,10 +62,21 @@ export class FileSystemWriter extends IFileWriter {
     }
 
     async deleteFile(filePath) {
-        deleteFile(filePath, this.#repositoryPath);
+        return deleteFile(filePath, this.#repositoryPath);
     }
 
     async renameFile(oldPath, newPath) {
-        renameFile(oldPath, newPath, this.#repositoryPath)
+        return renameFile(oldPath, newPath, this.#repositoryPath)
     }
+    /**
+     * 移动文件——地址基于仓库为基础
+     * @param {string|string[]} oldPath 源地址
+     * @param {string|string[]} newPath 新地址
+     */
+    async moveFile(oldPath, newPath) {
+        if (Array.isArray(oldPath)) oldPath = path.join(...oldPath);
+        if (Array.isArray(newPath)) newPath = path.join(...newPath);
+        return renameFile(oldPath, newPath, this.#repositoryPath)
+    }
+
 }

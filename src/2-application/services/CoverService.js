@@ -76,6 +76,7 @@ export class CoverService {
      * @returns {{path:string,temp:boolean}} 可以使用的图片实际路径，是否临时文件（需要自己删除
      */
     async prepareCoverForExport(coverImg, embedBookName, coverImageData) {
+        const warnings = [];
         if (!coverImg) coverImg = "#线装本";
         const tempDir = this.#config?.tempDir?.path;
         let coverFilePath = "";
@@ -86,15 +87,20 @@ export class CoverService {
         else if (embedBookName) isUseImageData = true;  //采用嵌入标题格式的封面
         else coverFilePath = this.#fileWriter.mapPath(coverImg);      //直接使用图片文件
 
-        if (coverFilePath.endsWith(".webp") || coverFilePath.endsWith(".jpg")) coverFilePath = await this.#fileWriter.converToPNG(coverFilePath, tempDir);
-
         let temp = false;
+        if (coverFilePath.endsWith(".webp") || coverFilePath.endsWith(".jpg")) {
+            const newCover = await this.#fileWriter.converToPNG(coverFilePath, `${tempDir}/cover`);
+            if (!newCover) warnings.push(`封面图片格式转换失败：${coverFilePath}`);
+            coverFilePath = newCover;
+            temp = true;
+        }
+
         if (isUseImageData && coverImageData.length > 0) {
             coverFilePath = await this.#fileWriter.saveFile([tempDir, "cover", `cimg${randomBytes(3).toString('hex')}.png`], coverImageData, { format: "base64" });
             temp = true;
         }
         coverFilePath = path.join(this.#config.repository.path, coverFilePath);//相对仓库地址改为以仓库开始记录的地址
-        return { path: coverFilePath, temp };
+        return { path: coverFilePath, temp, warnings };
     }
 
     // 内部辅助方法...
