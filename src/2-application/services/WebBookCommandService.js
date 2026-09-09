@@ -46,11 +46,12 @@ export class WebBookCommandService {
                 WebBookName: bookDTO.BookName,
                 BookId: bookId
             }, { transaction });
-            await this.#webBookSourceURLRepository.add({
+            const source = await this.#webBookSourceURLRepository.add({
                 Path: setting.sourcePage,
                 WebBookId: webBook.id,
                 Type: "index"
             }, { transaction });
+            await this.#webBookRepository.update(book.id, { defaultIndex: source.id }, { transaction });//更新章节ID索引
             if (setting.infoPage)
                 await this.#webBookSourceURLRepository.add({
                     Path: setting.infoPage,

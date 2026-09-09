@@ -79,10 +79,11 @@ export class CoverService {
         const warnings = [];
         if (!coverImg) coverImg = "#线装本";
         const tempDir = this.#config?.tempDir?.path;
-        let coverFilePath = "";
         if (typeof (embedBookName) === "undefined" || embedBookName === null) embedBookName = coverImg?.includes(SHOW_BOOKNAME);
         coverImg = coverImg.replace(SHOW_BOOKNAME, "");
+        
         let isUseImageData = false;
+        let coverFilePath = "";
         if (coverImg.startsWith("#")) isUseImageData = true;//线装本格式，直接采用图片
         else if (embedBookName) isUseImageData = true;  //采用嵌入标题格式的封面
         else coverFilePath = this.#fileWriter.mapPath(coverImg);      //直接使用图片文件

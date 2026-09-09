@@ -59,4 +59,5 @@ export const COLLECT_EVENTS = {
     UPDATE_INDEX: "Update.Index",    //更新目录
     UPDATE_CHAPTER: "Update.Chapter",       //章节采集
     UPDATE_CHAPTER_START: "Update.Chapter.Start",       //章节采集-开始
+    FETCH_CHAPTER: "Fetch.Chapter",     //单章抓取-存储为文件入库
 }

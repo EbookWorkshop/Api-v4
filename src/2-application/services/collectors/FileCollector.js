@@ -60,7 +60,7 @@ export class FileCollector extends ICollector {
 
     #resultHandle(payload, result, message) {
         const { url } = payload;
-        this.#eventManager.emitToMain(COLLECT_EVENTS.UPDATE_CHAPTER, { url, result, message });
+        this.#eventManager.emitToMain(COLLECT_EVENTS.FETCH_CHAPTER, { url, result, message });
         return { ...payload, result, message };
     }
 }

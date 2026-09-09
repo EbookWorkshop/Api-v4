@@ -26,8 +26,9 @@ export class TextCleanupService {
         const value = this.#cache.get(ruleKey);
         if (value) return value;
         const rules = await this.#reviewRuleRepository.findRulesByBookId(bookId);
+        if (rules.length === 0) return [];//空结果不缓存
         const rR = rules.map(({ Rule, Replace }) => { return { Replace, Rule: new RegExp(Rule, 'gm'), } });
-        this.#cache.set(ruleKey, rR);
+        this.#cache.set(ruleKey, rR, 3 * 60_000);   //缓存3分钟，导出功能时会多章节频繁调用；但如果设置时间过长，会导致新增的规则要到超时之后才能生效。
         return rR;
     }
 }

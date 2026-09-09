@@ -54,11 +54,12 @@ export class WebBookRepository {
         return await this.#WebBookModel.create(data, { transaction });
     }
 
-    async update(bookId, data) {
+    async update(bookId, data, { transaction }) {
         return this.#WebBookModel.update({
             ...data
         }, {
-            where: { BookId: bookId }
+            where: { BookId: bookId },
+            transaction
         })
     }
 }

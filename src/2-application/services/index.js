@@ -90,7 +90,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         webBookQuery: webBookQueryService,
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
         webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction),
-        webBookSourceURL: new WebBookSourceURLService(repositories.webBookSourceURLRepository, repositories.webBookChapterURLRepository, databaseTransaction),
+        webBookSourceURL: new WebBookSourceURLService(repositories.webBookSourceURLRepository, repositories.webBookChapterURLRepository, repositories.webBookRepository, databaseTransaction),
         webBookChapterURL: new WebBookChapterURLService(repositories.webBookChapterURLRepository, webBookQueryService),
 
         volumeQuery: new VolumeQueryService(volumeRepository),

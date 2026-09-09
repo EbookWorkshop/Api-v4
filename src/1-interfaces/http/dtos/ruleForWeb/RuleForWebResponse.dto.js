@@ -190,7 +190,7 @@ export class HostRequest {
      */
     static newOldHostInBody(body) {
         const { oldHostname, newHostname } = body;
-        if (!oldHostname || !newHostname) throw UserInputError("源域名或新域名均不能为空！");
+        if (!oldHostname || !newHostname) throw new UserInputError("源域名或新域名均不能为空！");
         return { oldHostname, newHostname };
     }
 }

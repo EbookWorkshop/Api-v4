@@ -111,12 +111,14 @@ export class CollectExecutor extends ITaskExecutor {
             return await collector.fetch(setting, payload);
         } catch (error) {
             error.stack = `CollectExecutor::execute: ${import.meta.filename}\n${error.stack}`;
+            const _error = {
+                name: error.name || `失败任务：${taskType}`,
+                message: error.message || '',
+                stack: error.stack || '',
+            }
+            const message = "采集任务执行失败：" + _error.message;
             this.#eventManager.emitToMain(msgEvent, {
-                payload, message: "采集任务执行失败", error: {
-                    name: error.name || `失败任务：${taskType}`,
-                    message: error.message || '',
-                    stack: error.stack || '',
-                }
+                payload, message, error: _error, result: { ...payload, error: _error, message }      //NOTE: 这数据格式将会发送到所有种类的采集方式，注意格式的兼容性。
             });
             throw error;
         } finally {

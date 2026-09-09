@@ -6,8 +6,8 @@ import Router from '@koa/router';
  * @returns 
  */
 export function createWebBookSourceURLRoutes(webBookSourceURLController) {
-    const router = new Router({ prefix: '/' });
-
+    const router = new Router({ prefix: '/library/webbook' });
+    router.post('/addnewsource', (ctx) => webBookSourceURLController.addWebBookSource(ctx));
     return router;
 }
 

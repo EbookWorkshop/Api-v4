@@ -12,11 +12,16 @@ export class WebBookSourceURLRepository {
         this.#EbookModel = sequelize.models.Ebook;
     }
 
+    async findById(id) {
+        return this.#WebBookSourceURLModel.findByPk(id, { raw: true });
+    }
+
     async findByWebBookId(webBookId) {
         return this.#WebBookSourceURLModel.findAll({
             where: {
                 WebBookId: webBookId
             },
+            order: [["id", "ASC"]],
             raw: true
         })
     }

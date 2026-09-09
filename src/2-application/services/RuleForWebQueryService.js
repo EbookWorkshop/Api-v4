@@ -52,6 +52,10 @@ export class RuleForWebQueryService {
             ...(r.RemoveSelector ? { removeSelector: r.RemoveSelector.split(",") } : {}),
         }));
 
+        if (rules.length == 0) {
+            throw new AppError(`站点【${host}】未配置提取规则。`);
+        }
+
         // //超时设置
         let timeout = await this.#systemConfigService.getConfig(WEBSITE_TIMEOUT, host);
         if (timeout) {

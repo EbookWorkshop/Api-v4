@@ -5,14 +5,16 @@ export class WebBookSourceURLService {
     /** @type {WebBookSourceURLRepository} */
     #webBookSourceURLRepository;
     #webBookChapterURLRepository;
+    #WebBookRepository;
     #transaction;
 
     /**
      * @param {WebBookSourceURLRepository} webBookSourceURLRepository 
      */
-    constructor(webBookSourceURLRepository, webBookChapterURLRepository, transaction) {
+    constructor(webBookSourceURLRepository, webBookChapterURLRepository, WebBookRepository, transaction) {
         this.#webBookSourceURLRepository = webBookSourceURLRepository;
         this.#webBookChapterURLRepository = webBookChapterURLRepository;
+        this.#WebBookRepository = WebBookRepository;
         this.#transaction = transaction;
     }
 
@@ -29,6 +31,24 @@ export class WebBookSourceURLService {
                 BookId: w['WebBook.Ebook.id'],
                 BookName: w['WebBook.Ebook.BookName'],
             }));
+        });
+    }
+
+    async addSource(bookId, sourceURL, type = "index", setDefault = true) {
+        return this.#transaction.runInTransaction(async (transaction) => {
+            const myWebbook = await this.#WebBookRepository.findByBookId(bookId);
+
+            const result = await this.#webBookSourceURLRepository.add({
+                Path: sourceURL,
+                WebBookId: myWebbook.id,
+                Type: type,
+            }, { transaction });
+
+            if (setDefault) {
+                await this.#WebBookRepository.update(bookId, { defaultIndex: result.id }, { transaction });
+            }
+
+            return result;
         });
     }
 }
