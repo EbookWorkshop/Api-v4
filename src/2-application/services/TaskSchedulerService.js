@@ -108,7 +108,7 @@ export class TaskSchedulerService {
                 this.#workerPool.addTask(task);
                 taskIds.push(task.taskId);
             }
-            return { message: `已添加任务x${chapterIds.lenngth}`, taskid: taskIds }
+            return { message: `已添加任务x${chapterIds.length}`, taskid: taskIds }
         } catch (error) {
             throw new AppError("添加采集任务失败：" + error.message);
         }
