@@ -8,25 +8,27 @@ export class ChapterCollector extends ICollector {
     #indexService
     /** @type{ChapterCommandService} */
     #chapterCommandService;
-    #eventManager;
+    #emitter;
 
     constructor(config, rules, fetcher, services) {
         super();
         this.#rules = rules;
         this.#fetcher = fetcher;
         this.#chapterCommandService = services.chapCommaServices;
-        this.#eventManager = services.eventManager;
+        this.#emitter = services.emitter;
         this.#indexService = services.index;
     }
 
     async fetch(setting, payload) {
         const { bookId, chapterId, isUpdate } = payload;
-
         if (!isUpdate) {    //检查是否已覆盖更新
             const chapt = await this.#indexService.find(chapterId);
-            if(chapt.IsHasContent) return this.#resultHandle(payload, true, `章节 ${chapterId} 已有内容，跳过更新。`);
+            if (chapt.IsHasContent) return this.#resultHandle(payload, true, `章节 ${chapterId} 已有内容，跳过更新。`);
         }
-        this.#eventManager.emitToMain(COLLECT_EVENTS.UPDATE_CHAPTER_START, { chapterId, bookId });
+        this.#emitter.start(COLLECT_EVENTS.UPDATE_CHAPTER_START, {
+            ctx: { chapterId },
+            message: `开始更新章节 ${chapterId}`,
+        });
 
         const pageCtx = [];
         let urlPage = payload.url;
@@ -55,10 +57,22 @@ export class ChapterCollector extends ICollector {
         return this.#resultHandle(payload, true, "已完成章节采集");
     }
 
-    #resultHandle(payload, result, message) {
-        const error = !result ? { message } : null;
-        this.#eventManager.emitToMain(COLLECT_EVENTS.UPDATE_CHAPTER, { payload, result, message, error });
-        return { payload, result, message };
+    #resultHandle(payload, ok, message) {
+        const { chapterId } = payload;
+        const ctx = { chapterId };
+
+        if (ok) {
+            this.#emitter.success(COLLECT_EVENTS.UPDATE_CHAPTER, { ctx, message });
+        } else {
+            this.#emitter.failure(COLLECT_EVENTS.UPDATE_CHAPTER, {
+                ctx,
+                error: { message },
+                message,
+            });
+        }
+
+        // 保持对上游（Task 完成消息、Task.callback）的兼容返回
+        return { payload, result: ok, message };
     }
 }
 

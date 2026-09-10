@@ -12,7 +12,7 @@ export class WebBookCollector extends ICollector {
     /** @type {IDataFetcher} */
     #fetcher;
     #setting;
-    #eventManager;
+    #emitter;
     #webBookService;
     #webBookChapterService;
     #coverService;
@@ -21,7 +21,7 @@ export class WebBookCollector extends ICollector {
         super();
         this.#rules = rules;
         this.#fetcher = fetcher;
-        this.#eventManager = services.eventManager;
+        this.#emitter = services.emitter;
         this.#webBookService = services.webBookService;
         this.#webBookChapterService = services.webBookChapterService;
         this.#coverService = services.coverService;
@@ -47,12 +47,7 @@ export class WebBookCollector extends ICollector {
             else if (mode === "update")
                 result = await this.updateChapter(payload);
         } catch (error) {
-            const _error = {
-                // name: error.name || `失败任务：${taskType}`,
-                message: error.message || '',
-                stack: error.stack || '',
-            }
-            return this.#resultHandle(payload, { error: _error, ...payload }, `采集执行失败`);
+            return this.#failureHandle(payload, error, "采集执行失败");
         }
         return result;
     }
@@ -73,7 +68,7 @@ export class WebBookCollector extends ICollector {
         const infoResult = await this.#handleInfo(info, isEmbedBookName);
         if (!infoResult) {
             // console.log("书籍信息处理失败：", infoResult, info);
-            return this.#resultHandle(payload, false, `书籍信息采集失败(一般是目标网站返回超时页)：${urlPage}`);
+            return  this.#failureHandle(payload, { message: "获取书籍信息失败，可能是网页返回内容出错，也可能是配置采集规则不匹配！", name: "获取书籍信息失败！" }, `从地址采集数据失败：${urlPage}。`);
         }
 
         //采集/提取章节列表
@@ -81,7 +76,7 @@ export class WebBookCollector extends ICollector {
         RULE_INDEX.map(r => cpl.set(r, result.get(r)));
         if (infoPage) cpl = await this.#fetcher.fetch(sourcePage, this.#setting);
         const chapList = cpl.get(RuleName.ChapterList);
-        if (!chapList || chapList.length <= 0) return this.#resultHandle(payload, false, "章节列表采集失败，没有章节信息：" + sourcePage);
+        if (!chapList || chapList.length <= 0) return this.#failureHandle(payload, { message: "获取的章节列表为空！", name: "更新章节列表失败" }, `从地址采集数据失败：${sourcePage}。`);
 
         const chapterList = await this.#getChapterList(sourcePage, cpl);
 
@@ -92,8 +87,11 @@ export class WebBookCollector extends ICollector {
 
         //存储到数据库
         const bookId = await this.#save(bookResult, { isEmbedBookName, sourcePage, infoPage });
-
-        return this.#resultHandle(payload, { bookId, bookName: bookResult.BookName }, `已创建书籍《${bookResult.BookName}》`);
+        return this.#successHandle(
+            payload,
+            { bookId, bookName: bookResult.BookName },
+            `已创建书籍《${bookResult.BookName}》`
+        );
     }
 
     /**
@@ -104,9 +102,7 @@ export class WebBookCollector extends ICollector {
         const { sourcePage, infoPage, bookId, bookName } = option;
         //从页面获取的章节
         let chapterList = await this.#getChapterList(sourcePage);
-        if (chapterList.length === 0) {
-            return this.#resultHandle(option, { error: true, ...option }, `从地址采集数据失败：${sourcePage}。`);
-        }
+        if (chapterList.length === 0) return this.#failureHandle(payload, { message: "获取的章节列表为空！", name: "更新章节列表失败" }, `从地址采集数据失败：${sourcePage}。`);
         chapterList = deduplicateByMultKey(chapterList, ["text", "url"]);//同目录内自我去重
 
         //【新数据：chapterList】与【已在数据库的数据:hasChaptList】 进行差集计算
@@ -129,7 +125,11 @@ export class WebBookCollector extends ICollector {
 
         //去重后的结果
         if (chapterList.length > 0) await this.#saveBatchChapter(bookId, chapterList);
-        return this.#resultHandle(option, { ...option, addedCount: chapterList.length }, `已完成章节合并，新增章节：${chapterList.length}`);
+        return this.#successHandle(
+            option,
+            { addedCount: chapterList.length },
+            `已完成章节合并，新增章节：${chapterList.length}`
+        );
     }
 
     /**
@@ -275,11 +275,45 @@ export class WebBookCollector extends ICollector {
         return this.#webBookChapterService.batchCreate(bookId, chapterList);
     }
 
-    #resultHandle(payload, result, message) {
-        const eventType = payload.mode == "create" ? COLLECT_EVENTS.CREATE_BOOK : COLLECT_EVENTS.UPDATE_INDEX;
-        this.#eventManager.emitToMain(eventType, { result, message });
+    /**
+     * 统一计算事件类型：create 走 CREATE_BOOK，其它走 UPDATE_INDEX
+     */
+    #resolveEventType(payload) {
+        return payload.mode === "create"
+            ? COLLECT_EVENTS.CREATE_BOOK
+            : COLLECT_EVENTS.UPDATE_INDEX;
+    }
 
-        // if (!result) throw new AppError(`执行失败：${message}`);
-        return { ...payload, result, message };
+    /**
+     * 提取当前 payload 的业务上下文
+     */
+    #resolveCtx(payload) {
+        return {
+            bookId: payload.bookId,
+            bookName: payload.bookName,
+            sourcePage: payload.sourcePage,
+            infoPage: payload.infoPage,
+        };
+    }
+
+    #successHandle(payload, data, message) {
+        const eventType = this.#resolveEventType(payload);
+        const ctx = this.#resolveCtx(payload);
+        this.#emitter.success(eventType, { ctx, data, message });
+        // 保留对上游的兼容返回：result 中保留 data，接收端已无需从此处拆包
+        return { ...payload, result: data, message };
+    }
+
+    #failureHandle(payload, error, message) {
+        const eventType = this.#resolveEventType(payload);
+        const ctx = this.#resolveCtx(payload);
+        const normalized = {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        };
+        this.#emitter.failure(eventType, { ctx, error: normalized, message });
+        // 兼容返回：原代码此处的 result 里包含 error 字段供上游判错
+        return { ...payload, result: { error: normalized }, message };
     }
 }

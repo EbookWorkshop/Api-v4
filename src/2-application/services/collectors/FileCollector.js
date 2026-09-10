@@ -7,15 +7,15 @@ export class FileCollector extends ICollector {
     #config;
     #rules;//全套规则
     #fetcher;
-    #eventManager;
     /** @type {IFileWriter} */
     #fileWriter;
+    #emitter;
 
     constructor(config, rules, fetcher, services) {
         super();
         this.#rules = rules;
         this.#fetcher = fetcher;
-        this.#eventManager = services.eventManager;
+        this.#emitter = services.emitter;
         this.#fileWriter = services.fileWriter;
         this.#config = config;
     }
@@ -58,10 +58,24 @@ export class FileCollector extends ICollector {
         return this.#resultHandle({ ...payload, filePath, fileName }, true, `文件已存储到${filePath}`);
     }
 
-    #resultHandle(payload, result, message) {
-        const { url } = payload;
-        this.#eventManager.emitToMain(COLLECT_EVENTS.FETCH_CHAPTER, { url, result, message });
-        return { ...payload, result, message };
+    #resultHandle(payload, ok, message) {
+        const { url, filePath, fileName } = payload;
+
+        if (ok) {
+            this.#emitter.success(COLLECT_EVENTS.FETCH_CHAPTER, {
+                ctx: { url },
+                data: { filePath, fileName },          // 成功时携带产出物信息
+                message,
+            });
+        } else {
+            this.#emitter.failure(COLLECT_EVENTS.FETCH_CHAPTER, {
+                ctx: { url },
+                error: { message },
+                message,
+            });
+        }
+
+        return { ...payload, result: ok, message };
     }
 }
 

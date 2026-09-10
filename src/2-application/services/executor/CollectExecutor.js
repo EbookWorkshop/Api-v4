@@ -9,7 +9,7 @@ import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine, IDataFetcher } from
 import { EventManager } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
 
-import { ChapterQueryService } from "../ChapterQueryService.js";
+// import { ChapterQueryService } from "../ChapterQueryService.js";
 import { ChapterCommandService } from "../ChapterCommandService.js";
 
 import { WebBookQueryService } from "../WebBookQueryService.js";
@@ -19,6 +19,7 @@ import { WebBookChapterService } from "../WebBookChapterService.js"
 import { CoverService } from "../CoverService.js"
 
 import { FileSystemWriter } from "../../../4-infrastructure/server/adapters/FileSystemWriter.js"
+import { CollectEventEmitter } from "../../events/index.js"
 
 export class CollectExecutor extends ITaskExecutor {
     #config;
@@ -44,13 +45,22 @@ export class CollectExecutor extends ITaskExecutor {
     }
 
     async execute(taskType, payload) {
+        const emitter = new CollectEventEmitter(this.#eventManager, {
+            taskId: payload.taskId,
+            batchId: payload.batchId,
+            ctx: {
+                bookId: payload.bookId,
+                sourcePage: payload.sourcePage,
+                infoPage: payload.infoPage,
+            },
+        });
         const ruleEngine = new RuleEngine({ debug: false });
         let msgEvent = COLLECT_EVENTS.UNKNOW;
         try {
             let pageURL = await this.#getPageURL(taskType, payload);
             let Collector = ICollector;
             let ruleGroup = COLLECT_EVENTS.UNKNOW;
-            let services = { eventManager: this.#eventManager };
+            let services = { eventManager: this.#eventManager, emitter };
             switch (taskType) {
                 case TASK_TYPES.WEB_BOOK_COLLECT: {
                     Collector = WebBookCollector;
@@ -111,15 +121,8 @@ export class CollectExecutor extends ITaskExecutor {
             return await collector.fetch(setting, payload);
         } catch (error) {
             error.stack = `CollectExecutor::execute: ${import.meta.filename}\n${error.stack}`;
-            const _error = {
-                name: error.name || `失败任务：${taskType}`,
-                message: error.message || '',
-                stack: error.stack || '',
-            }
-            const message = "采集任务执行失败：" + _error.message;
-            this.#eventManager.emitToMain(msgEvent, {
-                payload, message, error: _error, result: { ...payload, error: _error, message }      //NOTE: 这数据格式将会发送到所有种类的采集方式，注意格式的兼容性。
-            });
+            const message = "采集任务执行失败：" + (error.message || '未知错误');
+            emitter.failure(msgEvent, { error, message, });
             throw error;
         } finally {
             await this.#_fetcher?.close?.();
