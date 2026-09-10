@@ -412,7 +412,7 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
     //单章采集-存库存
     eventManager.on(COLLECT_EVENTS.FETCH_CHAPTER, (payload) => {
         let { result, message, filePath, fileName } = payload;
-        if (error) return eventManager.messageToClient(new Message(message + `\n\n${filePath}`, "notice", {
+        return eventManager.messageToClient(new Message(message + `\n\n${filePath}`, "notice", {
             subTitle: fileName,
             title: `单章采集任务执行${result ? "成功" : "失败"}`,
             avatar: result ? "success" : "error",

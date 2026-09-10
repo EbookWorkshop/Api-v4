@@ -48,7 +48,7 @@ export class WebBookCollector extends ICollector {
                 result = await this.updateChapter(payload);
         } catch (error) {
             const _error = {
-                name: error.name || `失败任务：${taskType}`,
+                // name: error.name || `失败任务：${taskType}`,
                 message: error.message || '',
                 stack: error.stack || '',
             }
