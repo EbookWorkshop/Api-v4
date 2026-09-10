@@ -419,4 +419,12 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
         }));
 
     });
+
+    eventManager.on(COLLECT_EVENTS.UNKNOW, (payload) => {
+        console.warn("采集任务初始化失败！")
+        let { result, message, error, ...param } = payload;
+        console.log(message);
+        console.log(error);
+        console.log(param);
+    });
 }

@@ -5,7 +5,7 @@ import { COLLECT_EVENTS } from "../../constants/Event.js"
 export class ChapterCollector extends ICollector {
     #rules;
     #fetcher;
-    #chapterQueryService;
+    #indexService
     /** @type{ChapterCommandService} */
     #chapterCommandService;
     #eventManager;
@@ -14,17 +14,17 @@ export class ChapterCollector extends ICollector {
         super();
         this.#rules = rules;
         this.#fetcher = fetcher;
-        this.#chapterQueryService = services.chapQueryServices;
         this.#chapterCommandService = services.chapCommaServices;
         this.#eventManager = services.eventManager;
+        this.#indexService = services.index;
     }
 
     async fetch(setting, payload) {
         const { bookId, chapterId, isUpdate } = payload;
 
         if (!isUpdate) {    //检查是否已覆盖更新
-            const chapt = await this.#chapterQueryService.getChapterById(chapterId);
-            if (chapt.Content?.length > 10) return this.#resultHandle(payload, true, `章节 ${chapterId} 已有内容，跳过更新。`);
+            const chapt = await this.#indexService.find(chapterId);
+            if(chapt.IsHasContent) return this.#resultHandle(payload, true, `章节 ${chapterId} 已有内容，跳过更新。`);
         }
         this.#eventManager.emitToMain(COLLECT_EVENTS.UPDATE_CHAPTER_START, { chapterId, bookId });
 

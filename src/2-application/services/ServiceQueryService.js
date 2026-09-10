@@ -14,8 +14,7 @@ export class ServiceQueryService {
     }
 
     async checkSiteAccessibility(host) {
-        return this.#serviceServer.checkSiteAccessibility(host)
-
+        return this.#serviceServer.checkAccessibilityByFetch(host)
     }
 
 

@@ -125,4 +125,31 @@ export class ServiceServer {
             });
         });
     }
+
+    async checkAccessibilityByFetch(hostname) {
+        let result = {};
+        let resTitle = "";
+        try {
+            hostname = hostname.replace(/https?:\/\//, ''); // 去掉http://或https://
+            hostname = "https://" + hostname;
+            result = await fetch(hostname);
+            const txt = await result.text();
+            const title = txt.match(/<title>([^<]+)<\/title>/);
+            if (title?.length >= 2) resTitle = title[1];
+            return {
+                status: result.status,
+                result: true,
+                location: result.url,
+                title: resTitle,
+            }
+        } catch (error) {
+            if (error.cause) error = error.cause;
+            return {
+                status: error.errno,
+                result: false,
+                location: error.address,
+                title: error.message,
+            }
+        }
+    }
 }

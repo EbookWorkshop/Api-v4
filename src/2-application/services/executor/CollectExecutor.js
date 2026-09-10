@@ -45,7 +45,7 @@ export class CollectExecutor extends ITaskExecutor {
 
     async execute(taskType, payload) {
         const ruleEngine = new RuleEngine({ debug: false });
-        let msgEvent = null;
+        let msgEvent = COLLECT_EVENTS.UNKNOW;
         try {
             let pageURL = await this.#getPageURL(taskType, payload);
             let Collector = ICollector;
@@ -177,7 +177,8 @@ export class CollectExecutor extends ITaskExecutor {
 
     #createChapterServices() {
         return {
-            chapQueryServices: new ChapterQueryService(this.#repositories.chapterRepository),
+            // chapQueryServices: new ChapterQueryService(this.#repositories.chapterRepository),
+            index: { find: this.#repositories.indexRepository.findById.bind(this.#repositories.indexRepository) },
             chapCommaServices: new ChapterCommandService(this.#repositories.chapterRepository, this.#transactionManager)
         }
     }

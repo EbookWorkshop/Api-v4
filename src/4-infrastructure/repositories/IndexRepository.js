@@ -26,4 +26,15 @@ export class IndexRepository {
             order: order
         });
     }
+
+    async findById(chapterId) {
+        const attr = ["createdAt", "updatedAt", "id", "Content"];
+        const scopeAttrs = this.#IndexModel.options.scopes.withHasContent.attributes.include;
+        return this.#IndexModel.findByPk(chapterId, {
+            attributes: {
+                include: [...scopeAttrs, "Title"] || [],
+                exclude: attr
+            }, raw: true
+        });
+    }
 }

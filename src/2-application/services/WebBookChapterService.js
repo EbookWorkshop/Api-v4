@@ -61,7 +61,13 @@ export class WebBookChapterService {
         return true;
     }
 
-    async getWebChapterURL(bookId, host) {
-        return this.#webBookChapterRepository.getWebChapterURL(bookId, host);
+    /**
+     * 
+     * @param {*} bookId 
+     * @returns {Array<{title:string,ruls:Array<string>}>}
+     */
+    async findChapterWithURL(bookId) {
+        return this.#webBookChapterRepository.findChapterWithURL(bookId);
     }
+
 }

@@ -1,5 +1,6 @@
 import { ICollector } from "../../ports/ICollector.js";
-import { RULE_INDEX, RULE_INFO, RuleName } from "../../../3-domain/constants/Rule.js"
+import { RULE_INDEX, RULE_INFO, RuleName } from "../../../3-domain/constants/Rule.js";
+import { deduplicateByMultKey, difference } from "../../../5-shared/utils/array.js";
 import { COLLECT_EVENTS } from "../../constants/Event.js";
 import { AppError } from "../../../5-shared/errors/index.js";
 import { getHost } from "../../../5-shared/utils/site.js";
@@ -34,7 +35,7 @@ export class WebBookCollector extends ICollector {
      * @param {string} payload.sourcePage 索引页
      * @param {boolean} payload.isEmbedBookName 是否嵌入标题
      * @param {string} [payload.infoPage] 信息页
-     * @param {create|update} [payload.mode] 信息页
+     * @param {create|update} [payload.mode] 任务类型
      */
     async fetch(setting, payload) {
         let result = {};
@@ -46,7 +47,12 @@ export class WebBookCollector extends ICollector {
             else if (mode === "update")
                 result = await this.updateChapter(payload);
         } catch (error) {
-            return this.#resultHandle(payload, { error, payload }, `采集执行失败`);
+            const _error = {
+                name: error.name || `失败任务：${taskType}`,
+                message: error.message || '',
+                stack: error.stack || '',
+            }
+            return this.#resultHandle(payload, { error: _error, ...payload }, `采集执行失败`);
         }
         return result;
     }
@@ -81,10 +87,8 @@ export class WebBookCollector extends ICollector {
 
         const bookResult = {
             ...infoResult,
-            ChapterList: chapterList
+            ChapterList: deduplicateByMultKey(chapterList, ["text", "url"]),
         };
-
-        this.#fixData(bookResult);
 
         //存储到数据库
         const bookId = await this.#save(bookResult, { isEmbedBookName, sourcePage, infoPage });
@@ -103,14 +107,28 @@ export class WebBookCollector extends ICollector {
         if (chapterList.length === 0) {
             return this.#resultHandle(option, { error: true, ...option }, `从地址采集数据失败：${sourcePage}。`);
         }
-        //已在数据库的章节
-        const hasChaptList = await this.#webBookChapterService.getWebChapterURL(bookId, getHost(sourcePage));
-        const keyDic = hasChaptList.map(t => `${t.WebTitle}${t["WebBookChapterURLs.Path"]}`);
-        const bookResult = { [RuleName.ChapterList]: chapterList };
-        this.#fixData(bookResult, new Set(keyDic));
-        chapterList = bookResult[RuleName.ChapterList]
-        if (chapterList.length > 0) await this.#saveBatchChapter(bookId, chapterList);
+        chapterList = deduplicateByMultKey(chapterList, ["text", "url"]);//同目录内自我去重
 
+        //【新数据：chapterList】与【已在数据库的数据:hasChaptList】 进行差集计算
+        const hasChaptList = await this.#webBookChapterService.findChapterWithURL(bookId);
+        if (hasChaptList.length > 0) {
+            //判断是否同源，如果是则将url也加入比较
+            const curHost = getHost(sourcePage);
+            let testCount = Math.min(hasChaptList.length, 800);
+            const tempURLs = hasChaptList.slice(0, testCount).flatMap(t => t.urls);
+            let diffSource = tempURLs.some(u => !u.includes(curHost));
+            let excludeChapters = hasChaptList.map(({ title, urls }) => ({ text: title, urls }));
+            const key = ["text"];           //不同源下的比较
+            if (!diffSource) {             //同源情况下的比较
+                key.push("url");
+                excludeChapters = excludeChapters.map(({ text, urls }) => ({ text, url: urls[0] }));
+            }
+            //求差集
+            chapterList = difference(chapterList, excludeChapters, key);
+        }
+
+        //去重后的结果
+        if (chapterList.length > 0) await this.#saveBatchChapter(bookId, chapterList);
         return this.#resultHandle(option, { ...option, addedCount: chapterList.length }, `已完成章节合并，新增章节：${chapterList.length}`);
     }
 
@@ -244,24 +262,6 @@ export class WebBookCollector extends ICollector {
         return chapters;
     }
 
-    /**
-     * 检查书本信息
-     * 检查章节是否重复
-     * @param {*} bookData 
-     */
-    #fixData(bookData, chapSet = new Set()) {
-        //检查章节重复——依据【标题、网址】同时重复
-        if (bookData[RuleName.ChapterList]) {
-            const newChap = [];
-            for (const c of bookData[RuleName.ChapterList]) {
-                const key = `${c.text}${c.url}`;
-                if (chapSet.has(key)) continue;
-                newChap.push({ text: c.text, url: c.url });
-                chapSet.add(key);
-            }
-            bookData[RuleName.ChapterList] = newChap;
-        }
-    }
 
     /**
      * 保存到数据库

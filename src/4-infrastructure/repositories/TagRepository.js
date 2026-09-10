@@ -11,8 +11,8 @@ export class TagRepository {
 
     /**
      * 
-     * @param {*} includeEBookTag 是否包含被EBook引用的数据
-     * @param {*} onlyWithBook 是否仅要含书本引用的信息
+     * @param {*} includeEBookTag 【否】全部tag；【是】同时考虑是否被Ebook引用过 —— 是否join EBookTag
+     * @param {*} onlyWithBook 是否仅要含书本引用的信息 —— join时，是inner 否left
      * @returns 
      */
     async #findAll(includeEBookTag = false, onlyWithBook = false) {
@@ -26,7 +26,7 @@ export class TagRepository {
      * 找到所有标签，仅返回tag表的所有信息
      * @returns 
      */
-    async findAllTags() { return await this.#findAll(false, false) }
+    async findAllTags() { return await this.#findAll(false) }
     /**
      * 找到所有标签，并关联书本引用信息
      * @param {boolean} hasBook 标签是否返回至少有一本书引用的

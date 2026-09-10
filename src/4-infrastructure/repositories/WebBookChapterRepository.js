@@ -51,26 +51,23 @@ export class WebBookChapterRepository {
     }
 
     /**
-     * 获取章节标题-网址集合
-     * @param {*} bookId 
-     * @param {*} host 
-     * @returns 
+     * 
+     * @param {number} bookId 
+     * @returns {Array<{title:string,ruls:Array<string>}>}
      */
-    async getWebChapterURL(bookId, host) {
-        return await this.#WebBookChapterModel.findAll({
+    async findChapterWithURL(bookId) {
+        let result = await this.#ChapterModel.findAll({
+            where: { BookId: bookId },
             include: [{
-                model: this.#ChapterModel, as: "EbookChapter",
-                require: true,
-                attributes: [],
-                where: { BookId: bookId }
-            }, {
-                model: this.#WebBookChapterURLModel, as: "WebBookChapterURLs",
-                require: true,
-                attributes: ["Path"],
-                where: { Path: { [Op.like]: `%${host}%` } }//兼容多源的情况
-            }],
-            attributes: ["WebTitle"],
-            raw: true,
+                model: this.#WebBookChapterModel, as: "WebBookChapter",
+                include: [{
+                    model: this.#WebBookChapterURLModel,
+                    attributes: ["Path"]
+                }]
+            }]
         });
+        return result.map(({ Title, WebBookChapter }) => {
+            return { title: Title, webTitle: WebBookChapter?.WebTitle ?? Title, urls: WebBookChapter?.WebBookChapterURLs?.map(url => url.Path) || [] }
+        })
     }
 }
