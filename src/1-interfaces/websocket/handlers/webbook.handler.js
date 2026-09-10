@@ -33,6 +33,7 @@ export function registerSocketEvents(socket, services, eventManager) {
      *         example: "123"
      */
     socket.on('subscribe:book', (bookId) => { if (bookId) socket.join(`book-${bookId}`); });
+
     /**
      * @asyncapi
      * channels:
@@ -205,7 +206,13 @@ export function registerSocketEvents(socket, services, eventManager) {
     socket.on('webBook:updateChapter', async (payload, callback) => {
         try {
             const result = await services.task.submitUpdateChapters(payload.chapterIds, payload);
-            callback({ success: true, taskId: result.taskId });
+            // 阶段 2 之后，submitUpdateChapters 返回 { batchId, total, taskIds, message }
+            callback({
+                success: true,
+                batchId: result.batchId,
+                total: result.total,
+                taskIds: result.taskIds,
+            });
         } catch (err) {
             callback({ success: false, message: err.message });
         }
@@ -216,6 +223,14 @@ export function registerSocketEvents(socket, services, eventManager) {
 /**
  * 注册全局广播（启动时执行一次）
  * 监听 eventManager 上的事件，转发到对应的房间
+ *
+ * 所有采集事件均使用统一信封：
+ *   { event, taskId?, batchId?, ctx, ok, data?, error?, message?, ts }
+ *
+ * 接收端处理原则：
+ *   1. 先处理人类可读消息（env.message）
+ *   2. 再按 env.ok 分支：成功读 env.data，失败读 env.error
+ *   3. 业务标识统一从 env.ctx 取，不再有深层嵌套
  */
 export function registerGlobalBroadcasts(io, services, eventManager) {
     /**
@@ -250,115 +265,139 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      *           - bookId
      *           - success
      */
-    eventManager.on(COLLECT_EVENTS.CREATE_BOOK, (payload) => {
-        const { bookId, bookName, error, payload: param } = payload.result;
-
-        if (error) {
-            return eventManager.messageToClient(new Message(`${error.message}\n参数：${JSON.stringify(param)} `, "notice", {
-                title: payload.message,
-                avatar: "error",
-            }));
+    eventManager.on(COLLECT_EVENTS.CREATE_BOOK, (env) => {
+        if (!env.ok) {
+            return eventManager.messageToClient(new Message(
+                `${env.error.message}\n采集来源：${env.ctx.sourcePage || '未知'}`,
+                "notice",
+                {
+                    title: env.message || "创建书籍失败",
+                    avatar: "error",
+                }
+            ));
         }
 
+        const { bookId, bookName } = env.data;
         io.emit('WebBook.Create.Finish', {
             bookId,
             bookName,
-            // success: payload.success,
-            message: payload.message,
+            message: env.message,
         });
     });
 
-    //更新合并目录
-    eventManager.on(COLLECT_EVENTS.UPDATE_INDEX, (payload) => {
-        let { bookId, bookName, error, message, addedCount } = payload.result;
-        if (!message) message = payload.message;
-        if (error) return eventManager.messageToClient(new Message(message, "notice", { title: `书籍《${bookName}》更新目录失败！`, avatar: "error", }));
-        /**
-         * @asyncapi
-         * channels:
-         *   web-book-update-index-finish:
-         *     address: WebBook.UpdateIndex.Finish
-         *     messages:
-         *       updateIndexFinish:
-         *         $ref: '#/components/messages/WebBookUpdateIndexFinish'
-         * operations:
-         *   webBookUpdateIndexFinish:
-         *     action: send
-         *     channel:
-         *       $ref: '#/channels/web-book-update-index-finish'
-         * components:
-         *   messages:
-         *     WebBookUpdateIndexFinish:
-         *       summary: 目录更新完成广播（全局）。
-         *       payload:
-         *         type: object
-         *         properties:
-         *           bookId:
-         *             type: string
-         *           bookName:
-         *             type: string
-         *           addedCount:
-         *             type: number
-         *           message:
-         *             type: string
-         *         required:
-         *           - bookId
-         *           - success
-         */
-        // io.to(`book - ${ payload.bookId } `).
-        io.emit('WebBook.UpdateIndex.Finish', {
-            bookId: bookId,
-            bookName: bookName,
-            addedCount: addedCount || 0,
-            message: message,
-        });
-    });
+    /**
+     * @asyncapi
+     * channels:
+     *   web-book-update-index-finish:
+     *     address: WebBook.UpdateIndex.Finish
+     *     messages:
+     *       updateIndexFinish:
+     *         $ref: '#/components/messages/WebBookUpdateIndexFinish'
+     * operations:
+     *   webBookUpdateIndexFinish:
+     *     action: send
+     *     channel:
+     *       $ref: '#/channels/web-book-update-index-finish'
+     * components:
+     *   messages:
+     *     WebBookUpdateIndexFinish:
+     *       summary: 目录更新完成广播（全局）。
+     *       payload:
+     *         type: object
+     *         properties:
+     *           bookId:
+     *             type: string
+     *           bookName:
+     *             type: string
+     *           addedCount:
+     *             type: number
+     *           message:
+     *             type: string
+     *         required:
+     *           - bookId
+     *           - success
+     */
+    eventManager.on(COLLECT_EVENTS.UPDATE_INDEX, (env) => {
+        const { bookId, bookName } = env.ctx;
 
-    //单章更新任务-开始
-    eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_START, (payload) => {
-        const { bookId, chapterId } = payload;
-        const room = `book-${bookId}`;
-        return io.to(room).emit(`WebBook.UpdateOneChapter.Start`, { chapterId, bookId });
-    });
-
-    //单章节更新结果
-    eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER, (payload) => {
-        const { error, payload: param } = payload;
-        const { bookId, chapterId, isUpdate, url } = param;
-        const room = `book-${bookId}`;
-
-        if (error) {
-            return io.to(room).emit(`WebBook.UpdateOneChapter.Error`, { chapterId, err: error });
+        if (!env.ok) {
+            return eventManager.messageToClient(new Message(
+                env.message || env.error.message,
+                "notice",
+                {
+                    title: `书籍《${bookName || bookId}》更新目录失败！`,
+                    avatar: "error",
+                }
+            ));
         }
 
-        /**
-         * @asyncapi
-         * channels:
-         *   web-book-chapter-update:
-         *     address: WebBook.Chapter.Update
-         *     messages:
-         *       chapterUpdate:
-         *         $ref: '#/components/messages/WebBookChapterUpdate'
-         * operations:
-         *   webBookChapterUpdate:
-         *     action: send
-         *     channel:
-         *       $ref: '#/channels/web-book-chapter-update'
-         * components:
-         *   messages:
-         *     WebBookChapterUpdate:
-         *       summary: 批量任务，单章更新完成广播（发送到对应书籍房间）。
-         *       payload:
-         *         type: object
-         *         properties:
-         *           chapterId:
-         *             type: number
-         *           bookId:
-         *             type: number
-         *         required:
-         *           - chapterId
-         */
-        io.to(room).emit(`WebBook.Chapter.Update`, { bookId, chapterId });
+        io.emit('WebBook.UpdateIndex.Finish', {
+            bookId,
+            bookName,
+            addedCount: env.data?.addedCount || 0,
+            message: env.message,
+        });
+    });
+
+    /**
+     * @asyncapi
+     * channels:
+     *   web-book-chapter-update-start:
+     *     address: WebBook.UpdateOneChapter.Start
+     *     messages:
+     *       chapterUpdateStart:
+     *         $ref: '#/components/messages/WebBookChapterUpdateStart'
+     * operations:
+     *   webBookChapterUpdateStart:
+     *     action: send
+     *     channel:
+     *       $ref: '#/channels/web-book-chapter-update-start'
+     */
+    eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_START, (env) => {
+        const { bookId, chapterId } = env.ctx;
+        const room = `book-${bookId}`;
+        io.to(room).emit('WebBook.UpdateOneChapter.Start', { chapterId, bookId });
+    });
+
+    /**
+     * @asyncapi
+     * channels:
+     *   web-book-chapter-update:
+     *     address: WebBook.Chapter.Update
+     *     messages:
+     *       chapterUpdate:
+     *         $ref: '#/components/messages/WebBookChapterUpdate'
+     * operations:
+     *   webBookChapterUpdate:
+     *     action: send
+     *     channel:
+     *       $ref: '#/channels/web-book-chapter-update'
+     * components:
+     *   messages:
+     *     WebBookChapterUpdate:
+     *       summary: 批量任务，单章更新完成广播（发送到对应书籍房间）。
+     *       payload:
+     *         type: object
+     *         properties:
+     *           chapterId:
+     *             type: number
+     *           bookId:
+     *             type: number
+     *         required:
+     *           - chapterId
+     */
+    eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER, (env) => {
+        const { bookId, chapterId } = env.ctx;
+        const room = `book-${bookId}`;
+
+        if (!env.ok) {
+            return io.to(room).emit('WebBook.UpdateOneChapter.Error', {
+                chapterId,
+                err: env.error,
+            });
+        }
+
+        io.to(room).emit('WebBook.Chapter.Update', { bookId, chapterId });
     });
 
     /**
@@ -398,33 +437,67 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      *           - doneNum
      *           - failNum
      */
-    eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_BATCH_FINISH, (payload) => {
-        // io.to(`book - ${ payload.bookId } `)
-        io.emit(`WebBook.UpdateChapter.Finish`, {
-            bookId: payload.bookId,
-            bookName: payload.bookName,
-            chapterIds: payload.chapterIds || [],
-            doneNum: payload.doneNum || 0,
-            failNum: payload.failNum || 0,
+    eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_BATCH_FINISH, (env) => {
+        const { bookId, bookName, batchId } = env.ctx;
+        const data = env.data || {};
+        io.emit('WebBook.UpdateChapter.Finish', {
+            batchId,
+            bookId,
+            bookName,
+            chapterIds: data.chapterIds || [],
+            doneNum: data.doneNum || 0,
+            failNum: data.failNum || 0,
+            total: data.total || 0,
+            status: data.status || 'completed',
         });
     });
 
-    //单章采集-存库存
-    eventManager.on(COLLECT_EVENTS.FETCH_CHAPTER, (payload) => {
-        let { result, message, filePath, fileName } = payload;
-        return eventManager.messageToClient(new Message(message + `\n\n${filePath}`, "notice", {
-            subTitle: fileName,
-            title: `单章采集任务执行${result ? "成功" : "失败"}`,
-            avatar: result ? "success" : "error",
-        }));
+    /**
+     * @asyncapi
+     * channels:
+     *   web-book-fetch-chapter:
+     *     address: WebBook.FetchChapter
+     *     messages:
+     *       fetchChapter:
+     *         $ref: '#/components/messages/WebBookFetchChapter'
+     * operations:
+     *   webBookFetchChapter:
+     *     action: send
+     *     channel:
+     *       $ref: '#/channels/web-book-fetch-chapter'
+     */
+    eventManager.on(COLLECT_EVENTS.FETCH_CHAPTER, (env) => {
+        const { url } = env.ctx;
 
+        if (!env.ok) {
+            return eventManager.messageToClient(new Message(
+                `${env.message}\n来源：${url || '未知'}`,
+                "notice",
+                {
+                    title: '单章采集失败',
+                    avatar: "error",
+                }
+            ));
+        }
+
+        const { filePath, fileName } = env.data || {};
+        return eventManager.messageToClient(new Message(
+            `${env.message}\n\n${filePath || ''}`,
+            "notice",
+            {
+                subTitle: fileName,
+                title: '单章采集成功',
+                avatar: "success",
+            }
+        ));
     });
 
-    eventManager.on(COLLECT_EVENTS.UNKNOW, (payload) => {
-        console.warn("采集任务初始化失败！")
-        let { result, message, error, ...param } = payload;
-        console.log(message);
-        console.log(error);
-        console.log(param);
+    /**
+     * 兜底：采集任务初始化阶段失败（未进入任何 Collector 分支）
+     */
+    eventManager.on(COLLECT_EVENTS.UNKNOW, (env) => {
+        console.warn('[采集任务初始化失败]', env.message);
+        console.warn('[错误]', env.error);
+        console.warn('[上下文]', env.ctx);
     });
 }
