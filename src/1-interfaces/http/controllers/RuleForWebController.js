@@ -2,6 +2,7 @@ import { HostRequest } from "../dtos/ruleForWeb/RuleForWebResponse.dto.js";
 import { RuleForWebQueryService } from "../../../2-application/services/RuleForWebQueryService.js";
 import { RuleForWebCommandService } from "../../../2-application/services/RuleForWebCommandService.js";
 import { VisRuleRequest } from "../dtos/ruleForWeb/VisRuleRequest.dto.js";
+import { UserInputError } from "../../../5-shared/errors/index.js";
 
 export class RuleForWebController {
     #ruleForWebQueryService;
@@ -303,6 +304,7 @@ export class RuleForWebController {
      */
     async batchUpsertBotRules(ctx) {
         const rules = ctx.request.body;//TODO: 接入DTO层
+        if (!Array.isArray(rules) || rules.length == 0) throw UserInputError("未发现导入规则。");
         const result = await this.#ruleForWebCommandService.batchUpsertRules(rules);
         ctx.body = result;
     }

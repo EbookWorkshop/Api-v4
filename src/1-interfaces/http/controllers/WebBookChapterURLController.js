@@ -48,7 +48,7 @@ export class WebBookChapterURLController {
      * /library/webbook/chapter/source/default:
      *   get:
      *     summary: 获取默认章节源 URL
-     *     description: 根据章节 ID 或图书 ID 获取对应的默认章节源地址。`chapterid`必须提供。（统一包装格式）
+     *     description: 根据章节 ID 和图书 ID 获取对应的默认章节源地址。（统一包装格式）
      *     tags:
      *       - Library - WebBook —— 网文图书馆
      *       - WebBook
@@ -75,7 +75,7 @@ export class WebBookChapterURLController {
      *               $ref: '#/components/schemas/ApiErrorResponse'
      *             example:
      *               code: 60000
-     *               msg: "请提供 chapterId 或 bookId"
+     *               msg: "请提供 chapterId 和 bookId"
      *               timestamp: "2026-09-02T10:00:00.000Z"
      *       404:
      *         description: 未找到对应的默认源

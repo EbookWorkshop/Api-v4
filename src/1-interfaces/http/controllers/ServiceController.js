@@ -1,5 +1,6 @@
 
 import { ServiceQueryService } from "../../../2-application/services/ServiceQueryService.js";
+import { UserInputError } from "../../../5-shared/errors/index.js";
 import { getHost } from "../../../5-shared/utils/site.js"
 
 export class ServiceController {
@@ -108,6 +109,7 @@ export class ServiceController {
      */
     async checkSiteAccessibility(ctx) {
         let host = getHost(ctx.query.host);
+        if (!host) throw new UserInputError("未提供host");
         ctx.body = await this.#serviceQueryService.checkSiteAccessibility(host);
     }
 
@@ -169,8 +171,7 @@ export class ServiceController {
 
         const status = this.#batchProgressTracker.getStatus(batchId);
         if (!status) {
-            ctx.status = 404;
-            throw new UserInputError("批次不存在或已过期");
+            throw new UserInputError("批次不存在或已过期", 404);
         }
         ctx.body = status;
     }

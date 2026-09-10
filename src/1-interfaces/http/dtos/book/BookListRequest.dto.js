@@ -36,10 +36,9 @@ export class BookListRequest {
             excludeTagIds = query.nottag
                 .split(',')
                 .map(t => parseInt(t, 10))
-                .filter(n => !isNaN(n)); // 过滤无效数字
+                .filter(n => !isNaN(n)); // 过滤无效数字——即使输入错误也被吃掉了
         }
 
-        if (excludeTagIds.some(t => isNaN(t))) throw new AppError("排除标签必须为正整数，多个排除标签可用英文逗号隔开。", 600);
         return {
             tagId,
             excludeTagIds,

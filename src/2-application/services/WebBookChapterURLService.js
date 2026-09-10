@@ -35,7 +35,7 @@ export class WebBookChapterURLService {
             const sourceInfo = await this.#webBookQueryService.getDefSources(bookId);
             defBookSource = sourceInfo.Path;
         }
-        else {   /* 通过 chapterId 反推出book信息并推导到当前来源 */ }
+        else {   /* TODO: 通过 chapterId 反推出book信息并推导到当前来源 */ }
 
         const defHost = getHost(defBookSource);
         const chapterList = await this.getChapterSources(chapterId);

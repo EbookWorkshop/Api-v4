@@ -20,18 +20,18 @@ export class WebBookQueryService {
 
     async getBookSources(bookId) {
         const webBook = await this.#webBookRepository.findByBookId(bookId);
-        if (!webBook) throw AppError("该书籍非在线采集，没有采集信息");
+        if (!webBook) throw new AppError("该书籍非在线采集，没有采集信息");
         const { id } = webBook;
         return this.#webBookSourceURLRepository.findByWebBookId(id);
     }
     async getDefSources(bookId) {
         const webBook = await this.#webBookRepository.findByBookId(bookId);
-        if (!webBook) throw AppError("该书籍非在线采集，没有采集信息");
+        if (!webBook) throw new AppError("该书籍非在线采集，没有采集信息");
         const { id, defaultIndex } = webBook;
         if (defaultIndex === 0) {
             const sourList = await this.#webBookSourceURLRepository.findByWebBookId(id);
-            if (!sourList) throw AppError("该书籍没有源数据", 404);
-            if (!sourList[defaultIndex]) throw AppError("设定的默认源不存在，请重新设定。", 404);
+            if (!sourList) throw new AppError("该书籍没有源数据", 404);
+            if (!sourList[defaultIndex]) throw new AppError("设定的默认源不存在，请重新设定。", 404);
             return sourList[defaultIndex];
         } else {
             return await this.#webBookSourceURLRepository.findById(defaultIndex);

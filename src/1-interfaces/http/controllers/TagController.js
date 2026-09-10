@@ -1,6 +1,7 @@
 // import { TagQueryService } from "../../../2-application/services/TagQueryService.js";
 import { BookIdRequest } from "../dtos/components/BookIdRequest.dto.js"
 import { TagCreateRequest } from "../dtos/tag/TagCreateRequest.dto.js";
+import { UpdateTagRequest } from "../dtos/tag/TagUpdateRequest.dto.js"
 import { TagIdQuery } from "../dtos/tag/TagIdRequest.dto.js"
 
 export class TagController {

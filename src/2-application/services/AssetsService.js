@@ -1,6 +1,6 @@
 import path from "node:path";
 import { IFileScanner } from '../ports/IFileScanner.js';
-import { AppError } from "../../5-shared/errors/index.js"
+import { AppError, UserInputError } from "../../5-shared/errors/index.js"
 
 export class AssetsService {
     /** @type {IFileScanner} */
