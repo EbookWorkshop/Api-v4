@@ -97,8 +97,10 @@ export class TaskSchedulerService {
         try {
             const { bookId, isUpdate } = setting;
             const taskIds = [];
+            const batchId = crypto.randomUUID()
             for (const cid of chapterIds) {
                 const task = new Task({
+                    batchId,
                     taskId: crypto.randomUUID(),
                     param: { bookId, isUpdate, chapterId: cid },
                     taskType: TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT,
@@ -108,7 +110,7 @@ export class TaskSchedulerService {
                 this.#workerPool.addTask(task);
                 taskIds.push(task.taskId);
             }
-            return { message: `已添加任务x${chapterIds.length}`, taskid: taskIds }
+            return { message: `已添加任务x${chapterIds.length}`, taskid: taskIds, batchId, chapterIds}
         } catch (error) {
             throw new AppError("添加采集任务失败：" + error.message);
         }
