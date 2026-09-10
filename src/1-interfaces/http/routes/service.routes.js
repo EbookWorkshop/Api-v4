@@ -7,11 +7,13 @@ import Router from '@koa/router';
  */
 export function createServiceRoutes(serviceController) {
     const router = new Router({ prefix: '/services' });
-    router.get('/message', (ctx) => ctx.body="TODO: /services/message");
+    router.get('/message', (ctx) => ctx.body = "TODO: /services/message");
     router.get('/version', (ctx) => serviceController.getVersion(ctx));
     router.get('/checkSiteAccessibility', (ctx) => serviceController.checkSiteAccessibility(ctx));
-    router.post('/version', (ctx) => serviceController.updateVersion(ctx));
+    router.get('/tasks/batch', (ctx) => serviceController.listRunningBatches(ctx));
+    router.get('/tasks/batch/:batchId', (ctx) => serviceController.getBatchProgress(ctx));
     
+    router.post('/version', (ctx) => serviceController.updateVersion(ctx));
     router.post('/compress_db', (ctx) => serviceController.compressDatabase(ctx));
     return router;
 }

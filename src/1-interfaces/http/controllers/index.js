@@ -49,7 +49,7 @@ export function createControllers(services, config) {
         email: new EmailController(services.email),
 
         export: new ExportController(services.task),
-        service: new ServiceController(services.serviceQuery, services.task),
+        service: new ServiceController(services.serviceQuery, services.task, services.batchProgressTracker),
 
         asyncApi: new AsyncApiController(config),
         swagger: new SwaggerController(config),

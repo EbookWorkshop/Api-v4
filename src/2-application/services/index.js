@@ -37,12 +37,12 @@ import { ReviewRuleUsingService } from './ReviewRuleUsingService.js';
 import { BookReviewService } from './BookReviewService.js';
 
 import { AssetsService } from './AssetsService.js';
+import { BatchProgressTracker } from "./BatchProgressTracker.js";
 
 import { TaskSchedulerService } from "./TaskSchedulerService.js";
 import { ServiceQueryService } from './ServiceQueryService.js';
 
-import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js"
-
+import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js";
 /**
  * 服务层 组装所有 Service
  * @param {*} repositories 
@@ -72,8 +72,8 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
     );
     const memoryCache = new MemoryCache();
     const textCleanup = new TextCleanupService(repositories.reviewRuleRepository, memoryCache);
-
-    const task = new TaskSchedulerService(workerPool);
+    const batchProgressTracker = new BatchProgressTracker(eventManager);
+    const task = new TaskSchedulerService(workerPool, batchProgressTracker);
     const reviewBookService = new BookReviewService(
         repositories.chapterRepository,
         repositories.reviewRuleRepository,
@@ -117,7 +117,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         assets: new AssetsService(fileScanner, fileWriter, config),
 
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),
-        task,
+        batchProgressTracker, task,
         workerPool,
 
     };

@@ -1,17 +1,21 @@
 import crypto from "node:crypto";
 import { TASK_TYPES } from '../constants/Task.js';
-import { WorkerPool, Task } from '../../4-infrastructure/workers/index.js';
+import { Task } from '../../4-infrastructure/workers/index.js';
 import { AppError } from "../../5-shared/errors/index.js";
 
 export class TaskSchedulerService {
     /** @type {WorkerPool} 线程池 */
     #workerPool;
+    /** @type {BatchProgressTracker} 批量统计 */
+    #progressTracker;
 
     /**
-     * @param {WorkerPool} workerPool 
+     * @param {import('../../4-infrastructure/workers/index.js').WorkerPool} workerPool
+     * @param {import('./BatchProgressTracker.js').BatchProgressTracker} progressTracker
      */
-    constructor(workerPool) {
+    constructor(workerPool, progressTracker) {
         this.#workerPool = workerPool;
+        this.#progressTracker = progressTracker;
     }
 
     /**
@@ -87,33 +91,63 @@ export class TaskSchedulerService {
     }
 
     /**
-     * 提交更新章节任务
-     * #### 会拆解为每章一个任务 
-     * TODO: 需要完成任务进度统计逻辑！
-     * @param {*} chapterIds 
-     * @param {*} setting 
+     * 提交批量更新章节任务
+     * 每个章节拆为一个子任务，通过 BatchProgressTracker 汇总进度
+     * @param {number[]} chapterIds
+     * @param {{ bookId: number, isUpdate: boolean, bookName?: string }} setting
+     * @returns {{ batchId: string, total: number, taskIds: string[], message: string }}
      */
     async submitUpdateChapters(chapterIds, setting) {
-        try {
-            const { bookId, isUpdate } = setting;
-            const taskIds = [];
-            const batchId = crypto.randomUUID()
-            for (const cid of chapterIds) {
+        if (!Array.isArray(chapterIds) || chapterIds.length === 0) {
+            throw new AppError("chapterIds 不能为空");
+        }
+
+        const { bookId, isUpdate, bookName } = setting;
+        const batchId = crypto.randomUUID();
+        const total = chapterIds.length;
+
+        // ① 先注册批次，确保 0% 进度能被前端收到
+        this.#progressTracker.register(batchId, {
+            type: TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT,
+            bookId,
+            bookName,
+            chapterIds,
+        });
+
+        const taskIds = [];
+        const dispatchFailures = [];
+
+        for (const cid of chapterIds) {
+            try {
+                const taskId = crypto.randomUUID();
                 const task = new Task({
-                    batchId,
-                    taskId: crypto.randomUUID(),
-                    param: { bookId, isUpdate, chapterId: cid },
+                    taskId,
+                    param: { bookId, isUpdate, chapterId: cid, batchId, taskId },
                     taskType: TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT,
                     useDB: true,
                     maxTaskNum: 5,
-                })
+                    callback: ({ data, error }) => {
+                        this.#progressTracker.onTaskSettled(batchId, cid, { data, error });
+                    },
+                });
                 this.#workerPool.addTask(task);
-                taskIds.push(task.taskId);
+                taskIds.push(taskId);
+            } catch (err) {
+                dispatchFailures.push({ chapterId: cid, error: err });
             }
-            return { message: `已添加任务x${chapterIds.length}`, taskid: taskIds, batchId, chapterIds}
-        } catch (error) {
-            throw new AppError("添加采集任务失败：" + error.message);
         }
+
+        // ② 调度失败的任务立即计入 fail，避免批次永远卡在 running
+        for (const { chapterId, error } of dispatchFailures) {
+            this.#progressTracker.onTaskSettled(batchId, chapterId, { error });
+        }
+
+        return {
+            batchId,
+            total,
+            taskIds,
+            message: `已添加任务 x${total}`,
+        };
     }
 
     /**

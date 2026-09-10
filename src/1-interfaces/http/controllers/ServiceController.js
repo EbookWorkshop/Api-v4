@@ -5,12 +5,17 @@ import { getHost } from "../../../5-shared/utils/site.js"
 export class ServiceController {
     #serviceQueryService;
     #taskSchedulerService;
+    /** @type {BatchProgressTracker} */
+    #batchProgressTracker;
     /**
-     * @param {ServiceQueryService} serviceQueryService 
+     * @param {ServiceQueryService} serviceQueryService
+     * @param {TaskSchedulerService} taskSchedulerService
+     * @param {BatchProgressTracker} batchProgressTracker
      */
-    constructor(serviceQueryService, taskSchedulerService) {
+    constructor(serviceQueryService, taskSchedulerService, batchProgressTracker) {
         this.#serviceQueryService = serviceQueryService;
         this.#taskSchedulerService = taskSchedulerService;
+        this.#batchProgressTracker = batchProgressTracker;
     }
 
     /**
@@ -131,5 +136,59 @@ export class ServiceController {
      */
     async compressDatabase(ctx) {
         ctx.body = await this.#taskSchedulerService.submitCompressDdatabase();
+    }
+
+    /**
+     * @swagger
+     * /services/tasks/batch/{batchId}:
+     *   get:
+     *     summary: 查询批任务进度
+     *     description: 根据 batchId 返回批次状态快照。用于前端断线重连后恢复进度展示。
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *       - Service
+     *     parameters:
+     *       - in: path
+     *         name: batchId
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: 批任务 ID
+     *         example: "5b0b8e5c-8c0e-4b3a-9d3a-1e6f0f3d2b1a"
+     *     responses:
+     *       200:
+     *         description: 成功返回批次状态
+     *       404:
+     *         description: 批次不存在或已过期
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async getBatchProgress(ctx) {
+        const { batchId } = ctx.params;
+        if (!batchId) throw new UserInputError("batchId 不能为空");
+
+        const status = this.#batchProgressTracker.getStatus(batchId);
+        if (!status) {
+            ctx.status = 404;
+            throw new UserInputError("批次不存在或已过期");
+        }
+        ctx.body = status;
+    }
+
+    /**
+     * @swagger
+     * /services/tasks/batch:
+     *   get:
+     *     summary: 列出正在运行的批任务
+     *     description: 返回当前主线程中所有 status=running 的批次快照。
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *       - Service
+     *     responses:
+     *       200:
+     *         description: 成功返回批次列表
+     */
+    async listRunningBatches(ctx) {
+        ctx.body = this.#batchProgressTracker.listRunning();
     }
 }

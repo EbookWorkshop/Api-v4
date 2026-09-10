@@ -455,6 +455,66 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
     /**
      * @asyncapi
      * channels:
+     *   web-book-update-chapter-progress:
+     *     address: WebBook.UpdateChapter.Progress
+     *     messages:
+     *       updateChapterProgress:
+     *         $ref: '#/components/messages/WebBookUpdateChapterProgress'
+     * operations:
+     *   webBookUpdateChapterProgress:
+     *     action: send
+     *     channel:
+     *       $ref: '#/channels/web-book-update-chapter-progress'
+     * components:
+     *   messages:
+     *     WebBookUpdateChapterProgress:
+     *       summary: 批量章节更新进度广播（发送到对应书籍房间）。
+     *       payload:
+     *         type: object
+     *         properties:
+     *           batchId:
+     *             type: string
+     *           bookId:
+     *             type: number
+     *           bookName:
+     *             type: string
+     *           total:
+     *             type: number
+     *           done:
+     *             type: number
+     *           success:
+     *             type: number
+     *           fail:
+     *             type: number
+     *           percent:
+     *             type: number
+     *           status:
+     *             type: string
+     *         required:
+     *           - batchId
+     *           - total
+     *           - done
+     */
+    eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_BATCH_PROGRESS, (env) => {
+        const { bookId, bookName } = env.ctx;
+        const data = env.data || {};
+
+        io.to(`book-${bookId}`).emit('WebBook.UpdateChapter.Progress', {
+            batchId: data.batchId,
+            bookId,
+            bookName,
+            total: data.total || 0,
+            done: data.done || 0,
+            success: data.success || 0,
+            fail: data.fail || 0,
+            percent: data.percent || 0,
+            status: data.status || 'running',
+        });
+    });
+
+    /**
+     * @asyncapi
+     * channels:
      *   web-book-fetch-chapter:
      *     address: WebBook.FetchChapter
      *     messages:
