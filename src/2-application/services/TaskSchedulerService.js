@@ -94,7 +94,7 @@ export class TaskSchedulerService {
      * 提交批量更新章节任务
      * 每个章节拆为一个子任务，通过 BatchProgressTracker 汇总进度
      * @param {number[]} chapterIds
-     * @param {{ bookId: number, isUpdate: boolean, bookName?: string }} setting
+     * @param {{ bookId: number, isUpdate: boolean, bookName?: string }} setting 接口提交的参数
      * @returns {{ batchId: string, total: number, taskIds: string[], message: string }}
      */
     async submitUpdateChapters(chapterIds, setting) {

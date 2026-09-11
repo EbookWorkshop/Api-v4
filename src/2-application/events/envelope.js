@@ -69,7 +69,29 @@
  * @property {string}           [message]
  * @property {number}           ts
  */
+/*
+    CollectEventEnvelope 数据边界约定
+    {
+        event,      // 事件名
+        taskId,     // Task 标识
+        batchId,    // 批任务标识
+        ts,         // 时间戳
+        ok,         // 成功/失败
+        message,    // 人类可读摘要
+    }
 
+    // ctx：已知的业务标识
+    {
+        bookId, bookName, chapterId, volumeId, url, sourcePage, infoPage
+    }
+
+    // data：执行后新产生的结果
+    {
+        addedCount, chapterIds, total, done, success, fail, percent,
+        status, filePath, fileName, startedAt, updatedAt,
+        bookId, bookName  // 仅当它们是"新产生"时（如 CREATE_BOOK）
+    }
+*/
 // ============================================================
 // 常量
 // ============================================================
@@ -220,6 +242,9 @@ export function normalizeCollectEnvelope(event, envelope = {}) {
         result.error = normalizeError(envelope.error);
     }
 
+    try {   //检查归一化后的信封是否符合约定
+        assertEnvelopeShape(result);//测试用的防御性判断，生产环境可删除
+    } catch (error) { console.error(error); throw error; }
     return result;
 }
 
@@ -251,4 +276,11 @@ export function assertEnvelopeShape(envelope) {
     if (!envelope.ctx || typeof envelope.ctx !== 'object') {
         throw new Error(`[CollectEnvelope] ctx 必须是对象，event=${envelope.event}`);
     }
+    if (envelope.ctx?.taskId || envelope.ctx?.batchId) {
+        throw new Error(`[CollectEnvelope] ctx 出现了顶层属性：batchId / taskId`)
+    }
+    if (envelope.data?.taskId || envelope.data?.batchId) {
+        throw new Error(`[CollectEnvelope] data 出现了顶层属性：batchId / taskId`)
+    }
 }
+

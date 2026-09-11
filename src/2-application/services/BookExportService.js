@@ -165,7 +165,7 @@ export class BookExportService {
             let rows = chap.content?.split("\n");//正文按行分割
 
             //设置压缩——去除空行
-            rows = rows.filter(s => s.length > 0);
+            rows = rows.filter(s => s.trim().length > 0);
 
             //去掉行首空白
             for (let i = 0; i < rows.length; i++) rows[i] = rows[i].trim();

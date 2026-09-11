@@ -438,7 +438,8 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      *           - failNum
      */
     eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_BATCH_FINISH, (env) => {
-        const { bookId, bookName, batchId } = env.ctx;
+        const { bookId, bookName } = env.ctx;
+        const batchId = env.batchId;
         const data = env.data || {};
         io.emit('WebBook.UpdateChapter.Finish', {
             batchId,
@@ -497,10 +498,11 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      */
     eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_BATCH_PROGRESS, (env) => {
         const { bookId, bookName } = env.ctx;
+        const batchId = env.batchId;                     // ← 从顶层取
         const data = env.data || {};
 
         io.to(`book-${bookId}`).emit('WebBook.UpdateChapter.Progress', {
-            batchId: data.batchId,
+            batchId,
             bookId,
             bookName,
             total: data.total || 0,

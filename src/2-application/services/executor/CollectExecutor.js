@@ -122,7 +122,8 @@ export class CollectExecutor extends ITaskExecutor {
         } catch (error) {
             error.stack = `CollectExecutor::execute: ${import.meta.filename}\n${error.stack}`;
             const message = "采集任务执行失败：" + (error.message || '未知错误');
-            emitter.failure(msgEvent, { error, message, });
+            const { batchId, taskId, ...ctx } = payload;
+            emitter.failure(msgEvent, { error, message, ctx });
             throw error;
         } finally {
             await this.#_fetcher?.close?.();

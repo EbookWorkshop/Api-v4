@@ -194,13 +194,25 @@ export class BatchProgressTracker {
         batch.lastEmitAt = now;
 
         emitCollect(this.#eventManager, COLLECT_EVENTS.UPDATE_CHAPTER_BATCH_PROGRESS, {
-            batchId: batch.batchId,
+            batchId: batch.batchId,               // 顶层唯一权威位置
             ctx: {
                 bookId: batch.bookId,
                 bookName: batch.bookName,
             },
             ok: true,
-            data: this.#snapshot(batch),
+            // 只放进度相关数字，标识类字段已在顶层或 ctx
+            data: {
+                total: batch.total,
+                done: batch.done,
+                success: batch.success,
+                fail: batch.fail,
+                percent: batch.total > 0
+                    ? Math.floor((batch.done / batch.total) * 100)
+                    : 0,
+                status: batch.status,
+                startedAt: batch.startedAt,
+                updatedAt: batch.updatedAt,
+            },
             message: `进度 ${batch.done}/${batch.total}`,
         });
     }
@@ -218,7 +230,7 @@ export class BatchProgressTracker {
             ctx: {
                 bookId: batch.bookId,
                 bookName: batch.bookName,
-                batchId: batch.batchId,
+                // batchId: batch.batchId,
             },
             ok: true,
             data: {
