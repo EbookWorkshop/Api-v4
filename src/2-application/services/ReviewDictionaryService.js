@@ -1,5 +1,5 @@
 import { ReviewDictionaryRepository } from '../../4-infrastructure/repositories/ReviewDictionaryRepository.js';
-import { AppError, UserInputError } from "../../5-shared/errors/index.js"
+// import { AppError, UserInputError } from "../../5-shared/errors/index.js"
 
 export class ReviewDictionaryService {
     /** @type {ReviewDictionaryRepository} */

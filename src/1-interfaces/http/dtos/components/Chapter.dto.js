@@ -116,9 +116,11 @@ export class ChapterRequest {
      *       example: 53,403
      */
     static fromQueryIds(query) {
-        const cpId = query.chapterids?.split(",");
-        if (isNaN(cpId)) throw new UserInputError("提供的章节ID不正确。");
-        return cpId;
+        const raw = query.chapterids?.split(",");
+        if (!raw || raw.some(id => isNaN(Number(id)))) {
+            throw new UserInputError("提供的章节ID不正确。");
+        }
+        return raw.map(Number);
     }
 
     /**

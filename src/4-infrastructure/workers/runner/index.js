@@ -21,7 +21,7 @@ export async function initWorker(serverResources, onclose = () => { }) {
     // 从主线程接收到的任务指令（workerData 是启动时传入，postMessage 是运行时传入）
     try {
         beforeClose = onclose ?? beforeClose;
-        parentPort.on('message', async (task) => {
+        parentPort?.on('message', async (task) => {
             if (task.taskType == TASK_TYPES.COMMAND) return await runCommand(task.param, config, serverResources);
             await runTask(task, config, serverResources);
         });
@@ -60,7 +60,7 @@ async function runTask(task, config, resources) {
         if (!taskExe) throw new AppError(`任务类型【${taskType}】未分配到执行器！`);
         result = await taskExe.execute(taskType, param);
 
-        parentPort.postMessage({
+        parentPort?.postMessage({
             type: TMT.TASK_COMPLETED,
             taskId,
             workerId,
@@ -87,7 +87,7 @@ function throwError(error, taskId, data) {
             data,
         },
     };
-    parentPort.postMessage(errorPayload);
+    parentPort?.postMessage(errorPayload);
 }
 
 async function closeMe() {

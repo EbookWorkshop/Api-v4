@@ -78,8 +78,8 @@ export class CreateBookRequest {
     static fromBody(body) {
         const { chapterList: chaptersDTO, type, ...bookDTO } = body;
         if (!bookDTO.bookName) throw new UserInputError("导入时，书名不能为空。");
-        const chap = chaptersDTO.some(c => !c.Title)
-        if (chap.length) throw new UserInputError("章节名不能为空。");
+        const hasEmptyTitle = chaptersDTO.some(c => !c.Title)
+        if (hasEmptyTitle) throw new UserInputError("章节名不能为空。");
         if (!bookDTO.cover) {
             if (type == "txt") bookDTO.cover = "#f2e3a4";
         }

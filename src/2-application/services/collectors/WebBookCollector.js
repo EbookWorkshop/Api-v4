@@ -68,7 +68,7 @@ export class WebBookCollector extends ICollector {
         const infoResult = await this.#handleInfo(info, isEmbedBookName);
         if (!infoResult) {
             // console.log("书籍信息处理失败：", infoResult, info);
-            return  this.#failureHandle(payload, { message: "获取书籍信息失败，可能是网页返回内容出错，也可能是配置采集规则不匹配！", name: "获取书籍信息失败！" }, `从地址采集数据失败：${urlPage}。`);
+            return this.#failureHandle(payload, { message: "获取书籍信息失败，可能是网页返回内容出错，也可能是配置采集规则不匹配！", name: "获取书籍信息失败！" }, `从地址采集数据失败：${urlPage}。`);
         }
 
         //采集/提取章节列表
@@ -102,7 +102,7 @@ export class WebBookCollector extends ICollector {
         const { sourcePage, infoPage, bookId, bookName } = option;
         //从页面获取的章节
         let chapterList = await this.#getChapterList(sourcePage);
-        if (chapterList.length === 0) return this.#failureHandle(payload, { message: "获取的章节列表为空！", name: "更新章节列表失败" }, `从地址采集数据失败：${sourcePage}。`);
+        if (chapterList.length === 0) return this.#failureHandle(option, { message: "获取的章节列表为空！", name: "更新章节列表失败" }, `从地址采集数据失败：${sourcePage}。`);
         chapterList = deduplicateByMultKey(chapterList, ["text", "url"]);//同目录内自我去重
 
         //【新数据：chapterList】与【已在数据库的数据:hasChaptList】 进行差集计算
@@ -134,7 +134,7 @@ export class WebBookCollector extends ICollector {
 
     /**
      * 处理书籍的主要信息
-     * @param {*} infoResult 
+     * @param {Map<string,object>} infoResult 
      * @returns 
      */
     async #handleInfo(infoResult, embedBookName) {
@@ -168,7 +168,7 @@ export class WebBookCollector extends ICollector {
         if (bookInfo[RuleName.BookCover]) {
             const coverRsl = await this.#coverService.storeCover({ source: bookInfo[RuleName.BookCover], embedBookName, bookName: bookInfo[RuleName.BookName] });
             bookInfo.CoverImg = coverRsl.coverValue;
-            delete infoResult[RuleName.BookCover];
+            infoResult.delete(RuleName.BookCover)
         }
         return bookInfo;
     }

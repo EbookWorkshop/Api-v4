@@ -144,7 +144,7 @@ export class AssetsController {
      */
     async deleteArchiveFile(ctx) {
         const fileName = ctx.params.name;
-        if (!fileName) throw UserInputError("文件名不能为空");
+        if (!fileName) throw new UserInputError("文件名不能为空");
         await this.#assetsService.deleteFile(fileName);
         ctx.body = true;
     }

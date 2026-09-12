@@ -1,4 +1,4 @@
-import { UserInputError } from '../../../5-shared/errors/index.js';
+// import { UserInputError } from '../../../5-shared/errors/index.js';
 // import { SendEmailRequest } from "../dtos/email/SendEmailRequest.dto.js";
 import { SaveAccountRequest } from '../dtos/email/SaveAccountRequest.dto.js';
 import { SaveInboxRequest } from '../dtos/email/SaveInboxRequest.dto.js';

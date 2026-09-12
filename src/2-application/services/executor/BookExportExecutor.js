@@ -18,7 +18,7 @@ export class BookExportExecutor extends ITaskExecutor {
      * 执行器
      * @param {*} taskType 
      * @param {Object} payload 
-     * @returns {{ path, filename }} 导出结果
+     * @returns {Promise<{ path, filename }>} 执行结果
      */
     async execute(taskType, payload) {
         try {

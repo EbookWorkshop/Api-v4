@@ -1,5 +1,5 @@
 import { ReviewRuleRepository } from '../../4-infrastructure/repositories/ReviewRuleRepository.js';
-import { AppError, UserInputError } from "../../5-shared/errors/index.js"
+import { UserInputError } from "../../5-shared/errors/index.js"
 
 export class ReviewRuleCommandService {
     /** @type {ReviewRuleRepository} */

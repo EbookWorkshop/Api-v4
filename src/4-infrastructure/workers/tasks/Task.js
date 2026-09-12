@@ -21,23 +21,24 @@ export class Task {
     /** @type {TASK_STATUS}  运行状态*/
     status;
 
+    startTime;
 
     /**
      * 创建一个 Task 实例。
      * @param {Object} options - 任务配置对象。
      * @param {string} options.taskId - 任务ID 缺省会自动创建
      * @param {any} options.param - 线程执行的传入参数（需要可序列化）
-     * @param {TASK_TYPES} [options.taskType] - 用于确认线程运行方式的标记
+     * @param {TASK_TYPES} options.taskType - 用于确认线程运行方式的标记
      * @param {number} [options.maxTaskNum] - 该类别允许的最大线程数，小于1则不限制
-     * @param {number} [options.highPriority] - 是【否】优先执行，默认为false
-     * @param {number} [options.useDB] - 是【否】需要数据库功能
+     * @param {boolean} [options.highPriority] - 是【否】优先执行，默认为false
+     * @param {boolean} [options.useDB] - 是【否】需要数据库功能
      * @param {undefined|function({error: Error, data: Object}): void} options.callback - 任务完成回调。
      */
     constructor({ taskId, param, taskType, maxTaskNum, highPriority, useDB, callback }) {
         this.taskId = taskId || randomUUID();
         this.param = param;
         this.taskType = taskType;
-        this.maxTaskNum = maxTaskNum;
+        this.maxTaskNum = maxTaskNum || 0;
         this.callback = callback;
         this.highPriority = highPriority || false;
         this.useDB = useDB || false;

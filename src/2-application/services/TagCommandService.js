@@ -13,9 +13,10 @@ export class TagCommandService {
 
     /**
      * 创建一个标签
-     * @param {string} tagText 标签文本
-     * @param {string|null|undefined} color 标签背景色
-     * @param {number} bookId 直接关联书本
+     * @param {object} object
+     * @param {string} object.tagText 标签文本
+     * @param {string|null|undefined} object.color 标签背景色
+     * @param {number} object.bookId 直接关联书本
      * @returns [isCreateTag,isAddToBook] 是否创建标签，是否关联书籍
      */
     async createTag({ tagText, color, bookId }) {
@@ -32,9 +33,10 @@ export class TagCommandService {
 
     /**
      * 修改标签信息
-     * @param {number} tagId 标签ID
-     * @param {*} tagText 标签文本
-     * @param {*} color 标签颜色
+     * @param {object} object
+     * @param {number} object.tagId 标签ID
+     * @param {*} object.tagText 标签文本
+     * @param {*} object.color 标签颜色
      * @returns 修改行数
      */
     async updateTag({ tagId, tagText, color }) {

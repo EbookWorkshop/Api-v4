@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 
 /**
- * @param {EmailController} emailController 
+ * @param {import("../controllers/EmailController.js").EmailController} emailController 
  * @returns 
  */
 export function createEmailRoutes(emailController) {

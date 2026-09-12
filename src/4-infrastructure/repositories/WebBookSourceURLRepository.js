@@ -45,13 +45,14 @@ export class WebBookSourceURLRepository {
      * @param {*} from 
      * @param {*} to 
      */
-    async changeHosts(from, to, { transaction }) {
+    async changeHosts(from, to, { transaction } = {}) {
         return await this.#sequelize.query(`
-            update [WebBookSourceURLs] 
-            SET Path = REPLACE(Path, :from, :to);`, {
-            replacements: { from, to },
+        UPDATE [WebBookSourceURLs]
+        SET Path = REPLACE(Path, :from, :to)
+        WHERE Path LIKE :likeFrom;`, {
+            replacements: { from, to, likeFrom: `%${from}%` },
             transaction
-        })
+        });
     }
     async add(data, option) {
         return this.#WebBookSourceURLModel.create(data, option);

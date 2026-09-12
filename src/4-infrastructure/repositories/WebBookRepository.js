@@ -50,11 +50,18 @@ export class WebBookRepository {
      * @param {Object} setting 
      * @returns 
      */
-    async create(data, { transaction }) {
+    async create(data, { transaction } = {}) {
         return await this.#WebBookModel.create(data, { transaction });
     }
 
-    async update(bookId, data, { transaction }) {
+    /**
+     * 
+     * @param {*} bookId 
+     * @param {*} data 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns 
+     */
+    async update(bookId, data, { transaction } = {}) {
         return this.#WebBookModel.update({
             ...data
         }, {

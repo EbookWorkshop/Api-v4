@@ -1,6 +1,5 @@
 
 import { EXPORT_EVENTS } from "../constants/Event.js";
-import { IFileWriter } from "../ports/IFileWriter.js"
 import { BookExportData } from '../dto/BookExportData.dto.js';
 import { BookQueryService } from "../services/BookQueryService.js"
 import { ChapterQueryService } from "../services/ChapterQueryService.js"
@@ -14,14 +13,14 @@ import { AppError } from "../../5-shared/errors/index.js";
 export class BookExportService {
     /** @type {BookQueryService} */
     #bookQueryService;
-    /** @type {VolumeQueryService} */
+    /** @type {import('./VolumeQueryService.js').VolumeQueryService} */
     #volumeQueryService;
     /** @type {ChapterQueryService} */
     #chapterQueryService;
 
-    /** @type {IFileWriter} */
-    #fileWriter;
-    /** @type {CoverService} */
+    // /** @type {IFileWriter} */
+    // #fileWriter;
+    /** @type {import("./CoverService.js").CoverService} */
     #coverService;
 
     /** @type {GeneratorFactory} */
@@ -34,13 +33,12 @@ export class BookExportService {
     #resultWarning;
 
     /**
-     * @param {{book:BookQueryService,volume:VolumeQueryService,chapter:ChapterQueryService}} bookService 
+     * @param {{book:BookQueryService,volume:import('./VolumeQueryService.js').VolumeQueryService,chapter:ChapterQueryService}} bookService 
      * @param {GeneratorFactory} generatorFactory 
-     * @param {IFileWriter} fileWriter 
      * @param {EventManager} eventMgr 
      * @param {Object} config 
      */
-    constructor(bookService, generatorFactory, fileWriter, coverService, textCleanup, eventMgr, config) {
+    constructor(bookService, generatorFactory, coverService, textCleanup, eventMgr, config) {
         const { book, volume, chapter } = bookService;
         this.#bookQueryService = bookService.book;
         this.#volumeQueryService = bookService.volume;
@@ -49,7 +47,7 @@ export class BookExportService {
         if (!book || !volume || !chapter) throw new AppError("[BookExportService]初始化失败，基础服务缺失！");
 
         this.#generatorFactory = generatorFactory;
-        this.#fileWriter = fileWriter;
+        // this.#fileWriter = fileWriter;
         this.#coverService = coverService;
         this.#textCleanup = textCleanup;
         this.#eventManager = eventMgr;
@@ -77,11 +75,12 @@ export class BookExportService {
     /**
      * 导出书本
      * @param {number} bookId 
-     * @param {epub|pdf|txt} format 文件格式
+     * @param {"epub"|"pdf"|"txt"} format 文件格式
      * @param {object} setting 
-     * @returns {{ path, filename,warnings }} 导出结果
+     * @returns {Promise<{ path, filename,warnings }>} 导出结果
      */
     async exportBook(bookId, format, setting) {
+        this.#resultWarning = [];
         let result = null;
         let runErr = null;
         let bookName = "";
@@ -150,17 +149,17 @@ export class BookExportService {
 
     /**
      * 应用排版
-     * @param {Array<{Title,Content}>} chapters 
+     * @param {Array<any>} volumes
+     * @param {Array<{Title,Content,VolumeId}>} chapters 
      * @returns {Array<{title,content}>}
-     * @param {*} setting 
      */
     #applyTypography(volumes, chapters) {
         let resultChapt = chapters.map(({ Title: title, Content: content, VolumeId }) => ({ title, content, VolumeId }));
 
         for (let chap of resultChapt) {
             if (!chap.content) {
-                chap.content = title + "\n\n-= 章节内容缺失 =-";
-                this.#resultWarning.push(`【缺失正文】：\t${title}`);
+                chap.content = chap.title + "\n\n-= 章节内容缺失 =-";
+                this.#resultWarning.push(`【缺失正文】：\t${chap.title}`);
             }
             let rows = chap.content?.split("\n");//正文按行分割
 

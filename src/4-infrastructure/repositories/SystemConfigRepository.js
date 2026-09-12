@@ -10,7 +10,7 @@ export class SystemConfigRepository {
      * 查找配置值
      * @param {string} group - 功能分组
      * @param {string} name - 配置名
-     * @param {object} options - 可选项（如 transaction）
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      * @returns {Promise<string|null>}
      */
     async findValue(group, name, options = {}) {
@@ -26,8 +26,7 @@ export class SystemConfigRepository {
     /**
      * 查找配置值
      * @param {string} group - 功能分组
-     * @param {string} name - 配置名
-     * @param {object} options - 可选项（如 transaction）
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      * @returns {Promise<string|null>}
      */
     async findValueGroup(group, options = {}) {
@@ -45,7 +44,7 @@ export class SystemConfigRepository {
      * @param {string} group
      * @param {string} name
      * @param {string} value
-     * @param {object} options
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      * @returns {Promise<{ record: any, created: boolean }>}
      */
     async upsert(group, name, value, options = {}) {
@@ -81,7 +80,7 @@ export class SystemConfigRepository {
      * 删除配置
      * @param {string} group - 可为 null（只按 name 删除）
      * @param {string} name
-     * @param {object} options
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      * @returns {Promise<number>} 删除的行数
      */
     async destroy(group, name, options = {}) {

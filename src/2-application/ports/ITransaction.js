@@ -2,7 +2,7 @@
 export class ITransaction {
     /**
      * 开始事务，并获得事务
-     * @returns {Transaction} 事务对象
+     * @returns {Promise<import('sequelize').Transaction>} 事务对象
      */
     async begin() { throw new Error('Not implemented'); }
     /**
@@ -16,7 +16,7 @@ export class ITransaction {
 
     /**
      * 托管事务
-     * @param {function (transaction) {}} work 
+     * @param {function (transaction:import('sequelize').Transaction) {}} work 
      * @returns 
      */
     async runInTransaction(work) { throw new Error('Not implemented'); }

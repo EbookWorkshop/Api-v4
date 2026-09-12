@@ -74,7 +74,6 @@ export class ChapterRepository {
     /**
      * 查找指定书籍的章节
      * @param {number} bookId 
-     * @param {Array<number>} volumeIds 
      */
     async findChaptersByBookId(bookId) {
         return this.#ChapterModel.findAll({
@@ -93,7 +92,7 @@ export class ChapterRepository {
      * @param {*} bookId 
      * @returns 
      */
-    async findIdOrderByBookId(bookId, { transaction }) {
+    async findIdOrderByBookId(bookId, { transaction } = {}) {
         return this.#ChapterModel.findAll({
             attributes: ["id", "OrderNum"],
             where: { BookId: bookId },
@@ -122,7 +121,7 @@ export class ChapterRepository {
      * 查找上一章
      * @param {number} bookId 书籍ID
      * @param {number} currentOrderNum 当前章节序号
-     * @returns {Promise<Model|null>}
+     * @returns {Promise<import("sequelize").Model|null>}
      */
     async findPrevious(bookId, currentOrderNum) {
         return await this.#ChapterModel.findOne({
@@ -254,7 +253,7 @@ export class ChapterRepository {
 
     /**
      * 插入或更新一章
-     * @param {Object} [chapter] 章节信息
+     * @param {Object} chapter 章节信息
      * @param {number} [chapter.id] 章节ID
      * @param {number} [chapter.BookId] 书籍ID
      * @param {string} [chapter.Title] 章节标题     
@@ -267,7 +266,10 @@ export class ChapterRepository {
         //校验卷需要属于同一本书
         if (chapter.VolumeId) {
             const volume = await this.#VolumeModel.findByPk(chapter.VolumeId);
-            if (!volume || volume.BookId != chapter.BookId) throw new UserInputError("设置的卷不存在或不属于当前书籍，请选择同一本书内的卷。");
+            if (!volume) throw new UserInputError("设置的卷不存在，请选择同一本书内的卷。");
+
+            const targetBookId = chapter.BookId ?? (await this.#ChapterModel.findByPk(chapter.id, { attributes: ['BookId'] }))?.BookId;
+            if (volume.BookId != targetBookId) throw new UserInputError("设置的卷不属于当前书籍。");
         }
         if (!chapter.id) return false;
 
@@ -293,12 +295,13 @@ export class ChapterRepository {
 
     /**
      * 批量插入章节
-     * @param {number} bookId 将插入的书籍
-     * @param {number|undefined} volumeId 插到指定卷中，-1为不设置卷
-     * @param {Array<{Content:string,OrderNum:number,Title:string}>} chapters 章节列表
+     * @param {object} info 
+     * @param {number} info.bookId 将插入的书籍
+     * @param {number|undefined|null} info.volumeId 插到指定卷中，-1为不设置卷
+     * @param {Array<{Content:string,OrderNum:number,Title:string,VolumeId:number}>} info.chapters 章节列表
      * @param {Object} setting
      */
-    async batchInsertChapters({ bookId, volumeId, chapters }, { transaction }) {
+    async batchInsertChapters({ bookId, volumeId, chapters }, { transaction } = {}) {
         const { sequelize } = this.#ChapterModel;
         const trans = transaction ? transaction : await sequelize.transaction();
 
@@ -331,9 +334,9 @@ export class ChapterRepository {
 
     /**
      * 批量更新章节顺序
-     * @param {Object} [orderData] 新的排序配置
-     * @param {Object} [orderData.indexId] 待更新的章节ID
-     * @param {Object} [orderData.newOrder] 要更新到的新序号
+     * @param {Array<{indexId, newOrder}>} orderData 新的排序配置
+     * @param {number} [orderData.n.indexId] 待更新的章节ID
+     * @param {number} [orderData.n.newOrder] 要更新到的新序号
      * @returns 
      */
     async updateOrder(orderData) {
@@ -418,7 +421,7 @@ export class ChapterRepository {
      * @param {*} content 
      * @param {Object} setting 
      */
-    async updateIntroduction({ bookId, content }, { transaction }) {
+    async updateIntroduction({ bookId, content }, { transaction } = {}) {
         const [ins, isCreate] = await this.#ChapterModel.findOrCreate({
             where: {
                 BookId: bookId,

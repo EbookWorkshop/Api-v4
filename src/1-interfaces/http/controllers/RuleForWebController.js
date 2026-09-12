@@ -304,7 +304,7 @@ export class RuleForWebController {
      */
     async batchUpsertBotRules(ctx) {
         const rules = ctx.request.body;//TODO: 接入DTO层
-        if (!Array.isArray(rules) || rules.length == 0) throw UserInputError("未发现导入规则。");
+        if (!Array.isArray(rules) || rules.length == 0) throw new UserInputError("未发现导入规则。");
         const result = await this.#ruleForWebCommandService.batchUpsertRules(rules);
         ctx.body = result;
     }

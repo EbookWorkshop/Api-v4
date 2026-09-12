@@ -19,9 +19,10 @@ export class IFileScanner {
     /**
      * 按后缀类型，列出指定目录下符合要求的文件
      * @param {*} sourcePath 相对资源目录的相对路径
+     * @param {object} [option]
      * @param {number[]} [option.filetype] - 仅需要的文件后缀，用于限定获取指定类型文件的列表
      * @param {boolean} [option.detail] - 是否返回明细信息（如大小，创建日期等）
-     * @returns 
+     * @returns {Promise<Array<any>>}
      */
     async listFiles(sourcePath, options = {}) {
         throw new Error('接口方法尚未实现');
@@ -30,7 +31,7 @@ export class IFileScanner {
     /**
      * 检查文件是否存在
      * @param {*} filePath 文件路径
-     * @returns {boolean} 文件是否存在
+     * @returns {Promise<boolean>} 文件是否存在
      */
     async accessFile(filePath) {
         throw new Error('接口方法尚未实现');

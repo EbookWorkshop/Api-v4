@@ -72,7 +72,7 @@ export class UpdateBookMetadataRequest {
         if (bookInfo.coverType === "默认") metadata.CoverImg = null;
         else if (bookInfo.coverType === "图片") metadata.embelBookName = bookInfo.embelBookName === "true";
 
-        if (request.files.coverFile) {
+        if (request.files?.coverFile) {
             metadata.converFile = request.files.coverFile;
             metadata.coverShowName = bookInfo.showBookName;
         }

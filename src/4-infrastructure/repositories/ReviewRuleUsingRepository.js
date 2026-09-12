@@ -1,4 +1,3 @@
-import { Op } from "sequelize";
 export class ReviewRuleUsingRepository {
     #ReviewRuleUsingModel;
     #ReviewRuleModel;
@@ -39,7 +38,7 @@ export class ReviewRuleUsingRepository {
 
     async create(bookId, ruleId) {
         let whereParam = { BookId: bookId, RuleId: ruleId };
-        let [rule, created] = await this.#ReviewRuleUsingModel.findOrCreate({
+        let [_, created] = await this.#ReviewRuleUsingModel.findOrCreate({
             where: whereParam,
             defaults: {
                 BookId: bookId,

@@ -20,7 +20,7 @@ export class GeneratorFactory extends IGeneratorFactory {
 
     /**
      * 创建生成器
-     * @param {epub|pdf|txt} format 生成器文件格式 - 'epub' | 'pdf' | 'txt'
+     * @param {"epub"|"pdf"|"txt"} format 生成器文件格式 - 'epub' | 'pdf' | 'txt'
      * @returns 
      */
     create(format) {

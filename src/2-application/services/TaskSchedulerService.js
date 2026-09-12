@@ -4,9 +4,9 @@ import { Task } from '../../4-infrastructure/workers/index.js';
 import { AppError } from "../../5-shared/errors/index.js";
 
 export class TaskSchedulerService {
-    /** @type {WorkerPool} 线程池 */
+    /** @type {import("../../4-infrastructure/workers/index.js").WorkerPool} 线程池 */
     #workerPool;
-    /** @type {BatchProgressTracker} 批量统计 */
+    /** @type {import("./BatchProgressTracker.js").BatchProgressTracker} 批量统计 */
     #progressTracker;
 
     /**

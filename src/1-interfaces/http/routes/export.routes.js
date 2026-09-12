@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 
 /**
- * @param {ExportController} exportController 
+ * @param {import("../controllers/ExportController.js").ExportController} exportController 
  * @returns 
  */
 export function createExportRoutes(exportController) {

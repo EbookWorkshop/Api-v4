@@ -71,12 +71,15 @@ export class VolumeRepository {
      * @param {*} volumeOrders 
      */
     async reorderVolumes(volumeOrders) {
-        const transaction = await this.#sequelize.transaction();
-        await Promise.all(volumeOrders.map(v => {
-            return this.#VolumeModel.update({ OrderNum: v.orderNum }, { where: { id: v.volumeId }, transaction });
-        }));
-        await transaction.commit();
-        return true;
+        return this.#sequelize.transaction(async (transaction) => {
+            for (const v of volumeOrders) {
+                await this.#VolumeModel.update(
+                    { OrderNum: v.orderNum },
+                    { where: { id: v.volumeId }, transaction }
+                );
+            }
+            return true;
+        });
     }
 
     /**

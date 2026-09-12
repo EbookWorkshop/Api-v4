@@ -47,8 +47,8 @@ export class VolumeReorderRequest {
      */
     static fromBody(body) {
         const { volumeOrders } = body;
-        const errNum = volumeOrders.some(item => isNaN(item.orderNum) || isNaN(item.volumeId));
-        if (volumeOrders.length == 0 || errNum.length > 0) throw new UserInputError("volumeOrders 必须为非空数组，且每个元素需包含 orderNum 和 volumeId");
+        const hasInvalidNum = volumeOrders.some(item => isNaN(item.orderNum) || isNaN(item.volumeId));
+        if (volumeOrders.length === 0 || hasInvalidNum) throw new UserInputError("volumeOrders 必须为非空数组，且每个元素需包含 orderNum 和 volumeId");
         return volumeOrders;
     }
 }

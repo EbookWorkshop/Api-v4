@@ -13,7 +13,7 @@ import { createMainRouter } from './routes/index.js';
  *   2. 挂载 Koa 路由
  *   3. 创建并返回 Node.js 原生 HTTP Server（封装了 Koa 回调）
  * 
- * @param {Koa} app - Koa 实例
+ * @param {import("koa").Koa} app - Koa 实例
  * @param {Object} config - 配置对象
  * @param {Object} controllers - 控制器映射
  * @returns {http.Server} 原生 HTTP 服务器实例（尚未监听端口）

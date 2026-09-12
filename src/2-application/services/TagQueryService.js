@@ -17,7 +17,7 @@ export class TagQueryService {
      * @returns 
      */
     async listTags(hasBook) {
-        const data = await this.#tagRepository.findAllWithBooks(true, hasBook);
+        const data = await this.#tagRepository.findAllWithBooks(hasBook);
         let result = data.map((t) => {
             return {
                 id: t.id,

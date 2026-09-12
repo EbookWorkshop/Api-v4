@@ -1,4 +1,4 @@
-import Sequelize, { Op } from "sequelize";
+import Sequelize from "sequelize";
 export class RuleForWebRepository {
     #RuleForWebModel;
     #sequelize;
@@ -71,11 +71,23 @@ export class RuleForWebRepository {
         return data;
     }
 
-    async create(rule, { transaction }) {
+    /**
+     * 
+     * @param {*} rule 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns 
+     */
+    async create(rule, { transaction } = {}) {
         return this.#RuleForWebModel.create(rule, { transaction })
     }
 
-    async delete(host, { transaction }) {
+    /**
+     * 
+     * @param {*} host 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns 
+     */
+    async delete(host, { transaction } = {}) {
         return this.#RuleForWebModel.destroy({
             where: { Host: host },
             transaction

@@ -1,4 +1,4 @@
-import { Op, literal } from "sequelize";
+import { literal } from "sequelize";
 export class ReviewRuleRepository {
     #ReviewRuleModel;
     #ReviewRuleUsingModel;

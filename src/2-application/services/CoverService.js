@@ -36,7 +36,7 @@ export class CoverService {
 
     /**
      * 存储封面（从来源生成并保存到静态目录）
-     * @param {{ source:string, embedBookName }} option
+     * @param {{ source:string, embedBookName ,bookName}} option
      * @returns {Promise<CoverStorageResult>}
      */
     async storeCover({ source, embedBookName, bookName }) {
@@ -68,7 +68,7 @@ export class CoverService {
      * @param {string} coverImg 
      * @param {boolean} embedBookName 
      * @param {Base64URLString} coverImageData 
-     * @returns {{path:string,temp:boolean}} 可以使用的图片实际路径，是否临时文件（需要自己删除
+     * @returns {Promise<{path:string,temp:boolean,warnings:string[]}>} 可以使用的图片实际路径，是否临时文件（需要自己删除
      */
     async prepareCoverForExport(coverImg, embedBookName, coverImageData) {
         const warnings = [];

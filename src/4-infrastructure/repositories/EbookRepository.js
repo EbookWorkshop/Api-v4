@@ -135,7 +135,7 @@ export class EbookRepository {
      * @param {Object} setting 
      * @returns 
      */
-    async create(data, { transaction }) {
+    async create(data, { transaction } = {}) {
         return await this.#EbookModel.create(data, { transaction });
     }
 
@@ -156,7 +156,7 @@ export class EbookRepository {
      * @param {*} metadata 
      * @param {Object} setting 
      */
-    async updateMetadata(id, metadata, { transaction }) {
+    async updateMetadata(id, metadata, { transaction } = {}) {
         return this.#EbookModel.update(metadata, { where: { id: id }, transaction });
     }
 }

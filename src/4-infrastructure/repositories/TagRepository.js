@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { AppError, UserInputError } from '../../5-shared/errors/index.js';
+import { UserInputError } from '../../5-shared/errors/index.js';
 export class TagRepository {
     #TagModel;
     #EBookTag;
@@ -47,13 +47,14 @@ export class TagRepository {
 
     /**
      * 创建一个标签
-     * @param {string} tagText 标签文本
-     * @param {string|null|undefined} color 标签背景色
-     * @param {number} bookId 直接关联书本
+     * @param {object} option
+     * @param {string} [option.tagText] 标签文本
+     * @param {string|null|undefined} [option.color] 标签背景色
+     * @param {number} [option.bookId] 直接关联书本
      * @returns [isCreateTag,isAddToBook] 是否创建标签，是否关联书籍
      */
     async createTag({ tagText, color, bookId }) {
-        const [myTag, isCreate] = await this.#TagModel.findOrCreate({
+        const [myTag] = await this.#TagModel.findOrCreate({
             where: { Text: tagText },
             defaults: {//设置Create时的默认值
                 Text: tagText,
@@ -61,12 +62,9 @@ export class TagRepository {
             }
         });
 
-        let addToBook = false;
-
         if (bookId) {
             try {
-                let _;
-                [_, addToBook] = await this.#EBookTag.findOrCreate({
+                await this.#EBookTag.findOrCreate({
                     where: {
                         TagId: myTag.id,
                         BookId: bookId
@@ -90,9 +88,10 @@ export class TagRepository {
 
     /**
      * 修改标签信息
-     * @param {number} tagId 标签ID
-     * @param {*} tagText 标签文本
-     * @param {*} color 标签颜色
+     * @param {object} option
+     * @param {number} option.tagId 标签ID
+     * @param {*} option.tagText 标签文本
+     * @param {*} option.color 标签颜色
      * @returns 修改行数
      */
     async updateTag({ tagId, tagText, color }) {

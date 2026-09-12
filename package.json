@@ -7,7 +7,8 @@
         "start": "node src/app.js",
         "dev": "node --watch src/app.js",
         "docs": "node scripts/generate-docs.js",
-        "db": "cp -f data/latest.sqlite data/dev.sqlite"
+        "db": "cp -f data/latest.sqlite data/dev.sqlite",
+        "check": "tsc --noEmit"
     },
     "dependencies": {
         "@koa/router": "^15.7.0",
@@ -25,5 +26,8 @@
         "socket.io": "^4.8.3",
         "sqlite3": "^6.0.1",
         "swagger-jsdoc": "^6.3.0"
+    },
+    "devDependencies": {
+        "typescript": "^7.0.2"
     }
 }

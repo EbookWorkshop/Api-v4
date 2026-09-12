@@ -96,7 +96,8 @@ export async function listFiles(sourcePath, options = { filetype: null, detail: 
  * 写入文件
  * @param {string|Array<string>} filePath 存储路径
  * @param {*} data 写入数据
- * @param {ObjectEncodingOptions} setting 传入接口的选项，如  { encoding: 'utf8' }
+ * @param {any} setting 传入接口的选项，如  { encoding: 'utf8' }
+ * @param {object} [setting] 
  * @param {string} setting.format 传入数据格式，如 base64
  * @returns 
  */
@@ -105,8 +106,10 @@ export async function saveFile(filePath, data, setting = { encoding: 'utf8' }) {
     if (format == "base64") data = Buffer.from(data, 'base64');
 
     //确保文件夹存在
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-    return fs.writeFile(filePath, data, writeOption);//writeFile的 { recursive: true } 设置不生效，不知为什么
+    let myPath = filePath;
+    if (Array.isArray(myPath)) myPath = path.join(...myPath);
+    await fs.mkdir(path.dirname(myPath), { recursive: true });
+    return fs.writeFile(myPath, data, writeOption);//writeFile的 { recursive: true } 设置不生效，不知为什么
 }
 
 /**

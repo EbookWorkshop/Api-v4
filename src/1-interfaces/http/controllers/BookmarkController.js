@@ -2,7 +2,6 @@
 import { BookmarkService } from "../../../2-application/services/BookmarkService.js";
 import { ChapterRequest } from "../dtos/components/Chapter.dto.js";
 import { IdRequest } from "../dtos/components/IdRequest.dto.js";
-import { AppError, UserInputError } from '../../../5-shared/errors/index.js';
 
 export class BookmarkController {
     #bookmarkService;

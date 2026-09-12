@@ -19,7 +19,7 @@ export class WebBookChapterRepository {
      * @param {Array<{WebTitle:string,IndexId:number}>} chapters 章节列表
      * @param {Object} setting
      */
-    async batchInsertChapters({ chapters }, { transaction }) {
+    async batchInsertChapters({ chapters }, { transaction } = {}) {
         const { sequelize } = this.#WebBookChapterModel;
         const trans = transaction ? transaction : await sequelize.transaction();
 
@@ -36,7 +36,7 @@ export class WebBookChapterRepository {
         return true;
     }
 
-    async findIdOrderByBookId(bookId, { transaction }) {
+    async findIdOrderByBookId(bookId, { transaction } = {}) {
         return this.#WebBookChapterModel.findAll({
             attributes: ["id", "IndexId"],
             include: [{

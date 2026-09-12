@@ -16,7 +16,7 @@ export class TxtGenerator extends IGenerator {
     /**
      * 生成电子书文件
      * @param {BookExportData} ebook - 统一装配好的数据
-     * @param {string} outputPath - 输出文件路径（含后缀）
+     * @param {string} [outputPath] - 输出文件路径（含后缀）
      * @returns {Promise<{ path:string, filename:string, warnings:Array<string> }>} 导出结果
      */
     async generate(ebook, outputPath) {
@@ -32,7 +32,7 @@ export class TxtGenerator extends IGenerator {
             writeStream = createWriteStream(outputPath);
             await writeOnStream(writeStream, `${ebook.title}\n`);
             if (ebook.author) await writeOnStream(writeStream, `作者：${ebook.author}\n`);
-            if (ebook.publisher) await writeOnStream(writeStream, `${ebook.publisher}\n`);
+            if (ebook.setting?.publisher) await writeOnStream(writeStream, `${ebook.setting?.publisher}\n`);
             if (ebook.introduction) await writeOnStream(writeStream, `\n简介：\n${ebook.introduction}\n\n`);
 
             for (let chap of ebook.chapters) {

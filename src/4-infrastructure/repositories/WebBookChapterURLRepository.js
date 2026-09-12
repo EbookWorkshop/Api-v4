@@ -13,14 +13,16 @@ export class WebBookChapterURLRepository {
      * 将记录的地址从from改到to
      * @param {*} from 
      * @param {*} to 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      */
-    async changeHosts(from, to, { transaction }) {
+    async changeHosts(from, to, { transaction } = {}) {
         return await this.#sequelize.query(`
-            update [WebBookChapterURLs] 
-            SET Path = REPLACE(Path, :from, :to);`, {
-            replacements: { from, to },
+        UPDATE [WebBookChapterURLs]
+        SET Path = REPLACE(Path, :from, :to)
+        WHERE Path LIKE :likeFrom;`, {
+            replacements: { from, to, likeFrom: `%${from}%` },
             transaction
-        })
+        });
     }
 
     /**
@@ -34,7 +36,7 @@ export class WebBookChapterURLRepository {
                 model: this.#WebBookChapterModel,
                 where: { IndexId: chapterId },
                 attributes: [], // 不需要查章节字段，只用来做过滤
-                require: true   // 转为 INNER JOIN，确保关联存在才返回     
+                required: true   // 转为 INNER JOIN，确保关联存在才返回     
             }],
             attributes: { exclude: ["createdAt", "updatedAt"] },
             raw: true
@@ -58,10 +60,10 @@ export class WebBookChapterURLRepository {
     /**
      * 批量插入
      * @param {*} param0 
-     * @param {*} option 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      * @returns 
      */
-    async batchInsert({chapterURLs}, { transaction }) {
+    async batchInsert({ chapterURLs }, { transaction } = {}) {
         const { sequelize } = this.#WebBookChapterModel;
         const trans = transaction ? transaction : await sequelize.transaction();
         const processedChapters = chapterURLs;

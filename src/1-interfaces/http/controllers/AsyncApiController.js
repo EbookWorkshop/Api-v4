@@ -1,12 +1,11 @@
 
-import { AppError, UserInputError } from '../../../5-shared/errors/index.js';
 import { findFastestCDN } from "../../../5-shared/utils/site.js"
 
 export class AsyncApiController {
     #config;
     #cdns;
     /**
-     * @param {config} config 
+     * @param {object} config 
      */
     constructor(config) {
         this.#config = config;
@@ -74,7 +73,7 @@ export class AsyncApiController {
     }
 
     async getStudio(ctx) {
-        const { version, server: { port } } = this.#config;
+        const { server: { port } } = this.#config;
         const studioUrl = `https://studio.asyncapi.com/?url=http://localhost:${port}/asyncapi.json`
         ctx.redirect(studioUrl);
     }

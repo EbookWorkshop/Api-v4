@@ -39,13 +39,14 @@ export class ChapterCommandService {
 
     /**
      * 插入或更新章节
-     * @param {Object} [chapter] 章节信息
+     * @param {Object} chapter 章节信息
      * @param {number} [chapter.IndexId] 章节ID
      * @param {number} [chapter.BookId] 书籍ID
      * @param {string} [chapter.Title] 章节标题     
      * @param {string} [chapter.Content] 章节正文
      * @param {number} [chapter.VolumeId] 卷ID
      * @param {number} [chapter.OrderNum] 章节排序号
+     * @param {number} [chapter.id] 章节ID
      */
     async upsertChapter(chapter) {
         const { IndexId, ...chp } = chapter;
@@ -70,9 +71,10 @@ export class ChapterCommandService {
 
     /**
      * 批量插入章节
-     * @param {number} bookId 将插入的书籍
-     * @param {number|undefined} volumeId 插到指定卷中，-1为不设置卷
-     * @param {Array<{Content:string,OrderNum:number,Title:string}>} chapters 章节列表
+     * @param {object} info 
+     * @param {number} info.bookId 将插入的书籍
+     * @param {number|undefined} info.volumeId 插到指定卷中，-1为不设置卷
+     * @param {Array<{Content:string,OrderNum:number,Title:string}>} info.chapters 章节列表
      */
     async batchInsertChapters({ bookId, volumeId, chapters }) {
         return await this.#chapterRepository.batchInsertChapters({ bookId, volumeId, chapters });

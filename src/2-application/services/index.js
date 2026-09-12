@@ -14,6 +14,7 @@ import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
 import { WebBookCommandService } from './WebBookCommandService.js';
 import { WebBookSourceURLService } from './WebBookSourceURLService.js';
 import { WebBookChapterURLService } from './WebBookChapterURLService.js';
+import { WebBookChapterService } from "./WebBookChapterService.js"
 import { CoverService } from "./CoverService.js"
 
 import { SystemConfigService } from "./SystemConfigService.js";
@@ -83,6 +84,12 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
     const webBookQueryService = new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository);
     const coverService = new CoverService(fileWriter, null, config);
+    const webBookChapterService = new WebBookChapterService(
+        databaseTransaction,
+        repositories.chapterRepository,
+        repositories.webBookChapterRepository,
+        repositories.webBookChapterURLRepository
+    );
 
     return {
         bookQuery: new BookQueryService(ebookRepository),
@@ -91,7 +98,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
 
         webBookQuery: webBookQueryService,
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
-        webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction),
+        webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction, repositories.ebookRepository, repositories.chapterRepository, repositories.webBookSourceURLRepository, webBookChapterService),
         webBookSourceURL: new WebBookSourceURLService(repositories.webBookSourceURLRepository, repositories.webBookChapterURLRepository, repositories.webBookRepository, databaseTransaction),
         webBookChapterURL: new WebBookChapterURLService(repositories.webBookChapterURLRepository, webBookQueryService),
 

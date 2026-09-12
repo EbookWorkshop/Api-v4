@@ -24,14 +24,16 @@ import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js";
 /** 
  * 负责组装出导出器
  * @param {Object} config 配置
- * @param {TASK_TYPES} taskType 任务类型
+ * @param {import("../constants/Task.js").TASK_TYPES} taskType 任务类型
  * @param {Object} repositories 线程/服务器资源
- * @returns {ITaskExecutor}
+ * @returns {Promise<ITaskExecutor>}
  */
 export async function createExportBookTask(config, taskType, { repositories }) {
     const { ebookRepository, volumeRepository, chapterRepository, reviewRuleRepository } = repositories;
+    const textCleanup = new TextCleanupService(reviewRuleRepository, new MemoryCache());
+    
     const bookServ = new BookQueryService(ebookRepository);
-    const chapServ = new ChapterQueryService(chapterRepository);
+    const chapServ = new ChapterQueryService(chapterRepository, textCleanup);
     const volumeServ = new VolumeQueryService(volumeRepository);
 
     const fileServ = new FileSystemWriter(config.repository?.path);
@@ -39,7 +41,6 @@ export async function createExportBookTask(config, taskType, { repositories }) {
     const factory = new GeneratorFactory(tempFolder);
     const coverService = new CoverService(fileServ, null, config);
     const eventMgr = new EventManager(new EventEmitter());
-    const textCleanup = new TextCleanupService(reviewRuleRepository, new MemoryCache());
     const systemConfigService = new SystemConfigService(repositories.systemConfigRepository);
 
 
@@ -58,7 +59,7 @@ export async function createExportBookTask(config, taskType, { repositories }) {
         book: bookServ,
         volume: volumeServ,
         chapter: chapServ,
-    }, factory, fileServ, coverService, textCleanup, eventMgr, config);
+    }, factory, coverService, textCleanup, eventMgr, config);
     return new BookExportExecutor(bookExpServ);
 }
 export default createExportBookTask;

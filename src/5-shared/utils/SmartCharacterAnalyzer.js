@@ -71,7 +71,7 @@ export class SmartCharacterAnalyzer {
         const freqMap = new Map();
         for (const char of text) {
             if (char.trim() === '') continue;
-            const block = this.getUnicodeBlock(char);
+            // const block = this.getUnicodeBlock(char);
             freqMap.set(char, (freqMap.get(char) || 0) + 1);
         }
         return freqMap;

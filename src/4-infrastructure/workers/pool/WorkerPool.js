@@ -41,7 +41,7 @@ export class WorkerPool {
      */
     #workerQueueWithDB;
 
-    /** @type {WeakMap<Worker,Object>} 当前线程附带数据*/
+    /** @type {WeakMap<Worker,Object>|WorkerData} 当前线程附带数据*/
     #workerData;
 
     /**
@@ -64,8 +64,9 @@ export class WorkerPool {
 
     /**
      * 初始化线程池
-     * @param {number} numThreads 最大线程数
-     * @param {EventManager} eventSer 消息管理
+     * @param {*} config 
+     * @param {EventManager} eventSer 
+     * @param {*} param2 
      */
     constructor(config, eventSer, { numThreads } = {}) {
         this.#config = config;
@@ -392,7 +393,7 @@ export class WorkerPool {
 
     /**
      * 重启任务
-     * @param {UUID} tid 
+     * @param {string} tid —— uuid
      */
     restartTask(tid) {
         const oldTask = this.#taskHistory.find(t => t.taskId === tid);

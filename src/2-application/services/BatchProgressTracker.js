@@ -51,7 +51,7 @@ export class BatchProgressTracker {
     #eventManager;
 
     /**
-     * @param {EventManager} eventManager
+     * @param {import("../../4-infrastructure/event/EventManager.js").EventManager} eventManager
      */
     constructor(eventManager) {
         if (!eventManager) {

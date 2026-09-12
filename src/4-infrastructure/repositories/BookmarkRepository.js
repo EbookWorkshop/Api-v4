@@ -26,7 +26,7 @@ export class BookmarkRepository {
                 }, {
                     model: this.#VolumeModel,
                     attributes: ['Title'],
-                    require: false,
+                    required: false,
                     as: 'Volume'
                 }]
             }],

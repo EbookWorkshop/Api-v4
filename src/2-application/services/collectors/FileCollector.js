@@ -40,7 +40,7 @@ export class FileCollector extends ICollector {
             pageCtx.push(content);
 
             const pg = result.get(RuleName.ContentNextPage);
-            if (Error.isError(pg[0])) { runTime++; console.debug(`内容采集失败，重试${runTime}次：`, urlPage); continue; }
+            if (pg[0]?.name === 'Error' || pg[0] instanceof Error) { runTime++; console.debug(`内容采集失败，重试${runTime}次：`, urlPage); continue; }
             const { Rule: rule, text, url } = pg[0];
             if (text === rule.checkSetting) urlPage = url;
             else break;

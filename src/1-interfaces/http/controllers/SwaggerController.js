@@ -1,4 +1,4 @@
-import { AppError } from "../../../5-shared/errors/index.js";
+// import { AppError } from "../../../5-shared/errors/index.js";
 import { findFastestCDN } from "../../../5-shared/utils/site.js"
 
 export class SwaggerController {

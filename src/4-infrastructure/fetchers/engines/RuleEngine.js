@@ -97,7 +97,7 @@ export class RuleEngine {
 
             // 如果是 Content 规则，应用字典
             if (rule.ruleName === RuleName.Content && dictionaries.length > 0) {
-                if (Error.isError(ruleResult[0])) continue;
+                if (ruleResult[0]?.name === 'Error' || ruleResult[0] instanceof Error) continue;
                 const activeDicts = await this.filterActiveDictionaries(pageObj, dictionaries);
                 const combinedData = activeDicts.map(d => d.Data).join('\n');
                 ruleResult = ruleResult.map(item => ({
