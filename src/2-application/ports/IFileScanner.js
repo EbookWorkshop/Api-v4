@@ -11,6 +11,7 @@ export class IFileScanner {
      * 
      * @param {*} dirPath 相对资源目录的相对路径
      * @param {*} basename 文件名
+     * @returns {Promise<string|null>} 带后缀的完整文件名
      */
     async findFileByBasename(dirPath, basename) {
         throw new Error('接口方法尚未实现');

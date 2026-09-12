@@ -1,5 +1,5 @@
 import { VolumeRepository } from '../../4-infrastructure/repositories/VolumeRepository.js';
-import { AppError } from "../../5-shared/errors/index.js"
+// import { AppError } from "../../5-shared/errors/index.js"
 
 export class VolumeCommandService {
     /** @type {VolumeRepository} */
@@ -14,9 +14,10 @@ export class VolumeCommandService {
 
     /**
      * 创建一个新卷
-     * @param {Number} bookId 
-     * @param {String} title 
-     * @param {String?} introduction 
+     * @param {object} book 
+     * @param {number} book.bookId 
+     * @param {string} book.title 
+     * @param {string?} book.introduction 
      */
     async createVolume({ bookId, title, introduction }) {
         return this.#volumeRepository.createVolume({ bookId, title, introduction });
@@ -24,9 +25,10 @@ export class VolumeCommandService {
 
     /**
      * 更新一个新卷
-     * @param {Number} volumeId 
-     * @param {String} title 
-     * @param {String?} introduction 
+     * @param {object} volume 
+     * @param {number} volume.volumeId 
+     * @param {string} volume.title 
+     * @param {string?} volume.introduction 
      */
     async updateVolume({ volumeId, title, introduction }) {
         return this.#volumeRepository.updateVolume({ volumeId, title, introduction });

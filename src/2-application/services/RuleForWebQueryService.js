@@ -2,23 +2,16 @@ import { getHost } from "../../5-shared/utils/site.js";
 import { RULE_GROUP, RULE_GROUP_SETTING, RuleCommon } from "../../3-domain/constants/Rule.js"
 import { WEBSITE_TIMEOUT, WEBSITE_SCRAPING, WEBSITE_USERAGENT } from "../constants/SystemConfigGroup.js";
 import { RuleForWebRepository } from '../../4-infrastructure/repositories/RuleForWebRepository.js';
-import { AppError, UserInputError } from "../../5-shared/errors/index.js"
+import { AppError } from "../../5-shared/errors/index.js"
 
 const DEFAULT_SCRAPING = "puppeteer";
 
 export class RuleForWebQueryService {
     /** @type {RuleForWebRepository} */
     #ruleForWebRepository;
-    /** @type {SystemConfigService} */
     #systemConfigService;
-    /** @type {ReviewDictionaryService} */
     #reviewDictionaryService;
 
-    /**
-     * @param {RuleForWebRepository} ruleForWebRepository 
-     * @param {SystemConfigService} systemConfigService 
-     * @param {ReviewDictionaryService} reviewDictionaryService 
-     */
     constructor(ruleForWebRepository, systemConfigService, reviewDictionaryService) {
         this.#ruleForWebRepository = ruleForWebRepository;
         this.#systemConfigService = systemConfigService;

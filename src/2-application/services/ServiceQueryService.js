@@ -1,11 +1,11 @@
-import { AppError, UserInputError } from "../../5-shared/errors/index.js"
+// import { AppError, UserInputError } from "../../5-shared/errors/index.js"
 
 export class ServiceQueryService {
-    #config;
+    // #config;
     #serviceServer;
 
     constructor(config, serviceServer) {
-        this.#config = config;
+        // this.#config = config;
         this.#serviceServer = serviceServer;
     }
 

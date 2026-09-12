@@ -16,7 +16,7 @@ export class ITransaction {
 
     /**
      * 托管事务
-     * @param {function (transaction:import('sequelize').Transaction) {}} work 
+     * @param {function} work 
      * @returns 
      */
     async runInTransaction(work) { throw new Error('Not implemented'); }

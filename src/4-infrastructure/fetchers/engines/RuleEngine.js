@@ -9,16 +9,16 @@ import { AppError } from "../../../5-shared/errors/index.js";
  * 依赖：puppeteer Page 或 cheerio 文档（可设计为适配器模式）
  */
 export class RuleEngine {
-    constructor({ isVis } = {}) {
+    constructor({ isVis = false } = {}) {
         this.isVis = isVis;
     }
 
     /**
      * 执行单个规则采集
-     * @param {puppeteer.Page} pageObj
+     * @param {import("puppeteer").Page} pageObj
      * @param {Object} rule - 规则配置
      * @param {boolean} isVis - 是否可视化（调试模式）
-     * @returns {Array<{Rule,text, url}|Object>}
+     * @returns {Promise<Array<{Rule,text,url}|Object>>}
      */
     async execRule(pageObj, rule, isVis = false) {
         //先尝试删除干扰元素
@@ -27,7 +27,7 @@ export class RuleEngine {
             try {
                 await pageObj.$$eval(sR, (node, isVis) => {
                     for (let nO of node)
-                        if (!isVis) nO.parentNode.removeChild(nO);
+                        if (!isVis) nO.parentNode?.removeChild(nO);
                         else nO.style.border = "5px solid blue";
                 }, isVis);
             } catch (err) { }//尝试删除干扰元素，失败不管
@@ -45,7 +45,7 @@ export class RuleEngine {
                  * 在服务器执行会失效
                  * @param {*} action 动作表达式，如：attr/innerText
                  * @param {*} myNode 已命中的node对象
-                 * @returns {text,url}
+                 * @returns {{text,url}|undefined}
                  */
                 let ActionHandle = (action, myNode) => {
                     if (action == undefined) return;
@@ -84,10 +84,10 @@ export class RuleEngine {
 
     /**
      * 执行所有规则
-     * @param {puppeteer.Page} pageObj
+     * @param {import("puppeteer").Page} pageObj
      * @param {Array<Object>} rules - 规则列表
      * @param {Array<Object>} dictionaries - 字典列表（用于 Content 规则）
-     * @returns {Map<string, Array>} - key: ruleName, value: 提取结果
+     * @returns {Promise<Map<string, Array>>} - key: ruleName, value: 提取结果
      */
     async extract(pageObj, rules, dictionaries = []) {
         const resultMap = new Map();

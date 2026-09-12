@@ -73,7 +73,7 @@ export class TaskSchedulerService {
      * @param {object} setting 
      * @returns 
      */
-    async submitCollectSingleChapterTask(setting) {
+    submitCollectSingleChapterTask(setting) {
         try {
             const task = new Task({
                 taskId: crypto.randomUUID(),
@@ -97,7 +97,7 @@ export class TaskSchedulerService {
      * @param {{ bookId: number, isUpdate: boolean, bookName?: string }} setting 接口提交的参数
      * @returns {{ batchId: string, total: number, taskIds: string[], message: string }}
      */
-    async submitUpdateChapters(chapterIds, setting) {
+    submitUpdateChapters(chapterIds, setting) {
         if (!Array.isArray(chapterIds) || chapterIds.length === 0) {
             throw new AppError("chapterIds 不能为空");
         }
@@ -155,7 +155,7 @@ export class TaskSchedulerService {
      * @param {*} setting 
      * @returns 
      */
-    async submitUpdateIndex(setting) {
+    submitUpdateIndex(setting) {
         try {
             const task = new Task({
                 taskId: crypto.randomUUID(),

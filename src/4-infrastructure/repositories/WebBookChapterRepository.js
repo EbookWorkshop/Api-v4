@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+// import { Op } from "sequelize";
 export class WebBookChapterRepository {
     #WebBookChapterModel;
     #ChapterModel;
@@ -16,7 +16,8 @@ export class WebBookChapterRepository {
 
     /**
      * 批量插入章节
-     * @param {Array<{WebTitle:string,IndexId:number}>} chapters 章节列表
+     * @param {object} option
+     * @param {Array<{WebTitle:string,IndexId:number}>} option.chapters 章节列表
      * @param {Object} setting
      */
     async batchInsertChapters({ chapters }, { transaction } = {}) {
@@ -36,6 +37,12 @@ export class WebBookChapterRepository {
         return true;
     }
 
+    /**
+     * 
+     * @param {*} bookId 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns 
+     */
     async findIdOrderByBookId(bookId, { transaction } = {}) {
         return this.#WebBookChapterModel.findAll({
             attributes: ["id", "IndexId"],
@@ -53,7 +60,7 @@ export class WebBookChapterRepository {
     /**
      * 
      * @param {number} bookId 
-     * @returns {Array<{title:string,ruls:Array<string>}>}
+     * @returns {Promise<Array<{title:string,ruls:Array<string>}>>}
      */
     async findChapterWithURL(bookId) {
         let result = await this.#ChapterModel.findAll({

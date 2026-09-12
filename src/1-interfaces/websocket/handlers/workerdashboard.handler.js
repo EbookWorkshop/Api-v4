@@ -1,9 +1,10 @@
 
 const CUR_ROOM_NAME = "worker.dashboard";
-let intervalHandler = -1;
+/** @type {NodeJS.Timeout|null} */
+let intervalHandler;
 
 let myIO = null;
-let myServices = null;
+// let myServices = null;
 let workerPool = null;
 
 /**
@@ -28,24 +29,24 @@ export function registerSocketEvents(socket, services, eventManager) {
  */
 export function registerGlobalBroadcasts(io, services, eventManager) {
     myIO = io;
-    myServices = services;
+    // myServices = services;
     workerPool = services.workerPool;
 }
 
 
 function getDataInterval() {
     //采集数据：
-    const data = workerPool.getInfo();
-    return myIO.to(CUR_ROOM_NAME).emit(`WorkerPool.Status`, data);
+    return myIO?.to(CUR_ROOM_NAME).emit(`WorkerPool.Status`, workerPool?.getInfo());
 }
 
 function run() {
-    if (intervalHandler > 0) return;
+    if (intervalHandler) return;
     intervalHandler = setInterval(getDataInterval, 3_000);
 }
 
 function stop() {
-    if (myIO.sockets.adapter.rooms.get(CUR_ROOM_NAME)?.size > 0) return;
-    clearInterval(intervalHandler);
-    intervalHandler = -1;
+    if (myIO?.sockets.adapter.rooms.get(CUR_ROOM_NAME)?.size > 0) return;
+    intervalHandler?.close();
+    // clearInterval(intervalHandler);
+    intervalHandler = null;
 }

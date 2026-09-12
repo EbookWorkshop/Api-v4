@@ -5,15 +5,14 @@ import { COLLECT_EVENTS } from "../../constants/Event.js";
 
 export class FileCollector extends ICollector {
     #config;
-    #rules;//全套规则
+    // #rules;//全套规则
     #fetcher;
-    /** @type {IFileWriter} */
     #fileWriter;
     #emitter;
 
     constructor(config, rules, fetcher, services) {
-        super();
-        this.#rules = rules;
+        super(config, rules, fetcher, services);
+        // this.#rules = rules;
         this.#fetcher = fetcher;
         this.#emitter = services.emitter;
         this.#fileWriter = services.fileWriter;
@@ -31,7 +30,7 @@ export class FileCollector extends ICollector {
         const pageCtx = [];//结果组，一页一个元素
         let urlPage = payload.url;
         let runTime = 0;
-        let result = [];
+        let result = new Map();
         do {
             result = await this.#fetcher.fetch(urlPage, setting);
             const ctx = result.get(RuleName.Content);

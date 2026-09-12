@@ -1,5 +1,5 @@
 import { BookmarkRepository } from '../../4-infrastructure/repositories/BookmarkRepository.js';
-import { AppError, UserInputError } from "../../5-shared/errors/index.js"
+// import { AppError, UserInputError } from "../../5-shared/errors/index.js"
 
 export class BookmarkService {
     /** @type {BookmarkRepository} */

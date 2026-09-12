@@ -4,6 +4,7 @@ import { workerData } from 'worker_threads';
 import { createMiniCore } from "../../container/miniCore.js"
 import { initWorker } from "./index.js"
 const { workerId, config } = workerData;
+/** @type {import("sequelize").Sequelize?} */
 let sequelize = null;
 
 //创建线程资源
@@ -16,7 +17,7 @@ async function CreateRepo() {
 async function close() {
     console.log(`🛑\t\t线程【${workerId}】关闭，已在线${(performance.now() / 60_000).toFixed(1)}分。`);
     if (sequelize) {
-        await sequelize.close();
+        await sequelize?.close();
         // console.log(`[Worker ${workerId}] Database connection closed.`);
         sequelize = null;
     }

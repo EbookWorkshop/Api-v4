@@ -16,7 +16,7 @@ export class IndexRepository {
         const scopeAttrs = this.#IndexModel.options.scopes.withHasContent.attributes.include;
         return this.#IndexModel.findAll({
             attributes: {
-                include: [...scopeAttrs, ["id", "IndexId"]] || [],
+                include: [...scopeAttrs, ["id", "IndexId"]],
                 exclude: attr
             },
             where: {
@@ -32,7 +32,7 @@ export class IndexRepository {
         const scopeAttrs = this.#IndexModel.options.scopes.withHasContent.attributes.include;
         return this.#IndexModel.findByPk(chapterId, {
             attributes: {
-                include: [...scopeAttrs, "Title"] || [],
+                include: [...scopeAttrs, "Title"],
                 exclude: attr
             }, raw: true
         });

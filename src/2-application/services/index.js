@@ -49,8 +49,8 @@ import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js";
  * 服务层 组装所有 Service
  * @param {*} repositories 
  * @param {ITransaction} databaseTransaction 
- * @param {WorkerPool} workerPool 
- * @param {EventManager} eventManager 
+ * @param {*} workerPool 
+ * @param {*} eventManager 
  * @param {Object} config 
  * @returns 
  */
@@ -78,7 +78,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
     const task = new TaskSchedulerService(workerPool, batchProgressTracker);
     const reviewBookService = new BookReviewService(
         repositories.chapterRepository,
-        repositories.reviewRuleRepository,
+        // repositories.reviewRuleRepository,
         databaseTransaction
     );
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
@@ -103,7 +103,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         webBookChapterURL: new WebBookChapterURLService(repositories.webBookChapterURLRepository, webBookQueryService),
 
         volumeQuery: new VolumeQueryService(volumeRepository),
-        volumeCommand: new VolumeCommandService(repositories.volumeRepository, databaseTransaction),
+        volumeCommand: new VolumeCommandService(repositories.volumeRepository),
 
         chapterQuery: new ChapterQueryService(chapterRepository, textCleanup),
         chapterCommand: new ChapterCommandService(chapterRepository, databaseTransaction),

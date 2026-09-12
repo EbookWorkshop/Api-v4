@@ -1,6 +1,6 @@
 import { EMAIL_SETTING_GROUP, KINDLE_INBOX } from '../constants/SystemConfigGroup.js';
 import { MAIL_SENT } from '../constants/Event.js';
-import { AppError, UserInputError } from '../../5-shared/errors/index.js';
+import { UserInputError } from '../../5-shared/errors/index.js';
 import { IEmailSender } from '../ports/IEmailSender.js';
 
 
@@ -62,11 +62,12 @@ export class EmailService {
     /**
      * @param {Object} params
      * @param {Array<{filename: string, filepath: string}>} params.files
-     * @param {string} params.[title]
-     * @param {string} params.[content]
+     * @param {string} [params.title]
+     * @param {string} [params.content]
      * @param {string} [params.mailto]
      * @param {string} [params.sender]
      * @param {string} [params.pass]
+     * @param {string} params.version
      */
     async sendEmail({ title, content, files, mailto, sender, pass, version }) {
         // 1. 补全缺省配置

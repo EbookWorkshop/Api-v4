@@ -1,5 +1,5 @@
-import { Op, where } from "sequelize";
-import { AppError, UserInputError } from "../../5-shared/errors/index.js";
+import { Op } from "sequelize";
+import { AppError } from "../../5-shared/errors/index.js";
 export class VolumeRepository {
     #VolumeModel;
     #ChapterModel;
@@ -27,12 +27,13 @@ export class VolumeRepository {
 
     /**
      * 创建一个新卷
-     * @param {Number} bookId 
-     * @param {String} title 
-     * @param {String?} introduction 
+     * @param {object} book 
+     * @param {number} book.bookId 
+     * @param {string} book.title 
+     * @param {string?} book.introduction 
      */
     async createVolume({ bookId, title, introduction }) {
-        const [newid, rows] = await this.#VolumeModel.sequelize.query(
+        const [newid, _] = await this.#VolumeModel.sequelize.query(
             `INSERT INTO Volumes (BookId, Title, Introduction, OrderNum, createdAt, updatedAt) 
                 SELECT :bookId, :title, :introduction, COALESCE(MAX(OrderNum), 0) + 1, datetime('now'), datetime('now')
                 FROM Volumes 
@@ -53,9 +54,10 @@ export class VolumeRepository {
 
     /**
      * 更新一个新卷
-     * @param {Number} volumeId 
-     * @param {String} title 
-     * @param {String?} introduction 
+     * @param {object} volume
+     * @param {number} volume.volumeId 
+     * @param {string} volume.title 
+     * @param {string?} volume.introduction 
      */
     async updateVolume({ volumeId, title, introduction }) {
         const volume = await this.#VolumeModel.findByPk(volumeId);

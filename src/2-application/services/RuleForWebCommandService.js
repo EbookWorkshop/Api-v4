@@ -2,7 +2,7 @@ import { RuleCommon } from "../../3-domain/constants/Rule.js"
 import { RuleForWebRepository } from '../../4-infrastructure/repositories/RuleForWebRepository.js';
 import { IFileScanner } from "../../2-application/ports/IFileScanner.js"
 import { ITransaction } from '../ports/ITransaction.js';
-import { AppError } from "../../5-shared/errors/index.js"
+// import { AppError } from "../../5-shared/errors/index.js"
 import { WEBSITE_TIMEOUT, WEBSITE_USERAGENT, WEBSITE_SCRAPING } from '../constants/SystemConfigGroup.js';
 
 const DEFAULT_TIME_OUT = 40_000;
@@ -11,7 +11,6 @@ const DEFAULT_SCRAPING = "puppeteer";
 export class RuleForWebCommandService {
     /** @type {RuleForWebRepository} */
     #ruleForWebRepository;
-    /** @type {ReviewDictionaryRepository} */
     #reviewDictionaryService;
     #sysConfig;
     /** @type {ITransaction} */
@@ -83,7 +82,7 @@ export class RuleForWebCommandService {
                 if (p.type == "Object" || p.type == "List") rule.Type = p.type;
                 if (p.checkSetting) rule.CheckSetting = p.checkSetting;
 
-                let ret = await this.#ruleForWebRepository.create(rule, { transaction: trans });
+                await this.#ruleForWebRepository.create(rule, { transaction: trans });
             }
 
             return true;

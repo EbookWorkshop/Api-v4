@@ -6,7 +6,6 @@ export class FileSystemScanner extends IFileScanner {
     #repositoryPath;
     constructor(repositoryPath) { super(repositoryPath); this.#repositoryPath = repositoryPath; }
 
-
     async findFileByBasename(dirPath, basename) {
         const realPath = path.join(this.#repositoryPath, dirPath);
         return impl(realPath, basename);
@@ -15,13 +14,13 @@ export class FileSystemScanner extends IFileScanner {
     async listFiles(dirPath, options = {}) {
         const realPath = path.join(this.#repositoryPath, dirPath);
         const fileList = await myListFiles(realPath, options);
-        if (!options.detail) return fileList;
-        return fileList.map(file => {
+        if (!options.detail) return fileList || [];
+        return fileList?.map(file => {
             const fileDir = path.relative(this.#repositoryPath, file.path);       //将服务器绝对路径改为相对资源库的相对路径
             file.filePath = path.join(fileDir, file.file);
             file.path = fileDir;
             return file;
-        });
+        }) || [];
     }
 
     /**

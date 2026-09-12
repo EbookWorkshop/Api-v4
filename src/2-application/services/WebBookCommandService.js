@@ -3,12 +3,8 @@ import { WebBookRepository } from '../../4-infrastructure/repositories/WebBookRe
 export class WebBookCommandService {
     /** @type {WebBookRepository} */
     #webBookRepository;
-    /** @type {ITransaction} */
     #transaction;
-
-    /** @type {EbookRepository} */
     #ebookRepository;
-    /** @type {ChapterRepository} */
     #chapterRepository;
     #webBookSourceURLRepository;
     #webBookChapterService;

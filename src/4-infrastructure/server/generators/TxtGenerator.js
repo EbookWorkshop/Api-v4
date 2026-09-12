@@ -1,5 +1,5 @@
 import path from "node:path";
-import { createWriteStream } from 'node:fs';
+import { createWriteStream, WriteStream } from 'node:fs';
 import { finished } from 'node:stream/promises';
 import { randomBytes } from "node:crypto";
 
@@ -20,6 +20,7 @@ export class TxtGenerator extends IGenerator {
      * @returns {Promise<{ path:string, filename:string, warnings:Array<string> }>} 导出结果
      */
     async generate(ebook, outputPath) {
+        /** @type {WriteStream|null} */
         let writeStream = null;
         let warnings = [];
         try {

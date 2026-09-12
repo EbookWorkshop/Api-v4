@@ -16,6 +16,7 @@ export class ReviewDictionaryRepository {
      * 
      * @param {*} host 
      * @param {Array<Object>} data 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      */
     async batchUpsert(host, data, { transaction } = {}) {
         const updateInTran = async (transaction) => {
@@ -41,6 +42,12 @@ export class ReviewDictionaryRepository {
         return sequelize.transaction(updateInTran);
     }
 
+    /**
+     * 
+     * @param {*} host 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns 
+     */
     async deleteByHost(host, { transaction } = {}) {
         const doInTran = async (transaction) => {
             return await this.#ReviewDictionaryModel.destroy({ where: { Host: host }, transaction });

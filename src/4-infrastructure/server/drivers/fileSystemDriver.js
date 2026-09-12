@@ -116,11 +116,13 @@ export async function saveFile(filePath, data, setting = { encoding: 'utf8' }) {
  * 
  * @param {string|Array<string>} filePath 存储路径
  * @param {Array<string>} arr 
+ * @param {{ encoding: BufferEncoding; }} [setting={ encoding: 'utf8' }] 
  */
 export async function saveArrayToFile(filePath, arr, setting = { encoding: 'utf8' }) {
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    let realFile = Array.isArray(filePath) ? path.join(...filePath) : filePath;
+    await fs.mkdir(path.dirname(realFile), { recursive: true });
 
-    const fileHandle = await fs.open(filePath, 'w');
+    const fileHandle = await fs.open(realFile, 'w');
     const writeStream = fileHandle.createWriteStream(setting);
     const readable = Readable.from(arr);//将数组转换为流
 
@@ -148,7 +150,7 @@ export async function accessDir(dir) {
 /**
  * 
  * @param {*} path 文件路径
- * @returns {boolean} 是否存在
+ * @returns {Promise<boolean>} 是否存在
  */
 export async function accessFile(path) {
     try {
@@ -210,12 +212,18 @@ export async function renameFile(oldPath, newPath) {
     return fs.rename(oldPath, newPath);
 }
 
-export async function readFileData(file, { encoding, format } = {}) {
+/**
+ * 
+ * @param {*} file 
+ * @param {{encoding?:BufferEncoding;format?:string}} param1 
+ * @returns 
+ */
+export async function readFileData(file, { encoding = "utf8", format = "" } = {}) {
     try {
         if (!file?.filepath) throw new AppError("文件不存在", 404);
-        const data = await fs.readFile(file.filepath, encoding || 'utf8');
+        const data = await fs.readFile(file.filepath, encoding);
         switch (format) {
-            case "json": return JSON.parse(data);
+            case "json": return JSON.parse(data.toString());
             default: return data;
         }
     } catch (error) { throw error; }

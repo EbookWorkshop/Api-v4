@@ -12,7 +12,7 @@ export class ReviewRuleUsingRepository {
 
     /**
      * 
-     * @param {number|undefined} bookId 
+     * @param {number|undefined} [bookId] 
      * @returns 
      */
     async findAll(bookId) {

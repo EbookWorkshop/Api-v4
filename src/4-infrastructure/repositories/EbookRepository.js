@@ -21,11 +21,11 @@ export class EbookRepository {
      * 通用的书籍查询方法（支持标签过滤）
      * 已支持分页
      * @param {Object} options
-     * @param {number} options.tagId - 包含的标签ID（大于0时生效）
-     * @param {number[]} options.excludeTagIds - 排除的标签ID列表
-     * @param {Array<[string, string]>} options.orderBy - 排序规则
-     * @param {number} options.limit - 分页限制
-     * @param {number} options.offset - 分页偏移
+     * @param {number} [options.tagId] - 包含的标签ID（大于0时生效）
+     * @param {number[]} [options.excludeTagIds] - 排除的标签ID列表
+     * @param {Array<[string, string]>} [options.orderBy] - 排序规则
+     * @param {number} [options.limit] - 分页限制
+     * @param {number} [options.offset] - 分页偏移
      * @returns {Promise<Object[]>} 纯对象数组
      */
     async findAllWithTagFilter(options = {}) {
@@ -66,7 +66,7 @@ export class EbookRepository {
 
         const excludedIdSet = new Set(excludedBookIds.map(item => item.BookId));
 
-        // 构建主查询条件
+        /** @type {Record<string, any>} 构建主查询条件 */
         const where = {
             id: { [Op.notIn]: Array.from(excludedIdSet) },
         };

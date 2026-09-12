@@ -70,7 +70,7 @@ export class EventManager {
     /**
      * 发向前端的消息
      * #### 支持在线程上发送
-     * @param {Message} message 
+     * @param {import("../../5-shared/dtos/Message.dto.js").Message} message 
      */
     messageToClient(message) {
         if (!isMainThread) return this.emitToMain(MESSAGE_SEND, message);

@@ -6,10 +6,10 @@ export class BookExportData {
      * @param {Object} params
      * @param {string} params.title - 书名
      * @param {string} params.author - 作者
-     * @param {string|File} params.cover - 封面
+     * @param {string|undefined} params.cover - 封面
      * @param {string} params.introduction - 简介
      * @param {Object} params.setting - 格式、排版、字体等设置
-     * @param {Array<{title: string, content: string,volume:boolean}>} params.chapters - 章节列表
+     * @param {Array<{title: string, content: string,volume?:boolean,VolumeId?:number}>} params.chapters - 章节列表
      */
     constructor({ title, author, cover, introduction, chapters, setting }) {
         this.title = title;

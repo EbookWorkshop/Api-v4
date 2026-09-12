@@ -19,6 +19,7 @@ export class EpubGenerator extends IGenerator {
         const { setting } = ebook;
         const { embedTitle, isCompact, enableIndent } = setting;
         try {
+            /** @type {import('@publiwrite/html-to-epub').EpubOptions} */
             let option = {
                 title: ebook.title, // *必需，书籍标题。
                 description: ebook.introduction,
@@ -30,19 +31,19 @@ export class EpubGenerator extends IGenerator {
                 tocTitle: "目  录",//默认 Table Of Contents
                 publisher: setting.publisher,
                 cover: ebook.cover, // URL 或文件路径，均可。
-                content: [],
+                content: this.#setChapters(ebook, isCompact),
                 tempDir: outputPath || this.tempFolder,
                 verbose: false,//是否输出控制台日志
 
                 //PubliWrite 新增配置
-                assetFailureMode: "throw",       //内联文件报错时如何处理 throw:抛出、warn:输出带有损坏引用的清单`{warnings}`
+                assetFailureMode: 'throw',       //内联文件报错时如何处理 throw:抛出、warn:输出带有损坏引用的清单`{warnings}`
                 // allowFileUrls:true,              //默认 false。拒绝 file:// URL
             }
             // await accessDir(option.tempDir); //EPub底层有这个代码
 
-            option.content = this.#setChapters(ebook, isCompact);
+            // option.content = this.#setChapters(ebook, isCompact);
             const outputFile = `${ebook.title}${randomBytes(2).toString("hex")}.epub`;
-            const output = path.join(option.tempDir, outputFile);
+            const output = path.join(option.tempDir ?? "_temp_", outputFile);
             let epub = new EPub(option, output);
             const result = await epub.render();
             return { path: output, filename: outputFile, ...result };

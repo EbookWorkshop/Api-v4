@@ -22,7 +22,7 @@ export class CoverService {
     /**
      * 
      * @param {*} fileWriter 
-     * @param {IDataFetcher?} dataFetcher 仅当需要下载时提供
+     * @param {*} dataFetcher 仅当需要下载时提供
      * @param {*} config 
      */
     constructor(fileWriter, dataFetcher, config) {
@@ -40,7 +40,7 @@ export class CoverService {
      * @returns {Promise<CoverStorageResult>}
      */
     async storeCover({ source, embedBookName, bookName }) {
-        let finalPath = null;
+        let finalPath = "";
         let coverValue = null;
 
         if (this.#isUrl(source)) {            // 从 URL 下载
@@ -138,7 +138,7 @@ export class CoverService {
         );
     }
 
-    async deleteCoverFile(coverValue, { except } = {}) {
+    async deleteCoverFile(coverValue, { except = null } = {}) {
         const target = this.#normalizeCoverValue(coverValue);
 
         // 颜色值、URL、空值都不删物理文件

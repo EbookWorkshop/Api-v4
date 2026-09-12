@@ -11,23 +11,25 @@ export class IFileWriter {
      * @param {string|Array<string>} filePath 存储路径，若为数组则是路径目录
      * @param {*} data 写入数据
      * @param {*} format 写入格式，如 base64
-     * @returns {string} 实际存储的相对路径——相对仓库
+     * @returns {Promise<string>} 实际存储的相对路径——相对仓库
      */
-    async saveFile(path, data, format = "") { throw new Error('接口方法尚未实现'); }
+    async saveFile(filePath, data, format = "") { throw new Error('接口方法尚未实现'); }
 
     /**
      * 移动文件——地址基于仓库为基础
      * @param {string} oldPath 源地址
      * @param {string} newPath 新地址
+     * @returns {Promise<string>} 新的相对地址
      */
     async moveFile(oldPath, newPath) { throw new Error('接口方法尚未实现'); }
 
     /**
      * 转换为PNG格式
      * @param {string} filePath 
-     * @returns {string} newFilePath
+     * @param {string} tempDir 
+     * @returns {Promise<string|null>} newFilePath
      */
-    async converToPNG(filePath) { throw new Error('接口方法尚未实现'); }
+    async converToPNG(filePath, tempDir) { throw new Error('接口方法尚未实现'); }
 
     /**
      * 获取服务器地址

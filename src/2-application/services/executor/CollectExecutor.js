@@ -5,7 +5,7 @@ import { COLLECT_EVENTS } from "../../constants/Event.js";
 import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
 import { WebBookCollector, ChapterCollector, FileCollector, ICollector } from "../collectors/index.js";
-import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine, IDataFetcher } from "../../../4-infrastructure/fetchers/index.js";
+import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine } from "../../../4-infrastructure/fetchers/index.js";
 import { EventManager } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
 
@@ -41,7 +41,7 @@ export class CollectExecutor extends ITaskExecutor {
 
         this.#eventManager = new EventManager(new EventEmitter());
         this.#fileWriter = new FileSystemWriter(this.#config.repository.path);
-        this.#_fetcher = IDataFetcher;
+        this.#_fetcher;
     }
 
     async execute(taskType, payload) {
@@ -54,12 +54,12 @@ export class CollectExecutor extends ITaskExecutor {
                 infoPage: payload.infoPage,
             },
         });
-        const ruleEngine = new RuleEngine({ debug: false });
+        const ruleEngine = new RuleEngine();
         let msgEvent = COLLECT_EVENTS.UNKNOW;
         try {
             let pageURL = await this.#getPageURL(taskType, payload);
             let Collector = ICollector;
-            let ruleGroup = COLLECT_EVENTS.UNKNOW;
+            let ruleGroup;
             let services = { eventManager: this.#eventManager, emitter };
             switch (taskType) {
                 case TASK_TYPES.WEB_BOOK_COLLECT: {
@@ -117,7 +117,7 @@ export class CollectExecutor extends ITaskExecutor {
             }
             const collector = new Collector(this.#config, rules, this.#_fetcher, services);
 
-            const setting = this.#rangeSetting(rules, payload);
+            const setting = this.#rangeSetting(rules);
             return await collector.fetch(setting, payload);
         } catch (error) {
             error.stack = `CollectExecutor::execute: ${import.meta.filename}\n${error.stack}`;
@@ -138,7 +138,7 @@ export class CollectExecutor extends ITaskExecutor {
      * 根据任务类型，获取任务开始页面地址
      * @param {*} taskType 
      * @param {*} payload 
-     * @returns {string} 采集网址
+     * @returns {Promise<string>} 采集网址
      */
     async #getPageURL(taskType, payload) {
         switch (taskType) {
@@ -162,7 +162,7 @@ export class CollectExecutor extends ITaskExecutor {
     /**
      * 包装抓取规则、设置
      * @param {*} rules 
-     * @returns {{ timeout, userAgent, dictionaries, rules }}
+     * @returns {{ timeout?, userAgent?, dictionaries?, rules }}
      */
     #rangeSetting(rules) {
         const setting = {

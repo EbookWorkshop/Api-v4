@@ -1,11 +1,11 @@
-import { TASK_TYPES } from "../constants/Task.js";
+// import { TASK_TYPES } from "../constants/Task.js";
 /**
  * 任务执行
  */
 export class ITaskExecutor {
     /**
      * 执行任务
-     * @param {TASK_TYPES} taskType 任务类型
+     * @param {import("../constants/Task.js").TaskType} taskType 任务类型
      * @param {Object} payload - 任务参数（如 URL、bookId 等）
      * @returns {Promise<Object>} 执行结果
      */

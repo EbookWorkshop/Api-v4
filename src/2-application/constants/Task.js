@@ -4,8 +4,12 @@
  */
 
 /**
- * 子线程任务类型
+ * @typedef {'EXPORT_BOOK' | 'WEB_BOOK_COLLECT' | 'WEB_BOOK_UPDATE_INDEX'
+ *   | 'WEB_BOOK_CHAPTER_COLLECT' | 'SINGLE_CHAPTER_COLLECT'
+ *   | 'SYSTEM_VERSION' | 'BOTRULE_VIS' | 'COMPRESS_DATABASE' | 'COMMAND'} TaskType
+ * @typedef {typeof TASK_STATUS[keyof typeof TASK_STATUS]} TaskStatus
  */
+
 export const TASK_TYPES = {
     EXPORT_BOOK: 'EXPORT_BOOK',
     WEB_BOOK_COLLECT: 'WEB_BOOK_COLLECT',

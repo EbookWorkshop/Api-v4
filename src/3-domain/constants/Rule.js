@@ -38,7 +38,7 @@ export const RULE_INDEX = [
     RuleName.IndexNextPage,
     RuleName.ChapterList,
 ]
-export const RULE_INFO_INDEX = [].concat(RULE_INFO, RULE_INDEX)
+export const RULE_INFO_INDEX = RULE_INFO.concat(RULE_INDEX)
 export const RULE_CHAPTER = [
     RuleName.CapterTitle,
     RuleName.Content,
@@ -52,4 +52,4 @@ export const RULE_GROUP_SETTING = {
     [RULE_GROUP.CHAPTER_PAGE]: RULE_CHAPTER,
 }
 
-export const RULE_ALL = [].concat(RULE_INFO_INDEX, RULE_CHAPTER)
+export const RULE_ALL = RULE_INFO_INDEX.concat(RULE_CHAPTER)

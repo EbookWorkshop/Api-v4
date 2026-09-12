@@ -1,15 +1,15 @@
-import { Op } from 'sequelize';
+// import { Op } from 'sequelize';
 import { ReviewString } from '../../5-shared/utils/reviewString.js';
 import { SmartCharacterAnalyzer } from '../../5-shared/utils/SmartCharacterAnalyzer.js';
 
 export class BookReviewService {
     #chapterRepository;
-    #reviewRuleRepository;
+    // #reviewRuleRepository;
     #transactionManager;
 
-    constructor(chapterRepository, reviewRuleRepository, transactionManager) {
+    constructor(chapterRepository, transactionManager) {
         this.#chapterRepository = chapterRepository;
-        this.#reviewRuleRepository = reviewRuleRepository;
+        // this.#reviewRuleRepository = reviewRuleRepository;
         this.#transactionManager = transactionManager;
     }
 
@@ -42,7 +42,7 @@ export class BookReviewService {
      * @param {number[]} [chapterIds] - 若未指定则全书生效
      * @returns {Promise<Array<{id, title, updated}>>}
      */
-    async save(bookId, rulePattern, replace, chapterIds = null) {
+    async save(bookId, rulePattern, replace, chapterIds = undefined) {
         let chapters = [];
         if (chapterIds?.length) chapters = await this.#chapterRepository.findChaptersByIds(bookId, chapterIds);
         else chapters = await this.#chapterRepository.findChaptersByBookId(bookId);
@@ -75,7 +75,7 @@ export class BookReviewService {
      * @param {number[]} [chapterIds]
      * @returns {Promise<Array<{id, title, suspiciousChars}>>}
      */
-    async analyzeSuspiciousChars(bookId, chapterIds = null) {
+    async analyzeSuspiciousChars(bookId, chapterIds = undefined) {
         const chapters = await this.#chapterRepository.findChaptersByBookId(bookId);
         const filtered = chapterIds?.length
             ? chapters.filter(ch => chapterIds.includes(ch.id))

@@ -25,7 +25,7 @@ export class DatabaseTransaction extends ITransaction {
 
     /**
      * 托管事务
-     * @param {function (transaction) {}} work 
+     * @param {function} work 
      * @returns 
      */
     async runInTransaction(work) {

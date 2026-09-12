@@ -11,6 +11,8 @@ const DEFAULT_CONFIG = {
     database: { path: './data/dev.sqlite', logging: false },
     debug: { mode: false, level: 'info' },
     collector: { timeout: 30000, retries: 3 },
+    version: "0.0.0",
+    env: "none",
 };
 
 export class ConfigLoader {

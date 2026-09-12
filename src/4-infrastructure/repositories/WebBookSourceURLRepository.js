@@ -44,6 +44,7 @@ export class WebBookSourceURLRepository {
      * 将记录的地址从a改到b
      * @param {*} from 
      * @param {*} to 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      */
     async changeHosts(from, to, { transaction } = {}) {
         return await this.#sequelize.query(`

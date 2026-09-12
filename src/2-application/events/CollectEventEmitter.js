@@ -20,7 +20,7 @@ export class CollectEventEmitter {
     #ctx;
 
     /**
-     * @param {EventManager} eventManager
+     * @param {import("../../4-infrastructure/event/EventManager.js").EventManager} eventManager
      * @param {{
      *   taskId?: string,
      *   batchId?: string,
@@ -64,7 +64,11 @@ export class CollectEventEmitter {
 
     /**
      * 任务失败事件
-     * @param {*} error 任意错误输入，由 normalizeError 归一化
+     * @param {string} event
+     * @param {Object} [options]
+     * @param {Object} [options.ctx]
+     * @param {*} [options.error]
+     * @param {string} [options.message]
      */
     failure(event, { ctx = {}, error, message = '' } = {}) {
         return this.#send(event, { ctx, ok: false, error, message });

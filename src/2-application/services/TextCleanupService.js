@@ -19,7 +19,7 @@ export class TextCleanupService {
     /**
      * 【带缓存】获取指定书籍的校阅规则
      * @param {number} bookId 
-     * @returns {Array<{ Rule:RegExp, Replace:string }>}
+     * @returns {Promise<Array<{ Rule:RegExp, Replace:string }>>}
      */
     async #getRulesByBookId(bookId) {
         const ruleKey = `review-rule:${bookId}`;

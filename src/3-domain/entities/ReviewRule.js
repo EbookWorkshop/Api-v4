@@ -3,7 +3,6 @@ import { DataTypes } from "sequelize";
 
 /**
  * 每个独立的替换规则
- * @type {ReviewRule}
  * @param {*} sqlConnect 
  * @returns 
  */

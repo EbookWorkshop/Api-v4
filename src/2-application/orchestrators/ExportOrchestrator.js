@@ -17,20 +17,21 @@ export class ExportOrchestrator {
 
     /**
      * 
-     * @param {{ bookId, setting, result, error }} event 
+     * @param {{ bookId, setting, result, error,payload }} event 
      */
     async #onFileGenerated(event) {
         const { bookId, bookName, format, setting, result: genRsl, error } = event.payload;
 
         if (error) {            //生成失败了
             this.#eventMgr.messageToClient(new Message("生成书籍任务失败，原因：" + error.message, "notice", {
-                title: `《${bookName}》生成${format}失败`, avatar: "error", subTitle: format
+                title: `${bookId}《${bookName}》生成${format}失败`, avatar: "error", subTitle: format
             }));
             return;
         }
         const { filename, path: filepath, result, warnings } = genRsl;
         const files = [{ filename: filename, originalFilename: `${bookName}.${format}`, filepath }];
-        const jobDone = [`已生成图书《${bookName}》 `];
+        const jobDone = [`已生成图书《${bookName}》 result:${result}`];
+        if (warnings.length > 0) jobDone.push("生成警告：\n", ...warnings);
 
         // 1. 根据配置决定是否发邮件
         if (setting.sendByEmail) {

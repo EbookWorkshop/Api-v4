@@ -5,7 +5,7 @@ import { RuleEngine } from './engines/RuleEngine.js';
 import { AppError } from '../../5-shared/errors/index.js';
 
 export class AxiosDataFetcher extends IDataFetcher {
-    #config;
+    // #config;
     /** @type {RuleEngine} */
     #ruleEngine;
     #browser;
@@ -13,7 +13,7 @@ export class AxiosDataFetcher extends IDataFetcher {
     #keep;
     constructor(config, ruleEngine, isKeep = false) {
         super();
-        this.#config = config;
+        // this.#config = config;
         this.#ruleEngine = ruleEngine;
         this.#browser = null;
         this.#keep = isKeep;
@@ -38,6 +38,7 @@ export class AxiosDataFetcher extends IDataFetcher {
      */
     async #parseHtmlString(htmlString, url, setting) {
         const browser = await this.#getBrowser(setting);
+        /** @type {import("puppeteer").Page|Object} */
         let page = {};
         try {
             page = await browser.newPage();
@@ -60,10 +61,14 @@ export class AxiosDataFetcher extends IDataFetcher {
     }
 
     /**
-     * 通过 URL 获取的 Buffer
+     * 使用 Puppeteer 通过 URL 获取的 Buffer
      * @param {string} url - 的完整 URL
-     * @param {object} options - 请求的额外配置（如 headers、代理等）
-     * @returns {Promise<Buffer>} 返回数据的 Buffer
+     * @param {object} [options] - 额外配置（可选）
+     * @param {object} [options.viewport] - 视口大小，默认 { width: 800, height: 600 }
+     * @param {string} [options.userAgent] - 自定义 User-Agent
+     * @param {number} [options.timeout] - 页面加载超时（毫秒），默认 30000
+     * @param {boolean} [options.headless] - 是否无头模式，默认 true
+     * @returns {Promise<Buffer>} 数据的 Buffer
      */
     async download(url, setting = {}) {
         try {
@@ -106,7 +111,7 @@ export class AxiosDataFetcher extends IDataFetcher {
     async #getBrowser(setting) {
         if (!this.#browser) this.#browser = await puppeteer.launch({
             timeout: setting.timeout,
-            headless: "new"
+            // headless: true
         });
         return this.#browser;
     }

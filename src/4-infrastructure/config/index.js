@@ -1,5 +1,5 @@
 import { ConfigLoader } from './ConfigLoader.js';
-
+/** @type{any} */
 let configInstance = null;
 
 /**

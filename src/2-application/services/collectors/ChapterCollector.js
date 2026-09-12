@@ -3,16 +3,15 @@ import { ICollector } from "../../ports/ICollector.js";
 import { COLLECT_EVENTS } from "../../constants/Event.js"
 
 export class ChapterCollector extends ICollector {
-    #rules;
+    // #rules;
     #fetcher;
     #indexService
-    /** @type{ChapterCommandService} */
     #chapterCommandService;
     #emitter;
 
     constructor(config, rules, fetcher, services) {
-        super();
-        this.#rules = rules;
+        super(config, rules, fetcher, services);
+        // this.#rules = rules;
         this.#fetcher = fetcher;
         this.#chapterCommandService = services.chapCommaServices;
         this.#emitter = services.emitter;
@@ -20,7 +19,7 @@ export class ChapterCollector extends ICollector {
     }
 
     async fetch(setting, payload) {
-        const { bookId, chapterId, isUpdate } = payload;
+        const { bookId: _, chapterId, isUpdate } = payload;
         if (!isUpdate) {    //检查是否已覆盖更新
             const chapt = await this.#indexService.find(chapterId);
             if (chapt.IsHasContent) return this.#resultHandle(payload, true, `章节 ${chapterId} 已有内容，跳过更新。`);

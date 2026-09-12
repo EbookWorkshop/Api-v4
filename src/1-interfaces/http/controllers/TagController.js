@@ -7,12 +7,6 @@ import { TagIdQuery } from "../dtos/tag/TagIdRequest.dto.js"
 export class TagController {
     #TagQueryService;
     #TagCommandService;
-
-    /**
-     * 
-     * @param {TagQueryService} TagQueryService 
-     * @param {TagCommandService} TagCommandService 
-     */
     constructor(TagQueryService, TagCommandService) {
         this.#TagQueryService = TagQueryService;
         this.#TagCommandService = TagCommandService;

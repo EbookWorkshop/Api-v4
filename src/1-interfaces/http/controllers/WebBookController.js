@@ -14,9 +14,9 @@ export class WebBookController {
     /**
      * 
      * @param {WebBookQueryService} webBookQueryService 
-     * @param {WebBookCommandService} webBookCommandService 
+     * @param {*} webBookCommandService 
      * @param {WebBookDetailQueryService} webBookDetailQuery 
-     * @param {BookCommandService} bookCommandService 
+     * @param {*} bookCommandService 
      */
     constructor(webBookQueryService, webBookCommandService, webBookDetailQuery, bookCommandService, task) {
         this.#webBookQueryService = webBookQueryService;

@@ -2,14 +2,13 @@ import { ICollector } from "../../ports/ICollector.js";
 import { RULE_INDEX, RULE_INFO, RuleName } from "../../../3-domain/constants/Rule.js";
 import { deduplicateByMultKey, difference } from "../../../5-shared/utils/array.js";
 import { COLLECT_EVENTS } from "../../constants/Event.js";
-import { AppError } from "../../../5-shared/errors/index.js";
+// import { AppError } from "../../../5-shared/errors/index.js";
 import { getHost } from "../../../5-shared/utils/site.js";
 
 
 
 export class WebBookCollector extends ICollector {
-    #rules;
-    /** @type {IDataFetcher} */
+    // #rules;
     #fetcher;
     #setting;
     #emitter;
@@ -18,8 +17,8 @@ export class WebBookCollector extends ICollector {
     #coverService;
 
     constructor(config, rules, fetcher, services) {
-        super();
-        this.#rules = rules;
+        super(config, rules, fetcher, services);
+        // this.#rules = rules;
         this.#fetcher = fetcher;
         this.#emitter = services.emitter;
         this.#webBookService = services.webBookService;
@@ -34,8 +33,8 @@ export class WebBookCollector extends ICollector {
      * @param {Object} payload 
      * @param {string} payload.sourcePage 索引页
      * @param {boolean} payload.isEmbedBookName 是否嵌入标题
+     * @param {"create"|"update"} payload.mode 任务类型
      * @param {string} [payload.infoPage] 信息页
-     * @param {create|update} [payload.mode] 任务类型
      */
     async fetch(setting, payload) {
         let result = {};
@@ -99,7 +98,7 @@ export class WebBookCollector extends ICollector {
      * @param {*} option 
      */
     async updateChapter(option) {
-        const { sourcePage, infoPage, bookId, bookName } = option;
+        const { sourcePage, bookId } = option;
         //从页面获取的章节
         let chapterList = await this.#getChapterList(sourcePage);
         if (chapterList.length === 0) return this.#failureHandle(option, { message: "获取的章节列表为空！", name: "更新章节列表失败" }, `从地址采集数据失败：${sourcePage}。`);
@@ -135,7 +134,7 @@ export class WebBookCollector extends ICollector {
     /**
      * 处理书籍的主要信息
      * @param {Map<string,object>} infoResult 
-     * @returns 
+     * @returns {Promise<{BookName?,CoverImg?}|false>}
      */
     async #handleInfo(infoResult, embedBookName) {
         const bn = infoResult.get(RuleName.BookName);
@@ -148,7 +147,7 @@ export class WebBookCollector extends ICollector {
             bookInfo[k] = rsl[0].text;
         }
         //书名删除括号部分
-        const indexOf = bookInfo[RuleName.BookName].search(/[（【『{\[(]/);
+        let indexOf = bookInfo[RuleName.BookName].search(/[（【『{\[(]/);
         if (indexOf >= 0) {
             let bookName = bookInfo[RuleName.BookName];
             if (indexOf == 0) {//括号在开头部分
@@ -181,7 +180,7 @@ export class WebBookCollector extends ICollector {
      */
     async #getChapterList(sourcePage, initialMap = new Map()) {
         const chapters = [];
-        let nextPageUrl = null;
+        let nextPageUrl = "";
         let currentUrl = sourcePage;
         let pageCount = 0;
         const MAX_PAGES = 50;           // 防止死循环

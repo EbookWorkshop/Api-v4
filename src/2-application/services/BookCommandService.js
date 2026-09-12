@@ -1,7 +1,7 @@
 import { EbookRepository } from "../../4-infrastructure/repositories/EbookRepository.js"
 import { ChapterRepository } from "../../4-infrastructure/repositories/ChapterRepository.js"
 import { ITransaction } from "../ports/ITransaction.js"
-import { AppError, UserInputError } from '../../5-shared/errors/index.js';
+import { AppError } from '../../5-shared/errors/index.js';
 
 export class BookCommandService {
     /** @type {EbookRepository} */
@@ -26,8 +26,9 @@ export class BookCommandService {
 
     /**
      * 创建一本空书
-     * @param {*} bookName 
-     * @param {*} author 
+     * @param {object} book 
+     * @param {string} book.bookName 
+     * @param {string} book.author 
      * @returns 
      */
     async createEmptyBook({ bookName, author }) {

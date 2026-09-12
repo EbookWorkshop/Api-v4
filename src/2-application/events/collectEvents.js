@@ -32,19 +32,19 @@ import { normalizeCollectEnvelope } from './envelope.js';
 /**
  * 归一化并投递一个采集事件信封
  *
- * @param {EventManager} eventManager
+ * @param {import("../../4-infrastructure/event/EventManager.js").EventManager} eventManager
  *        主线程 EventManager 实例。若在子线程调用，
  *        emitToMain 会通过 parentPort 转发到主线程。
  *
  * @param {string} event
  *        事件名，应为 COLLECT_EVENTS.* 中的常量。
  *
- * @param {Partial<CollectEventEnvelope>} envelope
+ * @param {Partial<import("./envelope.js").CollectEventEnvelope>} envelope
  *        原始信封。允许字段不全，由 normalizeCollectEnvelope 补齐。
  *        契约：ok=true 时提供 data，ok=false 时提供 error，
  *        两者不可同时提供。
  *
- * @returns {CollectEventEnvelope}
+ * @returns {import("./envelope.js").CollectEventEnvelope}
  *        归一化后的信封（便于调用方后续使用或断言）。
  */
 export function emitCollect(eventManager, event, envelope) {

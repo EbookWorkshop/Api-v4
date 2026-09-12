@@ -15,7 +15,7 @@ const promisify = (fun) => {
         return new Promise((resolve, reject) => {
             fun(cmd, (error, stdout, stderr) => {
                 if (stdout) resolve(stdout);
-                else reject(error, stderr);
+                else reject(error || stderr);
             });
         });
     };
@@ -33,7 +33,7 @@ export class ServiceServer {
         let pVer = [];
         try {
             const verStr = await fs.readFile(VERSION_FILE);
-            pVer = JSON.parse(verStr);
+            pVer = JSON.parse(verStr.toString());
         } catch (err) {
             this.updateVersionInfo();
         }
@@ -59,15 +59,15 @@ export class ServiceServer {
      */
     async updateVersionInfo() {
         try {
-            const runOption = {
-                env: {
-                    ...process.env,          // 保留其他环境变量
-                    NODE_OPTIONS: undefined   // 移除node的启动参数 如：--inspect
-                },
-            }
+            // const runOption = {
+            //     env: {
+            //         ...process.env,          // 保留其他环境变量
+            //         NODE_OPTIONS: undefined   // 移除node的启动参数 如：--inspect
+            //     },
+            // }
             const result = await Promise.all([
-                execAsync("pnpm outdated --json", runOption),        //NOTE: 这个命令在有包可更新时，会以1作为退出码（process.exit(1)）在系统底层会认为命令出错从而触发reject。但stdout输出是正常的，直接采用即可。
-                execAsync("pnpm list --json --depth=0", runOption)
+                execAsync("pnpm outdated --json"),        //NOTE: 这个命令在有包可更新时，会以1作为退出码（process.exit(1)）在系统底层会认为命令出错从而触发reject。但stdout输出是正常的，直接采用即可。
+                execAsync("pnpm list --json --depth=0")
             ]);
             const [outdata, packageList] = result.map((j) => JSON.parse(j));
             const packageInfo = Object.assign({}, packageList[0].dependencies);//NOTE: pnpm返回的是数组，npm返回的是对象，修改命令要注意调整取数方式
@@ -92,13 +92,13 @@ export class ServiceServer {
             https.get({ hostname, timeout: 5000 }, (response) => {
                 let html = "";
                 let resTitle = "";
-                const resUrl = response.headers.location || response.client._host;
+                const resUrl = response.headers.location || response.client?._host;
                 response.on('data', (chunk) => {
                     html += chunk;
                 });
                 response.on("end", () => {
                     const title = html.match(/<title>([^<]+)<\/title>/);
-                    if (title?.length >= 2) resTitle = title[1];
+                    if (title && title?.length >= 2) resTitle = title[1] ?? "";
 
                     resolve({
                         status: response.statusCode,

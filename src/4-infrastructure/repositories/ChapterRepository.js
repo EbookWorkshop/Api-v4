@@ -90,6 +90,7 @@ export class ChapterRepository {
      * 找到章节ID的序号
      * 应用场景：批量插入时，用于通过序号反查对应章节的ID
      * @param {*} bookId 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      * @returns 
      */
     async findIdOrderByBookId(bookId, { transaction } = {}) {
@@ -121,7 +122,7 @@ export class ChapterRepository {
      * 查找上一章
      * @param {number} bookId 书籍ID
      * @param {number} currentOrderNum 当前章节序号
-     * @returns {Promise<import("sequelize").Model|null>}
+     * @returns 
      */
     async findPrevious(bookId, currentOrderNum) {
         return await this.#ChapterModel.findOne({
@@ -137,7 +138,7 @@ export class ChapterRepository {
      * 查找下一章
      * @param {number} bookId 书籍ID
      * @param {number} currentOrderNum 当前章节序号
-     * @returns {Promise<Model|null>}
+     * @returns 
      */
     async findNext(bookId, currentOrderNum) {
         return await this.#ChapterModel.findOne({
@@ -183,8 +184,8 @@ export class ChapterRepository {
             [Op.or]: [{ Title: { [Op.like]: `%${keyword}%` } }, { Content: { [Op.like]: `%${keyword}%` } }]
         });
 
-        if (option.bookId?.length > 0) condition.push({ [Op.and]: { BookId: { [Op.in]: option.bookId } } });
-        if (option.notFind?.length > 0) condition.push({ [Op.and]: { BookId: { [Op.notIn]: option.notFind } } });
+        if ((option?.bookId?.length ?? 0) > 0) condition.push({ [Op.and]: { BookId: { [Op.in]: option.bookId } } });
+        if ((option?.notFind?.length ?? 0) > 0) condition.push({ [Op.and]: { BookId: { [Op.notIn]: option.notFind } } });
 
         //构建计算字段 原理：(原字符串长度 - 替换掉所有关键字后的长度) ÷ 关键字的长度
         const hitCountLiteral = sequelize.literal(` (LENGTH(Content) - LENGTH(REPLACE(Content, ${sequelize.escape(keyword)}, ''))) / LENGTH(${sequelize.escape(keyword)}) `);
@@ -260,7 +261,8 @@ export class ChapterRepository {
      * @param {string} [chapter.Content] 章节正文
      * @param {number} [chapter.VolumeId] 卷ID
      * @param {number} [chapter.OrderNum] 章节排序号
-     * @returns {boolean}
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns {Promise<boolean>}
      */
     async updateChapter(chapter, { transaction } = {}) {
         //校验卷需要属于同一本书
@@ -297,7 +299,7 @@ export class ChapterRepository {
      * 批量插入章节
      * @param {object} info 
      * @param {number} info.bookId 将插入的书籍
-     * @param {number|undefined|null} info.volumeId 插到指定卷中，-1为不设置卷
+     * @param {number|undefined|null} [info.volumeId] 插到指定卷中，-1为不设置卷
      * @param {Array<{Content:string,OrderNum:number,Title:string,VolumeId:number}>} info.chapters 章节列表
      * @param {Object} setting
      */
@@ -335,8 +337,6 @@ export class ChapterRepository {
     /**
      * 批量更新章节顺序
      * @param {Array<{indexId, newOrder}>} orderData 新的排序配置
-     * @param {number} [orderData.n.indexId] 待更新的章节ID
-     * @param {number} [orderData.n.newOrder] 要更新到的新序号
      * @returns 
      */
     async updateOrder(orderData) {
@@ -385,8 +385,8 @@ export class ChapterRepository {
      * 将指定章节设置为简介
      * 并将已有的简介章节放出
      * @param {*} chapterId 章节ID
-     * @param {object} options - { transaction: Transaction }
-     * @returns {boolean} 成功
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns {Promise<boolean>} 成功
      */
     async setAsIntroduction(chapterId, options = {}) {
         const { transaction } = options;
@@ -412,7 +412,7 @@ export class ChapterRepository {
             transaction: trans,
         });
 
-        if (!transaction) await trans.commit();
+        if (!transaction) await trans?.commit();
         return true;
     }
 

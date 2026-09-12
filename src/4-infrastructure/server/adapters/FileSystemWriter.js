@@ -13,9 +13,9 @@ export class FileSystemWriter extends IFileWriter {
      * 写入文件——以仓库为基础路径
      * @param {string|Array<string>} filePath 存储路径，若为数组则是路径目录
      * @param {*} data 写入数据，当为字符数组时，将会自动调整背压
-     * @param {ObjectEncodingOptions} setting 传入接口的选项，如  { encoding: 'utf8' }
+     * @param {object} setting 传入接口的选项，如  { encoding: 'utf8' }
      * @param {string} setting.format 传入数据格式，如 base64
-     * @returns {string} 实际存储的相对路径——相对仓库
+     * @returns {Promise<string>} 实际存储的相对路径——相对仓库
      */
     async saveFile(filePath, data, option) {
         let pathArray = [this.#repositoryPath];
@@ -32,7 +32,8 @@ export class FileSystemWriter extends IFileWriter {
     /**
      * 转换为PNG格式
      * @param {string} filePath 
-     * @returns {string} newFilePath
+     * @param {string} tempDir 
+     * @returns {Promise<string|null>} newFilePath
      */
     async converToPNG(filePath, tempDir) {
         try {
@@ -74,7 +75,7 @@ export class FileSystemWriter extends IFileWriter {
      * 移动文件——地址基于仓库为基础
      * @param {string|string[]} oldPath 源地址
      * @param {string|string[]} newPath 新地址
-     * @returns {string} 新的相对地址
+     * @returns {Promise<string>} 新的相对地址
      */
     async moveFile(oldPath, newPath) {
         const from = this.#resolve(oldPath);

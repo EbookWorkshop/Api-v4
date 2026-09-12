@@ -1,20 +1,12 @@
-import { Op } from "sequelize";
-import { AppError } from "../../5-shared/errors/index.js";
+// import { Op } from "sequelize";
+// import { AppError } from "../../5-shared/errors/index.js";
 
 export class WebBookChapterService {
-
-    /** @type {ITransaction} */
     #transaction;
-
-
-    /** @type {ChapterRepository} */
     #chapterRepository;
     #webBookChapterRepository;
     #webBookChapterURLRepository;
 
-    /**
-     * @param {WebBookRepository} webBookRepository 
-     */
     constructor(transaction, chapterRepository, webBookChapterRepository, webBookChapterURLRepository) {
         this.#transaction = transaction;
         this.#chapterRepository = chapterRepository;
@@ -25,8 +17,9 @@ export class WebBookChapterService {
 
     /**
      * 批量创建章节
+     * @param {number} bookId 
      * @param {*} ChapterList 
-     * @param {*} param1 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
      */
     async batchCreate(bookId, ChapterList, { transaction } = {}) {
         const runTrans = async (transaction) => {
@@ -64,7 +57,7 @@ export class WebBookChapterService {
     /**
      * 
      * @param {*} bookId 
-     * @returns {Array<{title:string,ruls:Array<string>}>}
+     * @returns {Promise<Array<{title:string,ruls:Array<string>}>>}
      */
     async findChapterWithURL(bookId) {
         return this.#webBookChapterRepository.findChapterWithURL(bookId);

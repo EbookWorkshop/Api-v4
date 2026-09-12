@@ -51,7 +51,7 @@ export class ChapterCommandService {
     async upsertChapter(chapter) {
         const { IndexId, ...chp } = chapter;
         const id = IndexId * 1;
-        if ((isNaN(id) || id <= 0) && chapter.BookId > 0)
+        if ((isNaN(id) || id <= 0) && (chapter.BookId ?? 0) > 0)
             return await this.#chapterRepository.addChapter(chp);
         else if (id > 0) {
             chp.id = id;
@@ -74,7 +74,7 @@ export class ChapterCommandService {
      * @param {object} info 
      * @param {number} info.bookId 将插入的书籍
      * @param {number|undefined} info.volumeId 插到指定卷中，-1为不设置卷
-     * @param {Array<{Content:string,OrderNum:number,Title:string}>} info.chapters 章节列表
+     * @param {Array<{Content:string,OrderNum:number,Title:string,VolumeId}>} info.chapters 章节列表
      */
     async batchInsertChapters({ bookId, volumeId, chapters }) {
         return await this.#chapterRepository.batchInsertChapters({ bookId, volumeId, chapters });
@@ -82,9 +82,7 @@ export class ChapterCommandService {
 
     /**
      * 批量更新章节顺序
-     * @param {Object} [orderData] 新的排序配置
-     * @param {Object} [orderData.indexId] 待更新的章节ID
-     * @param {Object} [orderData.newOrder] 要更新到的新序号
+     * @param {Array<{indexId,newOrder}>} orderData 新的排序配置
      * @returns 
      */
     async updateOrder(orderData) {

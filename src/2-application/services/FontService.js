@@ -11,9 +11,9 @@ export class FontService {
     #staticUrlPrefix;  // 例如 '/font'
 
     /**
-     * @param {SystemConfigService} systemConfigService
-     * @param {IFileScanner} fileScanner
-     * @param {IFileWriter} fileWriter
+     * @param {*} systemConfigService
+     * @param {*} fileScanner
+     * @param {*} fileWriter
      * @param {string} fontDir - 字体目录相对路径（如 'font'）
      * @param {string} staticUrlPrefix - 静态资源前缀（如 '/font'）
      */

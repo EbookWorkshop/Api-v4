@@ -4,16 +4,17 @@ import { RuleEngine } from './engines/RuleEngine.js';
 import { AppError } from '../../5-shared/errors/index.js';
 
 export class PuppeteerDataFetcher extends IDataFetcher {
-    #config;
+    // #config;
     /** @type {RuleEngine} */
     #ruleEngine;
 
+    /** @type {import("puppeteer").Browser|null} */
     #browser;
     /** 是否保持资源（一直打开浏览器模式）注意： 保持模式下需要手动关闭！ */
     #keep;
     constructor(config, ruleEngine, isKeep = false) {
         super();
-        this.#config = config;
+        // this.#config = config;
         this.#ruleEngine = ruleEngine;
 
         this.#browser = null;
@@ -28,7 +29,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
      */
     async fetch(url, setting) {
         const { isVis } = setting;
-        const startTime = performance.now();
+        // const startTime = performance.now();
         let browser = await this.#getBrowser(setting);
 
         let result = new Map();
@@ -46,7 +47,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
             // 配置需要访问网址
             const pageResult = await page.goto(url, { timeout: setting.timeout, waitUntil: 'networkidle2' });
 
-            if (pageResult.status() >= 400) throw new AppError(`目标地址访问出错：地址-${url};状态-${pageResult.status()}。`)
+            if (!pageResult || pageResult.status() >= 400) throw new AppError(`目标地址访问出错：地址-${url};状态-${pageResult?.status() ?? null}。`)
 
             //数据分析采集
             const { rules, dictionaries } = setting;
@@ -74,19 +75,20 @@ export class PuppeteerDataFetcher extends IDataFetcher {
     /**
      * 使用 Puppeteer 通过 URL 获取的 Buffer
      * @param {string} url - 的完整 URL
-     * @param {object} options - 额外配置（可选）
-     * @param {object} options.viewport - 视口大小，默认 { width: 800, height: 600 }
-     * @param {string} options.userAgent - 自定义 User-Agent
-     * @param {number} options.timeout - 页面加载超时（毫秒），默认 30000
-     * @param {boolean} options.headless - 是否无头模式，默认 true
+     * @param {object} [options] - 额外配置（可选）
+     * @param {object} [options.viewport] - 视口大小，默认 { width: 800, height: 600 }
+     * @param {string} [options.userAgent] - 自定义 User-Agent
+     * @param {number} [options.timeout] - 页面加载超时（毫秒），默认 30000
+     * @param {boolean} [options.headless] - 是否无头模式，默认 true
      * @returns {Promise<Buffer>} 数据的 Buffer
      */
     async download(url, options = {}) {
+        /** @type {import("puppeteer").Browser|null} */
         let browser = null;
         try {
             browser = await this.#getBrowser(options);
 
-            const page = await browser.newPage();
+            const page = await browser?.newPage();
 
             // 设置视口            await page.setViewport(options.viewport || { width: 800, height: 600 });
 
@@ -116,7 +118,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
         } catch (error) {
             throw new Error(`Puppeteer::download 下载资源 Buffer 失败: ${error.message}`);
         } finally {
-            if (!this.#keep && browser) await browser.close();
+            if (!this.#keep && browser) await browser?.close();
         }
     }
 
@@ -127,7 +129,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
                 width: 1400,
                 height: 900
             },
-            headless: "new",    //默认值new：新无头模式，https://developer.chrome.com/articles/new-headless/
+            headless: true,
             slowMo: 233,        //设置放慢每个步骤的毫秒数
             ignoreDefaultArgs: ['--enable-automation', '--no-sandbox', '--disable-setuid-sandbox'],      //去掉自动化提示-可能对部分反爬策略有帮助
             timeout: setting.timeout

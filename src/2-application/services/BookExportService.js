@@ -76,11 +76,12 @@ export class BookExportService {
      * 导出书本
      * @param {number} bookId 
      * @param {"epub"|"pdf"|"txt"} format 文件格式
-     * @param {object} setting 
+     * @param {any} setting 
      * @returns {Promise<{ path, filename,warnings }>} 导出结果
      */
     async exportBook(bookId, format, setting) {
         this.#resultWarning = [];
+        /** @type {any} */
         let result = null;
         let runErr = null;
         let bookName = "";
@@ -103,7 +104,7 @@ export class BookExportService {
             //获取简介
             const introduction = await this.#chapterQueryService.getIntroduction(bookId);
             //设置出版商
-            if (!rest.publisher) rest.publisher = `EBook Workshop v${this.#config.version}`;
+            if (!rest?.publisher) rest.publisher = `EBook Workshop v${this.#config.version}`;
 
             //设置排版
             const chapterAftTyp = this.#applyTypography(volumes, showChapters);
@@ -122,7 +123,7 @@ export class BookExportService {
             const exportData = new BookExportData({
                 title: book.BookName,
                 author: book.Author,
-                cover: coverPath,
+                cover: coverPath || "",
                 introduction: introduction?.Content,
                 chapters: chapterAftTyp,
                 setting: rest,           //格式、排版、字体等设置
@@ -150,11 +151,11 @@ export class BookExportService {
     /**
      * 应用排版
      * @param {Array<any>} volumes
-     * @param {Array<{Title,Content,VolumeId}>} chapters 
-     * @returns {Array<{title,content}>}
+     * @param {Array<{Title,Content,VolumeId?}>} chapters 
+     * @returns {Array<{title,content,volume?,VolumeId?}>}
      */
     #applyTypography(volumes, chapters) {
-        let resultChapt = chapters.map(({ Title: title, Content: content, VolumeId }) => ({ title, content, VolumeId }));
+        let resultChapt = chapters.map(({ Title: title, Content: content, VolumeId }) => ({ title, content, VolumeId}));
 
         for (let chap of resultChapt) {
             if (!chap.content) {

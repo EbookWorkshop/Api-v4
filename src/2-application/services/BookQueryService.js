@@ -13,11 +13,12 @@ export class BookQueryService {
 
     /**
      * 查找书本列表
-     * @param {number?} tagId 包含的tagId
-     * @param {number[]?} excludeTagIds 排除的tags
+     * @param {object} [option] 包含的tagId
+     * @param {number} [option.tagId] 包含的tagId
+     * @param {number[]} [option.excludeTagIds] 排除的tags
      * @returns 
      */
-    async listBooks({ tagId, excludeTagIds }) {
+    async listBooks({ tagId, excludeTagIds } = {}) {
         const bookList = await this.#ebookRepository.findAllWithTagFilter({
             tagId,
             excludeTagIds,

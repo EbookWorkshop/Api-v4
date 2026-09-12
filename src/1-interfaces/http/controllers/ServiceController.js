@@ -6,12 +6,12 @@ import { getHost } from "../../../5-shared/utils/site.js"
 export class ServiceController {
     #serviceQueryService;
     #taskSchedulerService;
-    /** @type {BatchProgressTracker} */
+    /** @type {import("../../../2-application/services/BatchProgressTracker.js").BatchProgressTracker} */
     #batchProgressTracker;
     /**
      * @param {ServiceQueryService} serviceQueryService
-     * @param {TaskSchedulerService} taskSchedulerService
-     * @param {BatchProgressTracker} batchProgressTracker
+     * @param {import("../../../2-application/services/TaskSchedulerService.js").TaskSchedulerService} taskSchedulerService
+     * @param {import("../../../2-application/services/BatchProgressTracker.js").BatchProgressTracker} batchProgressTracker
      */
     constructor(serviceQueryService, taskSchedulerService, batchProgressTracker) {
         this.#serviceQueryService = serviceQueryService;
