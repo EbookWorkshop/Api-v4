@@ -3,7 +3,7 @@ import { initWorker } from "./index.js"
 const { workerId, config } = workerData;
 
 function close() {
-    console.log(`🛑\t\t线程【${workerId}】关闭，已在线${performance.now() / 60000}分。`)
+    console.log(`🛑\t\t线程【${workerId}】关闭，已在线${(performance.now() / 60_000).toFixed(1)}分。`);
 }
 
 

@@ -59,8 +59,8 @@ export class UpdateBookMetadataRequest {
      *         name: "新书名"
      *         introduction: "更新简介"
      */
-    static fromBody(body) {
-        let bookInfo = body;
+    static fromRequest(request) {
+        let bookInfo = request.body;
         if (!bookInfo) throw new UserInputError("没有传入数据。");
         bookInfo.id *= 1;
         if (!bookInfo.id || isNaN(bookInfo.id)) throw new UserInputError("书籍Id缺失或格式不正确。");
@@ -68,9 +68,15 @@ export class UpdateBookMetadataRequest {
         if (bookInfo.name) metadata.BookName = bookInfo.name;
         if (bookInfo.author) metadata.Author = bookInfo.author;
         if (bookInfo.bookCover) metadata.CoverImg = bookInfo.bookCover;
-        if (bookInfo.coverFile && Array.isArray(bookInfo.coverFile)) metadata.converFile = bookInfo.coverFile[0];
         if (bookInfo.introduction) metadata.Introduction = bookInfo.introduction;
         if (bookInfo.coverType === "默认") metadata.CoverImg = null;
+        else if (bookInfo.coverType === "图片") metadata.embelBookName = bookInfo.embelBookName === "true";
+
+        if (request.files.coverFile) {
+            metadata.converFile = request.files.coverFile;
+            metadata.coverShowName = bookInfo.showBookName;
+        }
+
 
         return metadata;
     }

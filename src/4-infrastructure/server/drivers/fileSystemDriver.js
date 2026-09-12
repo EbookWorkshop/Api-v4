@@ -6,6 +6,17 @@ import { pipeline } from 'stream/promises';
 import { AppError } from '../../../5-shared/errors/index.js';
 
 /**
+ * 返回 绝对地址 或相对仓库的地址
+ * @param {*} basePath 基准地址
+ * @param {Array<string>|string} p 地址
+ * @returns 
+ */
+export function resolvePath(basePath, p) {
+    if (Array.isArray(p)) p = path.join(...p);
+    return path.isAbsolute(p) ? p : path.resolve(basePath, p);
+}
+
+/**
  * 扫描指定目录下的所有文件，返回文件名数组
  */
 export async function listFilesInDirectory(dirPath) {
@@ -192,10 +203,8 @@ export async function deleteFile(filePath, basePath) {
     return fs.unlink(full);
 }
 
-export async function renameFile(oldPath, newPath, basePath) {
-    const fullOld = path.join(basePath, oldPath);
-    const fullNew = path.join(basePath, newPath);
-    return fs.rename(fullOld, fullNew);
+export async function renameFile(oldPath, newPath) {
+    return fs.rename(oldPath, newPath);
 }
 
 export async function readFileData(file, { encoding, format } = {}) {
@@ -207,4 +216,21 @@ export async function readFileData(file, { encoding, format } = {}) {
             default: return data;
         }
     } catch (error) { throw error; }
+}
+
+/**
+ * 般文件，般不动就复制过去，然后删除源文件
+ * @param {*} from 
+ * @param {*} to 
+ * @returns 
+ */
+export async function safeMove(from, to) {
+    await fs.mkdir(path.dirname(to), { recursive: true });
+    try {
+        return await fs.rename(from, to);
+    } catch (e) {
+        if (e.code !== 'EXDEV') throw e;//跨设备错误。不在同一个文件系统/挂载点会出错
+        await fs.copyFile(from, to);
+        await fs.unlink(from);
+    }
 }

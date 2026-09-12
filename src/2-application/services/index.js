@@ -14,6 +14,7 @@ import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
 import { WebBookCommandService } from './WebBookCommandService.js';
 import { WebBookSourceURLService } from './WebBookSourceURLService.js';
 import { WebBookChapterURLService } from './WebBookChapterURLService.js';
+import { CoverService } from "./CoverService.js"
 
 import { SystemConfigService } from "./SystemConfigService.js";
 import { TagQueryService } from './TagQueryService.js';
@@ -81,11 +82,12 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
     );
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
     const webBookQueryService = new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository);
+    const coverService = new CoverService(fileWriter, null, config);
 
     return {
         bookQuery: new BookQueryService(ebookRepository),
         bookDetailQuery: bookDetailQueryService,
-        bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction),
+        bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction, coverService),
 
         webBookQuery: webBookQueryService,
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),

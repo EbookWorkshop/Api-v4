@@ -425,7 +425,7 @@ export class BookController {
      *         description: 服务器内部错误
      */
     async updateBookMetadata(ctx) {
-        const { id, ...metadata } = UpdateBookMetadataRequest.fromBody(ctx.request.body);
+        const { id, ...metadata } = UpdateBookMetadataRequest.fromRequest(ctx.request);
 
         ctx.body = await this.#bookCommandService.updateMetadata(id, metadata);
     }

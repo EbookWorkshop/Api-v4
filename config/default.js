@@ -3,13 +3,13 @@ export default {
     repository: {
         path: "../MyLibrary"
     },
-    archive: { path: "/Books" },
-    cover: { path: "/Cover" },
+    archive: { path: "./Books" },
+    cover: { path: "./Cover" },
     font: {
-        path: "/font"
+        path: "./font"
     },
     tempDir: {
-        path: "/temp"
+        path: "./temp"
     },
     server: {
         port: 8300,

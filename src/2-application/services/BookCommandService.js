@@ -10,16 +10,18 @@ export class BookCommandService {
     #chapterRepository;
     /** @type {ITransaction} */
     #transaction;
+    #coverService;
 
     /**
      * @param {EbookRepository} ebookRepository 
      * @param {ChapterRepository} chapterRepository 
      * @param {ITransaction} transaction 
      */
-    constructor(ebookRepository, chapterRepository, transaction) {
+    constructor(ebookRepository, chapterRepository, transaction, coverService) {
         this.#ebookRepository = ebookRepository;
         this.#chapterRepository = chapterRepository;
         this.#transaction = transaction;
+        this.#coverService = coverService;
     }
 
     /**
@@ -88,16 +90,23 @@ export class BookCommandService {
      * @param {*} metadata 
      */
     async updateMetadata(id, metadata) {
-        return await this.#transaction.runInTransaction(async (transaction) => {
-            const { Introduction, ...data } = metadata;
+        const oldBookInfo = await this.#ebookRepository.findById(id);
+        let updateCover = null;
+
+        const result = await this.#transaction.runInTransaction(async (transaction) => {
+            const { Introduction, converFile, coverShowName, embelBookName, ...data } = metadata;
             if (Introduction) await this.#chapterRepository.updateIntroduction({ bookId: id, content: Introduction }, { transaction });
 
-            if (metadata.converFile || typeof (metadata.CoverImg) !== "undefined") {
-                //TODO: 如果是文件，保存到服务器、并设置 data.CoverImg
-                console.warn("TODO: 如果是文件，保存到服务器、并设置 metadata.CoverImg")
+            if (converFile) {
+                data.CoverImg = await this.#coverService.saveCoverAndGetFilePath(converFile, coverShowName, embelBookName);
             }
 
+            updateCover = data.CoverImg;
             return this.#ebookRepository.updateMetadata(id, data, { transaction });
-        })
+        });
+
+        await this.#coverService.deleteCoverFile(oldBookInfo.CoverImg, { except: updateCover });
+
+        return result;
     }
 }

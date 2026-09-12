@@ -17,6 +17,7 @@ export class CoverService {
     #fileWriter;      // 实现 IFileWriter
     #dataFetcher;     // 实现 IDataFetcher fetch() ；需要下载图片时用。
     #config;
+    #coverDir;
 
     /**
      * 
@@ -28,29 +29,23 @@ export class CoverService {
         this.#fileWriter = fileWriter;
         this.#dataFetcher = dataFetcher;
         this.#config = config;
+        this.#coverDir = this.#config.cover.path;
     }
     /** */
     set dataFetcher(fetcher) { this.#dataFetcher = fetcher; }
 
     /**
      * 存储封面（从来源生成并保存到静态目录）
-     * @param {{ source, embedBookName }} option
+     * @param {{ source:string, embedBookName }} option
      * @returns {Promise<CoverStorageResult>}
      */
     async storeCover({ source, embedBookName, bookName }) {
         let finalPath = null;
         let coverValue = null;
 
-        // if (startsWith('#')) {
-        //     // 纯色模式：直接生成纯色图片
-        //     // const color = source;
-        //     // const imagePath = await this.#generateSolidColorImage(color, source);
-        //     // finalPath = imagePath;
-        //     // coverValue = color;
-        // } else 
         if (this.#isUrl(source)) {            // 从 URL 下载
             const buffer = await this.#dataFetcher.download(source);
-            const savedPath = await this.#fileWriter.saveFile([this.#config.cover.path, `${bookName}_${randomBytes(2).toString('hex')}.${eXtname(source, "jpg")}`], buffer);
+            const savedPath = await this.#fileWriter.saveFile([this.#coverDir, `${bookName}_${randomBytes(2).toString('hex')}.${eXtname(source, "jpg")}`], buffer);
             finalPath = savedPath;
             coverValue = savedPath;
 
@@ -81,7 +76,7 @@ export class CoverService {
         const tempDir = this.#config?.tempDir?.path;
         if (typeof (embedBookName) === "undefined" || embedBookName === null) embedBookName = coverImg?.includes(SHOW_BOOKNAME);
         coverImg = coverImg.replace(SHOW_BOOKNAME, "");
-        
+
         let isUseImageData = false;
         let coverFilePath = "";
         if (coverImg.startsWith("#")) isUseImageData = true;//线装本格式，直接采用图片
@@ -104,12 +99,68 @@ export class CoverService {
         return { path: coverFilePath, temp, warnings };
     }
 
+    /**
+     * 
+     * @param {*} converFile 
+     * @param {*} coverFileName 
+     * @param {*} embelBookName 
+     * @returns 
+     */
+    async saveCoverAndGetFilePath(converFile, coverFileName, embelBookName) {
+        const newFileName = `${coverFileName}_${converFile.originalFilename}`;
+        let filePath = await this.#fileWriter.moveFile(converFile.filepath, [this.#coverDir, newFileName]);
+        if (embelBookName) filePath += SHOW_BOOKNAME;
+        return filePath;
+    }
+
     // 内部辅助方法...
-    #parseCoverRecord(record) {
-        if (!record) return { path: null, hasShowname: false };
-        const hasShowname = record.endsWith(SHOW_BOOKNAME);
-        const path = hasShowname ? record.slice(0, -9) : record;
-        return { path, hasShowname };
+    #normalizeCoverValue(coverValue) {
+        if (!coverValue || typeof coverValue !== 'string') return null;
+
+        const value = coverValue.replace(SHOW_BOOKNAME, '');
+
+        if (value.startsWith('#')) return { type: 'color', value };
+        if (this.#isUrl(value)) return { type: 'url', value };
+
+        return { type: 'file', path: value };
+    }
+
+    async isSameCoverFile(a, b) {
+        const na = this.#normalizeCoverValue(a);
+        const nb = this.#normalizeCoverValue(b);
+
+        return !!(
+            na &&
+            nb &&
+            na.type === 'file' &&
+            nb.type === 'file' &&
+            na.path === nb.path
+        );
+    }
+
+    async deleteCoverFile(coverValue, { except } = {}) {
+        const target = this.#normalizeCoverValue(coverValue);
+
+        // 颜色值、URL、空值都不删物理文件
+        if (!target || target.type !== 'file') return false;
+
+        if (except) {        // 新旧是同一个文件，不删
+            const exceptTarget = this.#normalizeCoverValue(except);
+            if (
+                exceptTarget?.type === 'file' &&
+                exceptTarget.path === target.path
+            ) {
+                return false;
+            }
+        }
+
+        try {
+            await this.#fileWriter.deleteFile(target.path);
+            return true;
+        } catch (err) {
+            if (err.code === 'ENOENT') return false;
+            throw err;
+        }
     }
 
     #isUrl(str) {

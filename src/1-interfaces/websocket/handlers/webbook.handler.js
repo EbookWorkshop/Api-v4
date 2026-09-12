@@ -498,7 +498,7 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      */
     eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_BATCH_PROGRESS, (env) => {
         const { bookId, bookName } = env.ctx;
-        const batchId = env.batchId;                     // ← 从顶层取
+        const batchId = env.batchId;
         const data = env.data || {};
 
         io.to(`book-${bookId}`).emit('WebBook.UpdateChapter.Progress', {

@@ -1,12 +1,14 @@
 import path from "node:path";
 import sharp from "sharp";     //提供图像格式转换
-import { saveFile, saveArrayToFile, accessDir, mapPath, deleteFile, renameFile } from '../drivers/fileSystemDriver.js';
+import { resolvePath, saveFile, saveArrayToFile, accessDir, mapPath, deleteFile, renameFile, safeMove } from '../drivers/fileSystemDriver.js';
 import { IFileWriter } from '../../../2-application/ports/IFileWriter.js';
 
 export class FileSystemWriter extends IFileWriter {
     #repositoryPath;
     constructor(repositoryPath) { super(repositoryPath); this.#repositoryPath = repositoryPath; }
-
+    #resolve(p) {
+        return resolvePath(this.#repositoryPath, p);
+    }
     /**
      * 写入文件——以仓库为基础路径
      * @param {string|Array<string>} filePath 存储路径，若为数组则是路径目录
@@ -35,7 +37,7 @@ export class FileSystemWriter extends IFileWriter {
     async converToPNG(filePath, tempDir) {
         try {
             const finfo = path.parse(filePath);
-            const tempFile = path.join(this.#repositoryPath, tempDir, finfo.name + ".png");
+            const tempFile = this.#resolve([tempDir, finfo.name + ".png"]);
             await sharp(filePath).png().toFile(tempFile);
             return tempFile;
         } catch (error) {
@@ -49,7 +51,7 @@ export class FileSystemWriter extends IFileWriter {
      * @returns 
      */
     async accessDir(dir) {
-        return accessDir(path.join(this.#repositoryPath, dir));
+        return accessDir(this.#resolve(dir));
     }
 
     /**
@@ -66,17 +68,19 @@ export class FileSystemWriter extends IFileWriter {
     }
 
     async renameFile(oldPath, newPath) {
-        return renameFile(oldPath, newPath, this.#repositoryPath)
+        return renameFile(oldPath, newPath)
     }
     /**
      * 移动文件——地址基于仓库为基础
      * @param {string|string[]} oldPath 源地址
      * @param {string|string[]} newPath 新地址
+     * @returns {string} 新的相对地址
      */
     async moveFile(oldPath, newPath) {
-        if (Array.isArray(oldPath)) oldPath = path.join(...oldPath);
-        if (Array.isArray(newPath)) newPath = path.join(...newPath);
-        return renameFile(oldPath, newPath, this.#repositoryPath)
+        const from = this.#resolve(oldPath);
+        const to = this.#resolve(newPath);
+        await safeMove(from, to);
+        return path.relative(this.#repositoryPath, to);
     }
 
 }
