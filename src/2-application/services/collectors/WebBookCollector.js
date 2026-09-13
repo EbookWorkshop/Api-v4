@@ -180,7 +180,9 @@ export class WebBookCollector extends ICollector {
      */
     async #getChapterList(sourcePage, initialMap = new Map()) {
         const chapters = [];
+        /** @type {string|null} */
         let nextPageUrl = "";
+        /** @type {string|null} */
         let currentUrl = sourcePage;
         let pageCount = 0;
         const MAX_PAGES = 50;           // 防止死循环

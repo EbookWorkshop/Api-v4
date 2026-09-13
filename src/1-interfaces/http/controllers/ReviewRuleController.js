@@ -151,4 +151,62 @@ export class ReviewRuleController {
         const id = IdRequest.fromQuery(ctx.query);
         ctx.body = await this.#reviewRuleCommandService.deleteReviewRuleById(id);
     }
+
+    /**
+     * @swagger
+     * /review/rule/test:
+     *   post:
+     *     summary: 测试审核规则
+     *     description: 根据规则 ID 和章节 ID 测试该规则在指定章节上的匹配效果（统一包装格式）
+     *     tags:
+     *       - Review - Rule —— 自助校阅 - 规则库
+     *       - Review
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/TestReviewRuleRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/TestReviewRuleRequestExample'
+     *     responses:
+     *       200:
+     *         description: 测试成功，返回测试结果（如匹配数量、替换预览等）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-09-13T10:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如 ruleId 或 chapterId 缺失、非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "ruleId 和 chapterId 为必填字段且必须为有效整数"
+     *               timestamp: "2026-09-13T10:00:00.000Z"
+     *       404:
+     *         description: 规则或章节不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到指定的规则或章节"
+     *               timestamp: "2026-09-13T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async testReviewRule(ctx) {
+        const { ruleId, chapterId } = ctx.request.body;
+        const result = await this.#reviewRuleCommandService.testRule(ruleId, chapterId);
+        ctx.body = result;
+    }
 }

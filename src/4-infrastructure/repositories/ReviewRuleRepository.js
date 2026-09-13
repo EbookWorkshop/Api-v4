@@ -32,6 +32,14 @@ export class ReviewRuleRepository {
         });
     }
 
+    async findRules(ruleId) {
+        const rules = this.#ReviewRuleModel.findByPk(ruleId, {
+            attributes: ["Rule", "Replace"],
+            raw: true,
+        });
+        return rules;
+    }
+
     async findRulesByBookId(bookId) {
         const rules = await this.#ReviewRuleModel.findAll({
             attributes: ["Rule", "Replace"],

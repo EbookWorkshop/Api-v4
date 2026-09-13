@@ -1,15 +1,18 @@
 import { ReviewRuleRepository } from '../../4-infrastructure/repositories/ReviewRuleRepository.js';
 import { UserInputError } from "../../5-shared/errors/index.js"
+import { ReviewString } from "../../5-shared/utils/reviewString.js"
 
 export class ReviewRuleCommandService {
     /** @type {ReviewRuleRepository} */
     #reviewRuleRepository;
+    #chapterRepository;
 
     /**
      * @param {ReviewRuleRepository} reviewRuleRepository 
      */
-    constructor(reviewRuleRepository) {
+    constructor(reviewRuleRepository, chapterRepository) {
         this.#reviewRuleRepository = reviewRuleRepository;
+        this.#chapterRepository = chapterRepository;
     }
 
     /**
@@ -41,5 +44,17 @@ export class ReviewRuleCommandService {
      */
     async deleteReviewRuleById(id) {
         return await this.#reviewRuleRepository.deleteReviewRuleById(id);
+    }
+
+    async testRule(ruleId, chapterId) {
+        const rule = await this.#reviewRuleRepository.findRules(ruleId);
+        const chapter = await this.#chapterRepository.findByPK(chapterId);
+
+        let result = ReviewString.applyRule(rule, chapter.Content);
+        return {
+            // match,
+            source: chapter.Content,
+            result
+        };
     }
 }

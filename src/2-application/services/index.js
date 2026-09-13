@@ -117,7 +117,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         font: fontService,
 
         reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
-        reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository/*, databaseTransaction */),
+        reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository, chapterRepository),
         reviewRuleUsing: new ReviewRuleUsingService(repositories.reviewRuleUsingRepository),
         reviewBook: reviewBookService,
         ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer),

@@ -64,3 +64,31 @@ export class ReviewRuleRequest {
         return { id, name, rule, replace, bookId };
     }
 }
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     TestReviewRuleRequest:
+ *       type: object
+ *       description: 测试审核规则的请求体
+ *       properties:
+ *         ruleId:
+ *           type: integer
+ *           description: 要测试的审核规则 ID
+ *           example: 10
+ *         chapterId:
+ *           type: integer
+ *           description: 用于测试的章节 ID
+ *           example: 49017
+ *       required:
+ *         - ruleId
+ *         - chapterId
+ *
+ *   examples:
+ *     TestReviewRuleRequestExample:
+ *       summary: 测试审核规则请求示例
+ *       value:
+ *         ruleId: 10
+ *         chapterId: 49017
+ */
