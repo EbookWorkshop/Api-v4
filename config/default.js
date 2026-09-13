@@ -1,16 +1,10 @@
 // 默认配置（所有环境继承）
 export default {
-    repository: {
-        path: "../MyLibrary"
-    },
+    repository: { path: "../MyLibrary" },
     archive: { path: "./Books" },
     cover: { path: "./Cover" },
-    font: {
-        path: "./font"
-    },
-    tempDir: {
-        path: "./temp"
-    },
+    font: { path: "./font" },
+    tempDir: { path: "./temp" },
     server: {
         port: 8300,
         host: '0.0.0.0',

@@ -29,6 +29,9 @@ importers:
       koa-static:
         specifier: ^5.0.0
         version: 5.0.0
+      node-cron:
+        specifier: ^4.6.0
+        version: 4.6.0
       nodemailer:
         specifier: ^9.0.6
         version: 9.0.6
@@ -1749,6 +1752,10 @@ packages:
   node-addon-api@8.9.2:
     resolution: {integrity: sha512-VijLXbi3UACN69I0JVXJsX4tjACjNoQDgv2gTF6sx2wWEi8tkSg2eX8p5gSIFi8z2+DL3oHmY6OyKce38SDolg==}
     engines: {node: ^18 || ^20 || >= 21}
+
+  node-cron@4.6.0:
+    resolution: {integrity: sha512-Si/bzYiKRHOB8/a99T2+SDGN582ONDMSTlJr5oCkT6GtnqPjZ2s10eoQRYkW9ZHwjVxONL+W8Fb+qR0AHMQsdg==}
+    engines: {node: '>=20'}
 
   node-fetch@2.6.7:
     resolution: {integrity: sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==}
@@ -4339,6 +4346,8 @@ snapshots:
       semver: 7.8.5
 
   node-addon-api@8.9.2: {}
+
+  node-cron@4.6.0: {}
 
   node-fetch@2.6.7:
     dependencies:

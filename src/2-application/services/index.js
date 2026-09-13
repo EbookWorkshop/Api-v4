@@ -43,6 +43,7 @@ import { BatchProgressTracker } from "./BatchProgressTracker.js";
 
 import { TaskSchedulerService } from "./TaskSchedulerService.js";
 import { ServiceQueryService } from './ServiceQueryService.js';
+import { ImportService } from "./ImportService.js"
 
 import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js";
 /**
@@ -124,7 +125,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner, task),
 
         assets: new AssetsService(fileScanner, fileWriter, config),
-
+        import: new ImportService(fileWriter,config.archive?.path),
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),
         batchProgressTracker, task,
         workerPool,

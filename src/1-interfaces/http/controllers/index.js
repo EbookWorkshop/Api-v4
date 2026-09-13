@@ -13,6 +13,7 @@ import { ReviewRuleUsingController } from "./ReviewRuleUsingController.js"
 import { AssetsController } from "./AssetsController.js"
 import { EmailController } from './EmailController.js';
 import { RuleForWebController } from "./RuleForWebController.js"
+import { ImportController } from './ImportController.js';
 import { ExportController } from './ExportController.js';
 import { ServiceController } from "./ServiceController.js"
 import { BookmarkController } from "./BookmarkController.js";
@@ -48,6 +49,7 @@ export function createControllers(services, config) {
         assets: new AssetsController(services.assets),
         email: new EmailController(services.email),
 
+        import: new ImportController(services.import),
         export: new ExportController(services.task),
         service: new ServiceController(services.serviceQuery, services.task, services.batchProgressTracker),
 

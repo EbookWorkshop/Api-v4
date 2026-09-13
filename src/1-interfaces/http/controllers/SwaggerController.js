@@ -46,12 +46,13 @@ export class SwaggerController {
                 { name: 'Services - EMail —— 系统服务：邮件', "x-tag-expanded": false },
                 { name: 'Assets —— 资源管理', "x-tag-expanded": false },
                 { name: 'Export —— 图书馆产物', "x-tag-expanded": false },
+                { name: 'Import —— 书库导入', "x-tag-expanded": false },
 
             ],
             'x-tagGroups': [
                 {
                     name: '新系统架构',
-                    tags: ['Book', 'WebBook', "Volume", "Chapter", "Bookmark", "Review", "BotRule", 'Tag', 'Font', "Assets", "Export", "Email", "Service"],
+                    tags: ['Book', 'WebBook', "Volume", "Chapter", "Bookmark", "Review", "BotRule", 'Tag', 'Font', "Assets", "Export", "Import", "Email", "Service"],
                 },
                 {
                     name: '原风格排版',
@@ -68,6 +69,7 @@ export class SwaggerController {
                         "Services - EMail —— 系统服务：邮件",
                         'Assets —— 资源管理',
                         'Export —— 图书馆产物',
+                        'Import —— 书库导入',
                     ],
                 },
             ],
