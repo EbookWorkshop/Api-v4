@@ -52,7 +52,7 @@ export async function createExportBookTask(config, taskType, { repositories }) {
     });
     eventMgr.on(EXPORT_EVENTS.TEMP_CLEANUP, (param) => {    //清理文件
         const { filePath, delay } = param;
-        if (filePath) setTimeout(async () => { try { await fileServ.deleteFile(filePath); } catch (e) { } }, delay || 0);
+        if (filePath) setTimeout(async () => { try { await fileServ.deleteFile(filePath, true); } catch (e) { } }, delay || 0);
     });
     new EmailService(new NodemailerEmailSender(), systemConfigService, null, eventMgr);//注册邮件发送事件
     new ExportOrchestrator(eventMgr, config);//注册文件生成完成事件

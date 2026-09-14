@@ -124,8 +124,15 @@ export class WorkerPool {
 
         const flyTask = this.#taskHistory.find(t => t.status == TASK_STATUS.EXECUTING);
         if (flyTask && performance.now() - flyTask.startTime > this.#poolConfig.idle * 3) {
-            console.debug("发现跑飞的任务：", JSON.stringify(flyTask));
-            this.restartTask(flyTask.taskId);
+            const workerId = flyTask.workerId;
+            const worker = this.#workersQueue(flyTask.useDB).findById(workerId);
+            const wD = this.#workerData.get(worker);
+            if (!worker || worker[kIsDead] || !wd || wD?.taskId !== flyTask.taskId) {
+                console.debug("发现跑飞的任务：", JSON.stringify(flyTask));
+                if (!worker || worker[kIsDead]) console.debug("原因：执行器已死。");
+                if (!wd || wD?.taskId !== flyTask.taskId) console.debug("原因：执行器已安排新任务。");
+                this.restartTask(flyTask.taskId);
+            }
         }
 
         if (fwNum <= this.#poolConfig.min) return;              //达到线程池最低驻留数

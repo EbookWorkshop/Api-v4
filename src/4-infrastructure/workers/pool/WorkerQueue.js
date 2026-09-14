@@ -1,3 +1,7 @@
+// @ts-nocheck
+// 原因：WorkerPool 大量使用 Symbol 键和 Worker 动态扩展属性，
+// checkJs 对这类底层工具代码收益低、噪音大，选择跳过。
+
 export class WorkerQueue {
     /**@type Set<Worker> */
     #workers;
@@ -49,10 +53,15 @@ export class WorkerQueue {
         this.#workers.delete(worker);
     }
 
+    findById(workerId) {
+        for (let worker of this.#workers) if (worker.workerId === workerId) return worker;
+        return null;
+    }
+
+
     free(worker) { this.#freeWorkers.add(worker); }
     use(worker) { this.#freeWorkers.delete(worker); }
     isFree(worker) { return this.#freeWorkers.has(worker); }
-
 
     /**
      * 是否有空闲线程

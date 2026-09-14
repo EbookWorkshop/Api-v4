@@ -32,10 +32,21 @@ export class IFileWriter {
     async converToPNG(filePath, tempDir) { throw new Error('接口方法尚未实现'); }
 
     /**
+     * 确保路径存在——相对仓库的路径
+     * @param {*} dir 
+     * @returns 
+     */
+    async accessDir(dir) { throw new Error('接口方法尚未实现'); }
+
+    /**
      * 获取服务器地址
      * @param {Array<string>|string} dir 路径
      * @returns 
      */
     mapPath(dir) { throw new Error('接口方法尚未实现'); }
+
+    async deleteFile(filePath, isFull = false) { throw new Error('接口方法尚未实现'); }
+
+    async renameFile(oldPath, newPath) { throw new Error('接口方法尚未实现'); }
 
 }

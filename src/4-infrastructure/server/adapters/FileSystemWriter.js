@@ -64,8 +64,8 @@ export class FileSystemWriter extends IFileWriter {
         return mapPath(dir, this.#repositoryPath);
     }
 
-    async deleteFile(filePath) {
-        return deleteFile(filePath, this.#repositoryPath);
+    async deleteFile(filePath, isFull = false) {
+        return deleteFile(filePath, isFull ? '' : this.#repositoryPath);
     }
 
     async renameFile(oldPath, newPath) {
