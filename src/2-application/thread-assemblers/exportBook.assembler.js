@@ -13,6 +13,7 @@ import { SystemConfigService } from "../services/SystemConfigService.js";
 
 import { MemoryCache } from '../../4-infrastructure/cache/MemoryCache.js';
 import { EventManager } from "../../4-infrastructure/event/EventManager.js";
+import { FileSystemScanner } from "../../4-infrastructure/server/adapters/FileSystemScanner.js";
 import { FileSystemWriter } from "../../4-infrastructure/server/adapters/FileSystemWriter.js";
 import { GeneratorFactory } from '../../4-infrastructure/server/generators/GeneratorFactory.js';
 
@@ -31,11 +32,12 @@ import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js";
 export async function createExportBookTask(config, taskType, { repositories }) {
     const { ebookRepository, volumeRepository, chapterRepository, reviewRuleRepository } = repositories;
     const textCleanup = new TextCleanupService(reviewRuleRepository, new MemoryCache());
-    
+
     const bookServ = new BookQueryService(ebookRepository);
     const chapServ = new ChapterQueryService(chapterRepository, textCleanup);
     const volumeServ = new VolumeQueryService(volumeRepository);
 
+    const fileScanServ = new FileSystemScanner(config.repository?.path);
     const fileServ = new FileSystemWriter(config.repository?.path);
     const tempFolder = await fileServ.accessDir(config.tempDir?.path);
     const factory = new GeneratorFactory(tempFolder);
@@ -59,7 +61,7 @@ export async function createExportBookTask(config, taskType, { repositories }) {
         book: bookServ,
         volume: volumeServ,
         chapter: chapServ,
-    }, factory, coverService, textCleanup, eventMgr, config);
+    }, factory, coverService, fileScanServ, textCleanup, eventMgr, config);
     return new BookExportExecutor(bookExpServ);
 }
 export default createExportBookTask;

@@ -192,6 +192,7 @@ export class WebBookController {
      *     summary: 新增网页图书源
      *     description: 为指定网页图书新增一个源，可指定是否为默认源及源类型（index 目录页 / info 信息页）（统一包装格式）
      *     tags:
+     *       - Library - WebBook —— 网文图书馆
      *       - WebBook
      *     requestBody:
      *       required: true

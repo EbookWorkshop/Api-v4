@@ -1,4 +1,4 @@
-
+import path from "node:path";
 import { EXPORT_EVENTS } from "../constants/Event.js";
 import { BookExportData } from '../dto/BookExportData.dto.js';
 import { BookQueryService } from "../services/BookQueryService.js"
@@ -19,7 +19,7 @@ export class BookExportService {
     #chapterQueryService;
 
     // /** @type {IFileWriter} */
-    // #fileWriter;
+    #fileScanServ;
     /** @type {import("./CoverService.js").CoverService} */
     #coverService;
 
@@ -38,7 +38,7 @@ export class BookExportService {
      * @param {EventManager} eventMgr 
      * @param {Object} config 
      */
-    constructor(bookService, generatorFactory, coverService, textCleanup, eventMgr, config) {
+    constructor(bookService, generatorFactory, coverService, fileScanServ, textCleanup, eventMgr, config) {
         const { book, volume, chapter } = bookService;
         this.#bookQueryService = bookService.book;
         this.#volumeQueryService = bookService.volume;
@@ -47,7 +47,7 @@ export class BookExportService {
         if (!book || !volume || !chapter) throw new AppError("[BookExportService]初始化失败，基础服务缺失！");
 
         this.#generatorFactory = generatorFactory;
-        // this.#fileWriter = fileWriter;
+        this.#fileScanServ = fileScanServ;
         this.#coverService = coverService;
         this.#textCleanup = textCleanup;
         this.#eventManager = eventMgr;
@@ -105,6 +105,15 @@ export class BookExportService {
             const introduction = await this.#chapterQueryService.getIntroduction(bookId);
             //设置出版商
             if (!rest?.publisher) rest.publisher = `EBook Workshop v${this.#config.version}`;
+            if (rest.fontFamily) {
+                const fontFile = await this.#fileScanServ.findFileByBasename(this.#config.font.path, rest.fontFamily);
+                const filePath = path.join(this.#config.repository.path, this.#config.font.path, fontFile);
+                rest.font = {
+                    file: fontFile,
+                    dir: this.#config.font.path,
+                    path: filePath,
+                }
+            }
 
             //设置排版
             const chapterAftTyp = this.#applyTypography(volumes, showChapters);
@@ -155,7 +164,8 @@ export class BookExportService {
      * @returns {Array<{title,content,volume?,VolumeId?}>}
      */
     #applyTypography(volumes, chapters) {
-        let resultChapt = chapters.map(({ Title: title, Content: content, VolumeId }) => ({ title, content, VolumeId}));
+        /** @type{Array<{ title: any; content: any; volume?: boolean;VolumeId?: number;}>}  */
+        let resultChapt = chapters.map(({ Title: title, Content: content, VolumeId }) => ({ title, content, VolumeId }));
 
         for (let chap of resultChapt) {
             if (!chap.content) {

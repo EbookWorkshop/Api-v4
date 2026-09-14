@@ -352,6 +352,29 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      *     action: send
      *     channel:
      *       $ref: '#/channels/web-book-chapter-update-start'
+     *     messages:
+     *       - $ref: '#/channels/web-book-chapter-update-start/messages/chapterUpdateStart'
+     * components:
+     *   messages:
+     *     WebBookChapterUpdateStart:
+     *       name: WebBookChapterUpdateStart
+     *       title: 单章更新开始
+     *       summary: 某个书籍的某一章节开始更新时，服务端向订阅了该书籍房间的客户端广播
+     *       contentType: application/json
+     *       payload:
+     *         $ref: '#/components/schemas/WebBookChapterUpdateStartPayload'
+     *   schemas:
+     *     WebBookChapterUpdateStartPayload:
+     *       type: object
+     *       description: 对应代码里 io.to(room).emit 的第二参数
+     *       properties:
+     *         chapterId:
+     *           type: string
+     *           description: 章节 ID
+     *         bookId:
+     *           type: string
+     *           description: 书籍 ID
+     *       required: [chapterId, bookId]
      */
     eventManager.on(COLLECT_EVENTS.UPDATE_CHAPTER_START, (env) => {
         const { bookId, chapterId } = env.ctx;
@@ -515,18 +538,8 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
     });
 
     /**
-     * @asyncapi
-     * channels:
-     *   web-book-fetch-chapter:
-     *     address: WebBook.FetchChapter
-     *     messages:
-     *       fetchChapter:
-     *         $ref: '#/components/messages/WebBookFetchChapter'
-     * operations:
-     *   webBookFetchChapter:
-     *     action: send
-     *     channel:
-     *       $ref: '#/channels/web-book-fetch-chapter'
+     * 单章采集
+     * 使用了通用消息功能，没有专用的socket通讯信道
      */
     eventManager.on(COLLECT_EVENTS.FETCH_CHAPTER, (env) => {
         const { url } = env.ctx;

@@ -95,7 +95,8 @@ export class CoverService {
             coverFilePath = await this.#fileWriter.saveFile([tempDir, "cover", `cimg${randomBytes(3).toString('hex')}.png`], coverImageData, { format: "base64" });
             temp = true;
         }
-        coverFilePath = path.join(this.#config.repository.path, coverFilePath);//相对仓库地址改为以仓库开始记录的地址
+        const respoAbs = path.resolve(this.#config.repository.path)
+        if (!coverFilePath.startsWith(respoAbs)) coverFilePath = path.join(respoAbs, coverFilePath);//相对仓库地址改为以仓库开始记录的地址
         return { path: coverFilePath, temp, warnings };
     }
 

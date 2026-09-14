@@ -313,7 +313,7 @@ export class RuleForWebController {
      * @swagger
      * /services/botrule/vis:
      *   post:
-     *     summary: 可视化测试 Bot 规则    
+     *     summary: 🧵可视化测试 Bot 规则    
      *     description: 提交一个规则配置和测试 URL，返回模拟抓取结果，用于调试规则有效性（统一包装格式）
      *     tags:
      *       - Services - BotRule —— 系统服务：机器人爬网规则
@@ -492,7 +492,7 @@ export class RuleForWebController {
      *         description: 服务器内部错误
      */
     async deleteBotRules(ctx) {
-        const host = HostRequest.inQuery(ctx.query);
+        const host = HostRequest.inQuery(ctx.query) ?? "";
         const result = await this.#ruleForWebCommandService.deleteRulesByHost(host);
         ctx.body = result;
     }

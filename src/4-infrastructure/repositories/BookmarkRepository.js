@@ -45,8 +45,8 @@ export class BookmarkRepository {
     }
 
     async create(chapterId) {
-        return this.#BookmarkModel.create({
-            IndexId: chapterId
+        return this.#BookmarkModel.findOrCreate({
+            where: { IndexId: chapterId }
         });
     }
 

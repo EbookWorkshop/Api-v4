@@ -48,7 +48,7 @@ export class ServiceController {
      * @swagger
      * /services/version:
      *   post:
-     *     summary: 更新系统各依赖版本信息
+     *     summary: 🧵更新系统各依赖版本信息
      *     description: 更新系统各依赖版本信息
      *     tags:
      *       - Services - 基础 —— 系统服务：基础
@@ -117,7 +117,7 @@ export class ServiceController {
      * @swagger
      * /services/compress_db:
      *   post:
-     *     summary: 压缩数据库
+     *     summary: 🧵压缩数据库
      *     description: 压缩数据库
      *     tags:
      *       - Services - 基础 —— 系统服务：基础
