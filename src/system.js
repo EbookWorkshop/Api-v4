@@ -4,7 +4,8 @@ import { EventEmitter } from 'node:events';
 
 import { DATABASE_VERSION } from "./2-application/constants/SystemConfigGroup.js"
 import { EventManager } from './4-infrastructure/event/EventManager.js';
-import { WorkerPool } from "./4-infrastructure/workers/index.js"
+import { WorkerPool } from "./4-infrastructure/workers/index.js";
+import { Cron } from './4-infrastructure/server/Cron.js';
 import { loadConfig } from './4-infrastructure/config/index.js';
 import { createMiniCore } from './4-infrastructure/container/miniCore.js';
 import { createServices } from './2-application/services/index.js';
@@ -28,7 +29,7 @@ const { sequelize } = miniCore;
 // ============================================================
 // 3.1 仓储层 (Infrastructure)
 const eventManager = new EventManager(new EventEmitter());//消息管理模块
-const workerPool = new WorkerPool(config, eventManager);//线程池
+const workerPool = new WorkerPool(config, eventManager, new Cron());//线程池
 const { repositories } = miniCore;
 const { transactionManager } = miniCore;
 

@@ -187,6 +187,62 @@ export class WebBookController {
 
     /**
      * @swagger
+     * /library/webbook/sources:
+     *   post:
+     *     summary: 新增网页图书源
+     *     description: 为指定网页图书新增一个源，可指定是否为默认源及源类型（index 目录页 / info 信息页）（统一包装格式）
+     *     tags:
+     *       - WebBook
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AddWebBookSourceRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/AddWebBookSourceRequestExample'
+     *     responses:
+     *       200:
+     *         description: 新增成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-09-14T10:00:00.000Z"
+     *       400:
+     *         description: 请求参数错误（如 bookId 缺失、url 格式无效、type 取值不合法）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookId、url、type 为必填字段，type 必须为 index 或 info"
+     *               timestamp: "2026-09-14T10:00:00.000Z"
+     *       404:
+     *         description: 指定的网页图书不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该网页图书"
+     *               timestamp: "2026-09-14T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async addWebBookSources(ctx) {
+        const { bookId, defSource, url, type } = ctx.request.body;
+        ctx.body = await this.#webBookCommandService.addSource({ bookId, defSource, url, type });
+    }
+
+    /**
+     * @swagger
      * /library/webbook:
      *   post:
      *     summary: 🧵创建网页图书

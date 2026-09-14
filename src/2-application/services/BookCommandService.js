@@ -81,7 +81,12 @@ export class BookCommandService {
      * 删除书籍（软删除或硬删除）
      */
     async deleteBook(bookId) {
-        //TODO: 删除封面-删除书本信息前需要删除封面
+        const book = await this.#ebookRepository.findById(bookId);
+        if (!book) return true;
+
+        //删除封面-删除书本信息前需要删除封面
+        await this.#coverService.deleteCoverFile(book.CoverImg);
+
         return this.#ebookRepository.delete(bookId);
     }
 

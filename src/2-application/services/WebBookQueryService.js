@@ -18,11 +18,24 @@ export class WebBookQueryService {
         return this.#webBookRepository.findAll();
     }
 
+    /**
+     * 获取来源列表
+     * @param {*} bookId 
+     * @returns 
+     */
     async getBookSources(bookId) {
         const webBook = await this.#webBookRepository.findByBookId(bookId);
         if (!webBook) throw new AppError("该书籍非在线采集，没有采集信息");
         const { id } = webBook;
-        return this.#webBookSourceURLRepository.findByWebBookId(id);
+        const sourceList = await this.#webBookSourceURLRepository.findByWebBookId(id);
+
+        sourceList.map(s => {
+            s.defSource = (s.id == webBook.defaultIndex);
+            if (!s.Type) s.Type = "index";
+            return s;
+        });
+        if (webBook.defaultIndex === 0) sourceList[0].defSource = true;
+        return sourceList;
     }
     async getDefSources(bookId) {
         const webBook = await this.#webBookRepository.findByBookId(bookId);

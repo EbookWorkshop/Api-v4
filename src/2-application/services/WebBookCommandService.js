@@ -41,18 +41,8 @@ export class WebBookCommandService {
                 WebBookName: bookDTO.BookName,
                 BookId: bookId
             }, { transaction });
-            const source = await this.#webBookSourceURLRepository.add({
-                Path: setting.sourcePage,
-                WebBookId: webBook.id,
-                Type: "index"
-            }, { transaction });
-            await this.#webBookRepository.update(book.id, { defaultIndex: source.id }, { transaction });//更新章节ID索引
-            if (setting.infoPage)
-                await this.#webBookSourceURLRepository.add({
-                    Path: setting.infoPage,
-                    WebBookId: webBook.id,
-                    Type: "info"
-                }, { transaction });
+            await this.addSource({ bookId: book.id, defSource: true, url: setting.sourcePage, type: "index" }, transaction, webBook);
+            if (setting.infoPage) this.addSource({ bookId: book.id, defSource: false, url: setting.infoPage, type: "info" }, transaction, webBook);
 
             //处理章节
             if (Introduction) await this.#chapterRepository.updateIntroduction({ bookId, content: Introduction }, { transaction });
@@ -61,5 +51,25 @@ export class WebBookCommandService {
 
             return bookId;
         });
+    }
+
+    /**
+     * 添加网络源
+     * @param {*} setting 
+     */
+    async addSource({ bookId, defSource, url, type }, transaction, webBook) {
+        const runInTran = async (transaction) => {
+            if (!webBook) webBook = await this.#webBookRepository.findByBookId(bookId);
+            if (!webBook) {/* TODO： 新增源相关信息，非网文转网文！ */ }
+            const source = await this.#webBookSourceURLRepository.add({
+                Path: url,
+                WebBookId: webBook.id,
+                Type: type
+            }, { transaction });
+
+            if (defSource) await this.#webBookRepository.update(bookId, { defaultIndex: source.id }, { transaction });//更新章节ID索引
+        }
+        if (!transaction) return this.#transaction.runInTransaction(runInTran);
+        else return await runInTran(transaction);
     }
 }

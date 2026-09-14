@@ -25,6 +25,8 @@ export class Task {
     callback;
     /** @type {import("../../../2-application/constants/Task.js").TaskStatus}  运行状态*/
     status;
+    /** @type {import("../../server/Cron.js").CronTimmer|string|undefined} 定时执行的cron表达式 */
+    cron;
 
     startTime;
 
@@ -38,8 +40,9 @@ export class Task {
      * @param {boolean} [options.highPriority] - 是【否】优先执行，默认为false
      * @param {boolean} [options.useDB] - 是【否】需要数据库功能
      * @param {undefined | ((arg: {error: Error, data: Object}) => void)} options.callback - 任务完成回调。
+     * @param {import("../../server/Cron.js").CronTimmer|string} [options.cron] 定时执行的cron表达式
      */
-    constructor({ taskId, param, taskType, maxTaskNum, highPriority, useDB, callback }) {
+    constructor({ taskId, param, taskType, maxTaskNum, highPriority, useDB, callback, cron }) {
         this.taskId = taskId || randomUUID();
         this.param = param;
         this.taskType = taskType;
@@ -47,6 +50,7 @@ export class Task {
         this.callback = callback;
         this.highPriority = highPriority || false;
         this.useDB = useDB || false;
+        this.cron = cron;
 
         this.status = TASK_STATUS.PENDING;
         this.useMS = 0;//耗时

@@ -63,6 +63,7 @@ export class WorkerPool {
     #taskHistory;
 
     #event;
+    #cron;
     #poolConfig;//线程池配置
 
     /**
@@ -71,10 +72,11 @@ export class WorkerPool {
      * @param {EventManager} eventSer 
      * @param {*} param2 
      */
-    constructor(config, eventSer, { numThreads } = {}) {
+    constructor(config, eventSer, cronSer, { numThreads } = {}) {
         this.#config = config;
         const isDebug = false;// this.#config.debug;
         this.#event = eventSer;
+        this.#cron = cronSer;
         if (!numThreads) {
             const cpuNum = Math.floor(os.availableParallelism() * 1.5);
             numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
@@ -105,6 +107,8 @@ export class WorkerPool {
             interval: null,      //扫描器句柄
         }
         this.#poolConfig.interval = setInterval(this.#scanPool.bind(this), this.#poolConfig.scan);
+
+        // this.#cron.add({ seconds: "*/5" }, () => console.log("定时器已初始化成功！"))
     }
 
     /**
@@ -380,6 +384,15 @@ export class WorkerPool {
      * @param {Task} task 
      */
     addTask(task) {
+        if (task.cron) {        //如果有定时表达式的任务，托管到定时器上。
+            this.#cron.addCron(task.cron, () => this.add2TaskList(task));
+            return;
+        } else {
+            this.#add2TaskList(task);
+        }
+    }
+
+    #add2TaskList(task) {
         try {
             const { taskType, highPriority } = task;
             if (!this.#waitingTask.has(taskType)) {
@@ -408,7 +421,7 @@ export class WorkerPool {
         if (!oldTask) return;
         if (oldTask.status === TASK_STATUS.EXECUTING) oldTask.status = TASK_STATUS.RETRY;
         const { taskId, ...taskData } = oldTask
-        this.addTask(new Task(taskData));
+        this.addTask(new Task(taskData));//NOTE: 如果重启的任务带定时表达式，会导致重复注册定时任务
     }
 
     /**

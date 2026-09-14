@@ -125,10 +125,9 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner, task),
 
         assets: new AssetsService(fileScanner, fileWriter, config),
-        import: new ImportService(fileWriter,config.archive?.path),
+        import: new ImportService(fileWriter, config.archive?.path),
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),
         batchProgressTracker, task,
         workerPool,
-
     };
 }

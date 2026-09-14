@@ -1,3 +1,7 @@
+// @ts-nocheck
+// 原因：当前ts7.0版本不支持 type{const} 的设置，导致 TASK_TYPES.EXPORT_BOOK 这种具体值被推断为string
+// 可以降级ts。 现在先排除本文件检查，等以后实现了可以放开。
+
 import crypto from "node:crypto";
 import { TASK_TYPES } from '../constants/Task.js';
 import { Task } from '../../4-infrastructure/workers/index.js';

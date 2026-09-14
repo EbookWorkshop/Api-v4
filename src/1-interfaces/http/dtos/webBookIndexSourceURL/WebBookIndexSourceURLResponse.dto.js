@@ -22,11 +22,12 @@
  *           type: string
  *           nullable: true
  *           description: 源类型（可能为 null）
- *           example: null
+ *           example: null | index | info
  *       required:
  *         - id
  *         - Path
  *         - WebBookId
+ *         - defSource
  *
  *     WebBookSourceListResponse:
  *       allOf:
@@ -52,8 +53,10 @@
  *             Path: "https://www.ex.com/pa/1"
  *             WebBookId: 202
  *             Type: null
+ *             defSource: true
  *           - id: 208
  *             Path: "https://www.ex.com/pa/2"
  *             WebBookId: 202
  *             Type: "alternative"
+ *             defSource: false
  */
