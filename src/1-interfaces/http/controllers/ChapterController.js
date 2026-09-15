@@ -511,6 +511,59 @@ export class ChapterController {
 
     /**
      * @swagger
+     * /library/book/chapter/order/overvolume:
+     *   patch:
+     *     summary: 【章】按卷的顺序梳理所有章节排序
+     *     description: 按卷的顺序梳理所有章节排序
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Chapter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/BookIdRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/BookIdRequestExample'
+     *     responses:
+     *       200:
+     *         description: 章节排序更新成功，返回统一成功信息
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *       600:
+     *         description: 请求参数错误（如 bookId 缺失或非数字）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "bookId 必须为有效整数"
+     *               timestamp: "2026-08-19T12:00:00.000Z"
+     *       404:
+     *         description: 图书不存在
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该图书"
+     *               timestamp: "2026-08-19T12:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async sortChapterOverVolume(ctx) {
+        const bookId = BookIdRequest.fromBody(ctx.request.body);
+        ctx.body = await this.#chapterCommandService.sortChaptersOnVolumes(bookId);
+    }
+
+    /**
+     * @swagger
      * /library/book/chapter/toggleHide:
      *   patch:
      *     summary: 【章】切换章节是否隐藏

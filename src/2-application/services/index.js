@@ -80,7 +80,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
     const batchProgressTracker = new BatchProgressTracker(eventManager);
     const task = new TaskSchedulerService(workerPool, batchProgressTracker);
     const reviewBookService = new BookReviewService(
-        repositories.chapterRepository,
+        chapterRepository,
         // repositories.reviewRuleRepository,
         databaseTransaction
     );
@@ -102,15 +102,15 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
 
         webBookQuery: webBookQueryService,
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),
-        webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction, repositories.ebookRepository, repositories.chapterRepository, repositories.webBookSourceURLRepository, webBookChapterService),
+        webBookCommand: new WebBookCommandService(repositories.webBookRepository, databaseTransaction, ebookRepository, chapterRepository, repositories.webBookSourceURLRepository, webBookChapterService),
         webBookSourceURL: new WebBookSourceURLService(repositories.webBookSourceURLRepository, repositories.webBookChapterURLRepository, repositories.webBookRepository, databaseTransaction),
         webBookChapterURL: new WebBookChapterURLService(repositories.webBookChapterURLRepository, webBookQueryService),
 
         volumeQuery: new VolumeQueryService(volumeRepository),
-        volumeCommand: new VolumeCommandService(repositories.volumeRepository),
+        volumeCommand: new VolumeCommandService(volumeRepository),
 
         chapterQuery,
-        chapterCommand: new ChapterCommandService(chapterRepository, databaseTransaction),
+        chapterCommand: new ChapterCommandService(chapterRepository, indexRepository, volumeRepository, databaseTransaction),
 
         tagQuery: new TagQueryService(tagRepository),
         tagCommand: new TagCommandService(tagRepository /*, databaseTransaction */),

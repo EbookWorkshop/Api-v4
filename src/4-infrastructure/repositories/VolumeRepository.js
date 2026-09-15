@@ -12,15 +12,16 @@ export class VolumeRepository {
     }
 
     async findByBookId(bookId) {
-        return await this.#VolumeModel.findAll({
+        return this.#VolumeModel.findAll({
             where: {
                 BookId: { [Op.eq]: bookId }
             },
             attributes: {
                 include: [["id", "VolumeId"]],
                 exclude: ["id", "createdAt", "updatedAt"]
-            }
-            , raw: true
+            },
+            order: [["OrderNum", "ASC"]],
+            raw: true
         })
     }
 

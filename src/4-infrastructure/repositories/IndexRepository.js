@@ -23,7 +23,8 @@ export class IndexRepository {
                 BookId: { [Op.eq]: bookId },
                 OrderNum: { [Op.gt]: 0 }
             },
-            order: order
+            order: order,
+            raw: true
         });
     }
 

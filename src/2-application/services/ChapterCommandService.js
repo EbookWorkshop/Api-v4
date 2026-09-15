@@ -5,6 +5,8 @@ import { ITransaction } from "../ports/ITransaction.js"
 export class ChapterCommandService {
     /** @type {ChapterRepository} */
     #chapterRepository;
+    #indexRepository;
+    #volumeRepository;
     /** @type {ITransaction} */
     #transactionManager;
 
@@ -12,8 +14,10 @@ export class ChapterCommandService {
      * @param {ChapterRepository} chapterRepository 
      * @param {ITransaction} transactionManager 
      */
-    constructor(chapterRepository, transactionManager) {
+    constructor(chapterRepository, indexRepository, volumeRepository, transactionManager) {
         this.#chapterRepository = chapterRepository;
+        this.#indexRepository = indexRepository;
+        this.#volumeRepository = volumeRepository;
         this.#transactionManager = transactionManager;
     }
 
@@ -36,6 +40,34 @@ export class ChapterCommandService {
         return await this.#chapterRepository.moveChaptersToVolume(volumeId, chapterIds);
     }
 
+    /**
+     * 按卷梳理章节顺序
+     * 避免跨卷错乱顺序
+     * @param {*} bookId 
+     */
+    async sortChaptersOnVolumes(bookId) {
+        const volumes = await this.#volumeRepository.findByBookId(bookId);
+        if (!volumes || volumes.length <= 0) return false;//无分卷信息，无法梳理
+
+        const index = await this.#indexRepository.findByBookId(bookId);
+
+        const newOrder = [];
+        for (const v of volumes) {
+            const chapOnVolume = index.filter(c => c.VolumeId == v.VolumeId);
+            chapOnVolume.sort((a, b) => a.OrderNum - b.OrderNum);
+            newOrder.push(...chapOnVolume);
+        }
+        const newOrderId = newOrder.map(c => c.IndexId);
+        const chapOutVolume = index.filter(c => !newOrderId.includes(c.IndexId));
+        newOrder.push(...chapOutVolume);
+        let curOrder = 1;
+        return this.#chapterRepository.updateOrder(newOrder.map(({ IndexId }) => {
+            return {
+                indexId: IndexId, newOrder: curOrder++
+            }
+        }))
+    }
+
 
     /**
      * 插入或更新章节
@@ -49,7 +81,7 @@ export class ChapterCommandService {
      * @param {number} [chapter.id] 章节ID
      */
     async upsertChapter(chapter) {
-        const { IndexId, ...chp } = chapter;
+        const { IndexId = 0, ...chp } = chapter;
         const id = IndexId * 1;
         if ((isNaN(id) || id <= 0) && (chapter.BookId ?? 0) > 0)
             return await this.#chapterRepository.addChapter(chp);
