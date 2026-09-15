@@ -39,6 +39,7 @@ import { ReviewRuleUsingService } from './ReviewRuleUsingService.js';
 import { BookReviewService } from './BookReviewService.js';
 
 import { AssetsService } from './AssetsService.js';
+import { PdfService } from './PdfService.js';
 import { BatchProgressTracker } from "./BatchProgressTracker.js";
 
 import { TaskSchedulerService } from "./TaskSchedulerService.js";
@@ -46,6 +47,7 @@ import { ServiceQueryService } from './ServiceQueryService.js';
 import { ImportService } from "./ImportService.js"
 
 import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js";
+import { PdfGenerator } from '../../4-infrastructure/server/generators/PdfGenerator.js';
 /**
  * 服务层 组装所有 Service
  * @param {*} repositories 
@@ -83,6 +85,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         databaseTransaction
     );
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
+    const chapterQuery = new ChapterQueryService(chapterRepository, textCleanup);
     const webBookQueryService = new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository);
     const coverService = new CoverService(fileWriter, null, config);
     const webBookChapterService = new WebBookChapterService(
@@ -106,7 +109,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         volumeQuery: new VolumeQueryService(volumeRepository),
         volumeCommand: new VolumeCommandService(repositories.volumeRepository),
 
-        chapterQuery: new ChapterQueryService(chapterRepository, textCleanup),
+        chapterQuery,
         chapterCommand: new ChapterCommandService(chapterRepository, databaseTransaction),
 
         tagQuery: new TagQueryService(tagRepository),
@@ -116,6 +119,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         systemConfig: systemConfigService,
         email: new EmailService(emailSender, systemConfigService, databaseTransaction, eventManager),
         font: fontService,
+        pdf: new PdfService(new PdfGenerator(config.tempDir.path), chapterQuery, fileScanner, config),
 
         reviewRuleQuery: new ReviewRuleQueryService(repositories.reviewRuleRepository),
         reviewRuleCommand: new ReviewRuleCommandService(repositories.reviewRuleRepository, chapterRepository),

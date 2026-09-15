@@ -10,9 +10,11 @@ export function createServiceRoutes(serviceController) {
     router.get('/message', (ctx) => ctx.body = "TODO: /services/message");
     router.get('/version', (ctx) => serviceController.getVersion(ctx));
     router.get('/checkSiteAccessibility', (ctx) => serviceController.checkSiteAccessibility(ctx));
+    // router.get('/pdf/view', (ctx) => ctx.body="TODO: /services/pdf/view");
+    router.get('/pdf/view', (ctx) => serviceController.viewOnPdf(ctx));
     router.get('/tasks/batch', (ctx) => serviceController.listRunningBatches(ctx));
     router.get('/tasks/batch/:batchId', (ctx) => serviceController.getBatchProgress(ctx));
-    
+
     router.post('/version', (ctx) => serviceController.updateVersion(ctx));
     router.post('/compress_db', (ctx) => serviceController.compressDatabase(ctx));
     return router;

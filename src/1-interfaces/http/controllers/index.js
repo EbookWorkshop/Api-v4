@@ -51,7 +51,7 @@ export function createControllers(services, config) {
 
         import: new ImportController(services.import),
         export: new ExportController(services.task),
-        service: new ServiceController(services.serviceQuery, services.task, services.batchProgressTracker),
+        service: new ServiceController(services.serviceQuery, services.task, services.batchProgressTracker, services.pdf),
 
         asyncApi: new AsyncApiController(config),
         swagger: new SwaggerController(config),

@@ -31,7 +31,7 @@ export class ExportOrchestrator {
         const { filename, path: filepath, result, warnings } = genRsl;
         const files = [{ filename: filename, originalFilename: `${bookName}.${format}`, filepath }];
         const jobDone = [`已生成图书《${bookName}》 result:${result}`];
-        if (warnings.length > 0) jobDone.push("生成警告：\n", ...warnings);
+        // if (warnings.length > 0) jobDone.push("生成警告：\n", ...warnings);
 
         // 1. 根据配置决定是否发邮件
         if (setting.sendByEmail) {
@@ -54,7 +54,7 @@ export class ExportOrchestrator {
         });
         jobDone.push("将进行临时文件清理");
 
-        if (genRsl.warnings.length > 0) jobDone.push("\n以下为生成警告：", ...genRsl.warnings);
+        if (warnings.length > 0) jobDone.push("\n\n以下为生成警告：", ...genRsl.warnings);
 
         this.#eventMgr.messageToClient(new Message(jobDone.join("…\n"), "notice", {
             title: `生成《${bookName}》成功`, avatar: "success", subTitle: format

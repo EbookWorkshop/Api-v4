@@ -8,15 +8,17 @@ export class ServiceController {
     #taskSchedulerService;
     /** @type {import("../../../2-application/services/BatchProgressTracker.js").BatchProgressTracker} */
     #batchProgressTracker;
+    #pdfServide;
     /**
      * @param {ServiceQueryService} serviceQueryService
      * @param {import("../../../2-application/services/TaskSchedulerService.js").TaskSchedulerService} taskSchedulerService
      * @param {import("../../../2-application/services/BatchProgressTracker.js").BatchProgressTracker} batchProgressTracker
      */
-    constructor(serviceQueryService, taskSchedulerService, batchProgressTracker) {
+    constructor(serviceQueryService, taskSchedulerService, batchProgressTracker, pdfServide) {
         this.#serviceQueryService = serviceQueryService;
         this.#taskSchedulerService = taskSchedulerService;
         this.#batchProgressTracker = batchProgressTracker;
+        this.#pdfServide = pdfServide;
     }
 
     /**
@@ -138,6 +140,93 @@ export class ServiceController {
      */
     async compressDatabase(ctx) {
         ctx.body = await this.#taskSchedulerService.submitCompressDdatabase();
+    }
+
+    /**
+     * @swagger
+     * /services/pdf/view:
+     *   get:
+     *     summary: 生成并查看 PDF 文档
+     *     description: |
+     *       根据章节 ID 或直接提供的内容生成 PDF 文档。
+     *       **注意**：`chapterId` 和 `content` 二选一，至少提供一个，优先使用 `chapterId`（若提供）。
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *       - Service
+     *     parameters:
+     *       - in: query
+     *         name: chapterId
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: 章节 ID（与 content 二选一）
+     *         example: 56888
+     *       - in: query
+     *         name: content
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: 直接提供的文本内容（与 chapterId 二选一）
+     *         example: "这是要生成 PDF 的文本内容..."
+     *       - in: query
+     *         name: fontsize
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: 字体大小（单位 pt）
+     *         example: 12
+     *       - in: query
+     *         name: fontfamily
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: 字体文件名（可不含扩展名）
+     *         example: "字体.ttf"
+     *     responses:
+     *       200:
+     *         description: 成功返回 PDF 文档
+     *         content:
+     *           application/pdf:
+     *             schema:
+     *               type: string
+     *               format: binary
+     *             example: "(PDF 二进制数据)"
+     *       400:
+     *         description: 参数错误（如 chapterId 和 content 均未提供）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "请提供 chapterId 或 content"
+     *               timestamp: "2026-09-15T10:00:00.000Z"
+     *       404:
+     *         description: 章节不存在或内容生成失败
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 40400
+     *               msg: "未找到该章节"
+     *               timestamp: "2026-09-15T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async viewOnPdf(ctx) {
+        const { chapterId, content, ...setting } = ctx.query;
+        ctx.state.skipResponseWrapper = true;
+        ctx.set('Content-Type', "application/pdf");
+        let buffer;
+        if (!isNaN(chapterId)) {
+            buffer = await this.#pdfServide.viewChapter(chapterId * 1, setting);
+        } else if (content) {
+            buffer = await this.#pdfServide.viewContent(content, setting);
+        } else {
+            throw new UserInputError("请提供 chapterId 或 content");
+        }
+        ctx.body = buffer;
     }
 
     /**
