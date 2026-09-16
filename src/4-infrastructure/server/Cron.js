@@ -57,9 +57,10 @@ export class Cron {
      */
     addCron(cronText, func) {
         try {
-            cron.schedule(cronText, func);
+            return cron.schedule(cronText, func);
         } catch (error) {
             console.warn(`加入定时任务失败，表达式【${cronText}】。\n`, error);
+            return null;
         }
     }
 
@@ -70,7 +71,7 @@ export class Cron {
      */
     add(timmer, func) {
         if (!(timmer instanceof CronTimmer)) timmer = new CronTimmer(timmer);
-        this.addCron(timmer.toCron(), func);
+        return this.addCron(timmer.toCron(), func);
     }
 
 }

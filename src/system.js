@@ -27,14 +27,15 @@ const { sequelize } = miniCore;
 // ============================================================
 // 3. 组装核心依赖链（依赖倒置：外层注入内层）
 // ============================================================
-// 3.1 仓储层 (Infrastructure)
+// 3.1 仓储层、基础设施 (Infrastructure)
 const eventManager = new EventManager(new EventEmitter());//消息管理模块
-const workerPool = new WorkerPool(config, eventManager, new Cron());//线程池
+const workerPool = new WorkerPool(config, eventManager);//线程池
+const cron = new Cron(config);
 const { repositories } = miniCore;
 const { transactionManager } = miniCore;
 
 // 3.2 服务层 (Application) - 依赖 Repositories
-const services = createServices(repositories, transactionManager, workerPool, eventManager, config);
+const services = createServices(repositories, transactionManager, workerPool, eventManager, cron, config);
 
 // 3.3 控制器层 (Interfaces) - 依赖 Services
 const controllers = createControllers(services, config);
@@ -70,13 +71,17 @@ async function initializeDatabase() {
     // 记录数据库初始化时使用的项目版本-便于跟踪后续升级
     await services.systemConfig.defaultConfig(DATABASE_VERSION, 'create_version', config.version)
 
+    await services.autoTaskScheduler.start();//启动定时作业
+
     if (config.env === 'development') {
         console.log('✅ 数据库表结构已同步 (development)');
     }
 }
 
-
 async function closeDatabase() {
+    httpServer.close();
+    services.autoTaskScheduler.stop();
+    await workerPool.close();
     await miniCore.close();
 }
 

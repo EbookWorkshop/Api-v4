@@ -23,13 +23,13 @@ export class ChapterQueryService {
     async getChapterById(chapterId) {
         const cpt = await this.#chapterRepository.findByPkWithEbook(chapterId);
         if (!cpt) throw new AppError('章节不存在', 404);
-        const { Ebook: book, Title, Content, ...chapter } = cpt;
+        const { Ebook: book, Title, Content, Volume, ...chapter } = cpt;
         const newTitle = await this.#textCleanup.cleanup(book.id, Title);
         const content = await this.#textCleanup.cleanup(book.id, Content);
 
         //注入动态校阅
         return {
-            Book: book, Title: newTitle, Content: content,
+            Book: book, Title: newTitle, Content: content, VolumeTitle: Volume?.VolumeTitle,
             ...chapter
         }
     }

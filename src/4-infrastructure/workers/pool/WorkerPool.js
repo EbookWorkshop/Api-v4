@@ -63,7 +63,6 @@ export class WorkerPool {
     #taskHistory;
 
     #event;
-    #cron;
     #poolConfig;//线程池配置
 
     /**
@@ -72,11 +71,10 @@ export class WorkerPool {
      * @param {EventManager} eventSer 
      * @param {*} param2 
      */
-    constructor(config, eventSer, cronSer, { numThreads } = {}) {
+    constructor(config, eventSer, { numThreads } = {}) {
         this.#config = config;
         const isDebug = false;// this.#config.debug;
         this.#event = eventSer;
-        this.#cron = cronSer;
         if (!numThreads) {
             const cpuNum = Math.floor(os.availableParallelism() * 1.5);
             numThreads = Math.min(cpuNum, MAX_THREAD_NUM);
@@ -95,6 +93,11 @@ export class WorkerPool {
         this.#init();
     }
 
+    async close() {
+        clearInterval(this.#poolConfig.interval);
+        for (const [key, worker] of this.#allWorker) await worker.terminate();
+    }
+
     /**
      * 初始化处理
      */
@@ -106,9 +109,9 @@ export class WorkerPool {
             scan: 30_000,        //扫描间隔
             interval: null,      //扫描器句柄
         }
-        this.#poolConfig.interval = setInterval(this.#scanPool.bind(this), this.#poolConfig.scan);
-
-        // this.#cron.add({ seconds: "*/5" }, () => console.log("定时器已初始化成功！"))
+        this.#poolConfig.interval = setInterval(() => {
+            this.#scanPool().catch(err => console.error('[WorkerPool] scan failed', err));
+        }, this.#poolConfig.scan);
     }
 
     /**
@@ -367,6 +370,11 @@ export class WorkerPool {
     async #freeAWorker(worker, resule, { data, error }) {
         const tData = this.#workerData.get(worker);
         if (!tData && this.#workersQueue(worker.withDB).isFree(worker)) return;  //已经是闲置线程，出现了重复置闲。
+        if (!tData) {
+            console.error("线程调度出现错误，尝试闲置的线程运行时数据不存在。");
+            console.trace();
+            return;
+        }
         const task = tData[kTaskData];
         task.status = resule;
         task.useMS = performance.now() - tData[kTaskStartTime];
@@ -391,15 +399,6 @@ export class WorkerPool {
      * @param {Task} task 
      */
     addTask(task) {
-        if (task.cron) {        //如果有定时表达式的任务，托管到定时器上。
-            this.#cron.addCron(task.cron, () => this.add2TaskList(task));
-            return;
-        } else {
-            this.#add2TaskList(task);
-        }
-    }
-
-    #add2TaskList(task) {
         try {
             const { taskType, highPriority } = task;
             if (!this.#waitingTask.has(taskType)) {

@@ -47,5 +47,5 @@ export const READING_HABIT = 'reading_habit';
 /**
  * 系统-自动任务
  */
-export const SYSTEM_AUTO_WORKER = 'system_auto_worker';
+export const SYSTEM_AUTO_TASK = 'system_auto_task';
 

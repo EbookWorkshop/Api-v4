@@ -30,7 +30,10 @@ export class ChapterRepository {
      */
     async findByPkWithEbook(chapterId) {
         const chapter = await this.#ChapterModel.findByPk(chapterId, {
-            include: [{ model: this.#EbookModel, as: "Ebook" }],
+            include: [
+                { model: this.#EbookModel, as: "Ebook" },
+                { model: this.#VolumeModel, as: "Volume", attributes: [["Title", "VolumeTitle"]] }
+            ],
             attributes: { include: [["id", "IndexId"]], exclude: ["id"] },
         });
         if (!chapter) return null;

@@ -38,6 +38,7 @@ import { ReviewDictionaryService } from "./ReviewDictionaryService.js";
 import { ReviewRuleUsingService } from './ReviewRuleUsingService.js';
 import { BookReviewService } from './BookReviewService.js';
 
+import { AutoTaskSchedulerService } from './AutoTaskSchedulerService.js';
 import { AssetsService } from './AssetsService.js';
 import { PdfService } from './PdfService.js';
 import { BatchProgressTracker } from "./BatchProgressTracker.js";
@@ -54,10 +55,11 @@ import { PdfGenerator } from '../../4-infrastructure/server/generators/PdfGenera
  * @param {ITransaction} databaseTransaction 
  * @param {*} workerPool 
  * @param {*} eventManager 
+ * @param {*} cron 
  * @param {Object} config 
  * @returns 
  */
-export function createServices(repositories, databaseTransaction, workerPool, eventManager, config = {}) {
+export function createServices(repositories, databaseTransaction, workerPool, eventManager, cron, config = {}) {
     const { ebookRepository, volumeRepository, indexRepository, chapterRepository, bookmarkRepository } = repositories;
     const { tagRepository, systemConfigRepository, } = repositories;
 
@@ -128,6 +130,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer),
         ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner, task),
 
+        autoTaskScheduler: new AutoTaskSchedulerService({ systemConfigService, cron, taskScheduler: task }),
         assets: new AssetsService(fileScanner, fileWriter, config),
         import: new ImportService(fileWriter, config.archive?.path),
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),
