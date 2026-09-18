@@ -32,7 +32,7 @@ export class SystemConfigService {
      * @param {string} name
      * @param {string} value
      * @param {object} options
-     * @returns {Promise<{ group: string, name: string, value: string }>} DTO
+     * @returns {Promise<{ group: string, name: string, value: string, id:number}>} DTO
      */
     async setConfig(group, name, value, options = {}) {
         const { record } = await this.#systemConfigRepository.upsert(group, name, value, options);
@@ -41,6 +41,7 @@ export class SystemConfigService {
             group: record.Group,
             name: record.Name,
             value: record.Value,
+            id: record.id,
         };
     }
 
@@ -60,9 +61,10 @@ export class SystemConfigService {
      * 设置默认值/当已有值则不存储
      * @param {*} group 
      * @param {*} name 
+     * @param {*} defaultValue 
      * @param {*} options 
      */
-    async defaultConfig(group, name, options = {}) {
-        return this.#systemConfigRepository.findOrCreate(group, name, options);
+    async defaultConfig(group, name, defaultValue, options = {}) {
+        return this.#systemConfigRepository.findOrCreate(group, name, defaultValue, options);
     }
 }

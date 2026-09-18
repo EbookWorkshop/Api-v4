@@ -32,7 +32,7 @@ export class SystemConfigRepository {
     async findValueGroup(group, options = {}) {
         const record = await this.#SystemConfigModel.findAll({
             where: { Group: group },
-            attributes: ["Name", 'Value'],
+            attributes: ["Name", 'Value', 'id'],
             raw: true,
             transaction: options.transaction,
         });

@@ -18,6 +18,7 @@ import { ExportController } from './ExportController.js';
 import { ServiceController } from "./ServiceController.js"
 import { BookmarkController } from "./BookmarkController.js";
 //文档
+import { AutoTaskController } from "./AutoTaskController.js"
 import { AsyncApiController } from "./AsyncApiController.js"
 import { SwaggerController } from "./SwaggerController.js"
 
@@ -53,6 +54,7 @@ export function createControllers(services, config) {
         export: new ExportController(services.task),
         service: new ServiceController(services.serviceQuery, services.task, services.batchProgressTracker, services.pdf),
 
+        autoTask: new AutoTaskController(services.autoTaskScheduler),
         asyncApi: new AsyncApiController(config),
         swagger: new SwaggerController(config),
     };
