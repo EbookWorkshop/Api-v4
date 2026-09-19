@@ -444,7 +444,7 @@ export class WorkerPool {
         const taskList = this.#taskHistory.map(t => {
             if (!t.useMS && t.startTime) t.useMS = performance.now() - t.startTime;
             //格式化参数
-            if (t.param.coverImageData) t.param.coverImageData = t.param.coverImageData.substring(0, 13) + "..."
+            if (t?.param?.coverImageData) t.param.coverImageData = t.param.coverImageData.substring(0, 13) + "..."
             return t;
         });
         return {

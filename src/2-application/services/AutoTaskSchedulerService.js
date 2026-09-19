@@ -1,4 +1,5 @@
 // 2-application/services/AutoTaskSchedulerService.js
+import { UserInputError } from '../../5-shared/errors/index.js';
 import { SYSTEM_AUTO_TASK } from '../constants/SystemConfigGroup.js';
 import { TASK_TYPES } from "../constants/Task.js"
 
@@ -68,25 +69,27 @@ export class AutoTaskSchedulerService {
         this.#started = false;
     }
 
-    stopJob(id) {
-        if (!id) return;
-        const theJob = this.#jobs.find(j => j.id === id);
+    stopJob(name) {
+        if (!name) return;
+        const theJob = this.#jobs.find(j => j.name === name);
         theJob?.handler?.stop?.();
         this.#jobs = this.#jobs.filter(t => t != theJob);
     }
 
     async #getJobs() {
         const raw = await this.#systemConfigService.getConfigGroup(SYSTEM_AUTO_TASK);
-        return raw.map(j => {
-            let obj = j.Value;
-            try { obj = JSON.parse(obj); } catch { obj = { cron: "", descript: "任务配置解释失败，请重新设置任务配置。" } }
-            if (obj.enabled === undefined) obj.enabled = true;
-            return {
-                id: j.id,
-                ...obj, //cron、descript、param
-                type: j.Name, name: j.Name,
-            }
-        });
+        return raw.map(j => this.#jobDTO(j));
+    }
+
+    #jobDTO(j) {
+        let obj = j.Value;
+        try { obj = JSON.parse(obj); } catch { obj = { cron: "", descript: "任务配置解释失败，请重新设置任务配置。" } }
+        if (obj.enabled === undefined) obj.enabled = true;
+        return {
+            id: j.id,
+            ...obj, //cron、descript、param
+            type: j.Name, name: j.Name,
+        }
     }
 
     /**
@@ -111,7 +114,7 @@ export class AutoTaskSchedulerService {
     async saveJob(job) {
         try {
             const { type, name, id, ...value } = job;
-            this.stopJob(id);
+            this.stopJob(name);
             const setting = await this.#systemConfigService.setConfig(SYSTEM_AUTO_TASK, job.type, JSON.stringify(value));
             this.startJob({ type, name: type, id: setting.id, ...value });
             return { ok: true };
@@ -121,7 +124,24 @@ export class AutoTaskSchedulerService {
     }
 
     async deleteJob(id, type) {
-        this.stopJob(id);
+        this.stopJob(type);     //NOTE: 这里将Type和Name交换使用了
         return this.#systemConfigService.deleteConfig(SYSTEM_AUTO_TASK, type);
+    }
+
+    /**
+     * 开/关 任务
+     */
+    async switchJob({ enabled, type }) {
+        const raw = await this.#systemConfigService.getConfig(SYSTEM_AUTO_TASK, type);
+        if (!raw) throw new UserInputError(`任务[${type}]尚未配置！`)
+        const job = this.#jobDTO({ Name: type, Value: raw });
+        job.enabled = enabled;
+        const { type: _, name, id, ...value } = job;
+        await this.#systemConfigService.setConfig(SYSTEM_AUTO_TASK, type, JSON.stringify(value));
+
+        if (enabled) this.startJob(job);
+        else this.stopJob(job.name)
+        // console.log(enabled, type)
+        return true;
     }
 }
