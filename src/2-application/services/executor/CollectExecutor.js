@@ -45,7 +45,9 @@ export class CollectExecutor extends ITaskExecutor {
     }
 
     async execute(taskType, payload) {
-        const emitter = new CollectEventEmitter(this.#eventManager, {
+        const { keepsilent } = payload;
+
+        const emitter = keepsilent ? null : new CollectEventEmitter(this.#eventManager, {
             taskId: payload.taskId,
             batchId: payload.batchId,
             ctx: {
@@ -123,7 +125,7 @@ export class CollectExecutor extends ITaskExecutor {
             error.stack = `CollectExecutor::execute: ${import.meta.filename}\n${error.stack}`;
             const message = "采集任务执行失败：" + (error.message || '未知错误');
             const { batchId, taskId, ...ctx } = payload;
-            emitter.failure(msgEvent, { error, message, ctx });
+            emitter?.failure(msgEvent, { error, message, ctx });
             throw error;
         } finally {
             await this.#_fetcher?.close?.();
@@ -183,7 +185,7 @@ export class CollectExecutor extends ITaskExecutor {
         return {
             // chapQueryServices: new ChapterQueryService(this.#repositories.chapterRepository),
             index: { find: this.#repositories.indexRepository.findById.bind(this.#repositories.indexRepository) },
-            chapCommaServices: new ChapterCommandService(this.#repositories.chapterRepository, this.#transactionManager)
+            chapCommaServices: new ChapterCommandService(this.#repositories.chapterRepository, this.#repositories.indexRepository, this.#repositories.volumeRepository, this.#transactionManager)
         }
     }
 

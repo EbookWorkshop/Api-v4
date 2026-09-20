@@ -7,13 +7,15 @@ export class AutoTaskSchedulerService {
     #systemConfigService;
     #cron;
     #taskScheduler;
+    #webBookSync;
     #jobs = [];//已启动的任务
     #started = false;
 
-    constructor({ systemConfigService, cron, taskScheduler }) {
+    constructor({ systemConfigService, cron, taskScheduler, webBookSync }) {
         this.#systemConfigService = systemConfigService;
         this.#cron = cron;
         this.#taskScheduler = taskScheduler;
+        this.#webBookSync = webBookSync;
     }
 
     async start() {
@@ -51,10 +53,11 @@ export class AutoTaskSchedulerService {
             case TASK_TYPES.SYSTEM_VERSION:
                 return this.#taskScheduler.submitUpdateVersion();
 
-            case TASK_TYPES.WEB_BOOK_AUTO_SYNC:
-                // TODO: 这里需要扫描 AutoSyncEnabled 的书，建议再抽一个应用服务
-                // 然后由它批量调用 taskScheduler.submitUpdateChapters / submitUpdateIndex
-                return this.#taskScheduler.submitWebBookAutoSync?.(job.param);
+            case TASK_TYPES.WEB_BOOK_AUTO_SYNC_CHAPTER:
+                return this.#webBookSync.SyncOneChapter();
+
+            // case TASK_TYPES.WEB_BOOK_AUTO_SYNC_INDEX:
+            //     return this.#webBookSync.SyncOneChapter();
 
             default:
                 console.warn(`[AutoTask] 未知任务类型: ${job.type}`);

@@ -24,7 +24,7 @@ export class ChapterCollector extends ICollector {
             const chapt = await this.#indexService.find(chapterId);
             if (chapt.IsHasContent) return this.#resultHandle(payload, true, `章节 ${chapterId} 已有内容，跳过更新。`);
         }
-        this.#emitter.start(COLLECT_EVENTS.UPDATE_CHAPTER_START, {
+        this.#emitter?.start(COLLECT_EVENTS.UPDATE_CHAPTER_START, {
             ctx: { chapterId },
             message: `开始更新章节 ${chapterId}`,
         });
@@ -61,9 +61,9 @@ export class ChapterCollector extends ICollector {
         const ctx = { chapterId };
 
         if (ok) {
-            this.#emitter.success(COLLECT_EVENTS.UPDATE_CHAPTER, { ctx, message });
+            this.#emitter?.success(COLLECT_EVENTS.UPDATE_CHAPTER, { ctx, message });
         } else {
-            this.#emitter.failure(COLLECT_EVENTS.UPDATE_CHAPTER, {
+            this.#emitter?.failure(COLLECT_EVENTS.UPDATE_CHAPTER, {
                 ctx,
                 error: { message },
                 message,

@@ -300,7 +300,7 @@ export class WebBookCollector extends ICollector {
     #successHandle(payload, data, message) {
         const eventType = this.#resolveEventType(payload);
         const ctx = this.#resolveCtx(payload);
-        this.#emitter.success(eventType, { ctx, data, message });
+        this.#emitter?.success(eventType, { ctx, data, message });
         // 保留对上游的兼容返回：result 中保留 data，接收端已无需从此处拆包
         return { ...payload, result: data, message };
     }
@@ -313,7 +313,7 @@ export class WebBookCollector extends ICollector {
             message: error.message,
             stack: error.stack,
         };
-        this.#emitter.failure(eventType, { ctx, error: normalized, message });
+        this.#emitter?.failure(eventType, { ctx, error: normalized, message });
         // 兼容返回：原代码此处的 result 里包含 error 字段供上游判错
         return { ...payload, result: { error: normalized }, message };
     }

@@ -1,13 +1,19 @@
-// import { Op } from "sequelize";
+import { Op } from "sequelize";
 export class WebBookChapterRepository {
     #WebBookChapterModel;
     #ChapterModel;
     #WebBookChapterURLModel;
+    #WebBookModel;
+    #EbookModel;
+    #sequelize;
 
     constructor(sequelize) {
         this.#WebBookChapterModel = sequelize.models.WebBookChapter;
         this.#ChapterModel = sequelize.models.EbookChapter;
         this.#WebBookChapterURLModel = sequelize.models.WebBookChapterURL;
+        this.#WebBookModel = sequelize.models.WebBook;
+        this.#EbookModel = sequelize.models.Ebook;
+        this.#sequelize = sequelize;
     }
 
     async addChapter(chapter, option) {
@@ -76,5 +82,46 @@ export class WebBookChapterRepository {
         return result.map(({ Title, WebBookChapter }) => {
             return { title: Title, webTitle: WebBookChapter?.WebTitle ?? Title, urls: WebBookChapter?.WebBookChapterURLs?.map(url => url.Path) || [] }
         })
+    }
+
+    /**
+     * 找到最新一个空章节
+     * @returns 
+     */
+    async findLatestEmpty() {
+        const chap = await this.#ChapterModel.findOne({
+            include: [{
+                model: this.#EbookModel,
+                as: "Ebook",
+                required: true,
+                attributes: ["BookName"],
+                include: [{
+                    model: this.#WebBookModel,
+                    as: "WebBook",
+                    required: true,
+                    where: { AutoSyncEnabled: { [Op.eq]: true } },
+                    attributes: [],
+                }],
+            }],
+            where: {
+                Content: { [Op.is]: null },
+                OrderNum: { [Op.gt]: 0 },
+            },
+            attributes: ["id", "BookId", "Title"],
+            order: [[this.#sequelize.col("EbookChapter.updatedAt"), "DESC"]],
+            raw: true,
+        });
+
+        if (!chap) {
+            const [rows] = await this.#ChapterModel.update(
+                { Content: null },
+                { where: { Content: { [Op.eq]: "" } } }
+            );
+            console.log("所有待办任务已处理，已重置任务数：", rows);
+            return { id: null };
+        }
+
+        const { BookId, id, Title, "Ebook.BookName": BookName } = chap;
+        return { BookId, id, Title, BookName };
     }
 }

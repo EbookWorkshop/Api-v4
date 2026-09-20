@@ -17,7 +17,7 @@ export class Task {
     taskType;
     /** @type {number} [maxTaskNum] 该类别允许的最大线程数，小于1则不限制 */
     maxTaskNum;
-    /** @type {boolean} 是否优先执行，默认为false */
+    /** @type {boolean|"lazy"} 是否优先执行，默认为false 当为"lazy"时，如任务队列不为空则不添加任务 */
     highPriority;
     /** @type {boolean} 是否需要数据库功能 */
     useDB;
@@ -37,7 +37,7 @@ export class Task {
      * @param {string} [options.taskId] - 任务ID 缺省会自动创建
      * @param {any} [options.param] - 线程执行的传入参数（需要可序列化）
      * @param {number} [options.maxTaskNum] - 该类别允许的最大线程数，小于1则不限制
-     * @param {boolean} [options.highPriority] - 是【否】优先执行，默认为false
+     * @param {boolean|"lazy"} [options.highPriority] - 是【否】优先执行，默认为false
      * @param {boolean} [options.useDB] - 是【否】需要数据库功能
      * @param {undefined | ((arg: {error: Error, data: Object}) => void)} options.callback - 任务完成回调。
      * @param {import("../../server/Cron.js").CronTimmer|string} [options.cron] 定时执行的cron表达式

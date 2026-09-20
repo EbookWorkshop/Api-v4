@@ -401,12 +401,14 @@ export class WorkerPool {
     addTask(task) {
         try {
             const { taskType, highPriority } = task;
+            if (highPriority === "lazy" && this.allTaskNum > 0) return false;
+
             if (!this.#waitingTask.has(taskType)) {
                 this.#waitingTask.set(taskType, new Array());
             }
             let taskQueue = this.#waitingTask.get(taskType);
 
-            if (highPriority) taskQueue.unshift(task);
+            if (highPriority === true) taskQueue.unshift(task);
             else taskQueue.push(task);
 
             this.#taskHistory.push(task);   //加入历史记录

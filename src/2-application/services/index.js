@@ -14,7 +14,8 @@ import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
 import { WebBookCommandService } from './WebBookCommandService.js';
 import { WebBookSourceURLService } from './WebBookSourceURLService.js';
 import { WebBookChapterURLService } from './WebBookChapterURLService.js';
-import { WebBookChapterService } from "./WebBookChapterService.js"
+import { WebBookChapterService } from "./WebBookChapterService.js";
+import { WebBookSyncService } from "./WebBookSyncService.js"
 import { CoverService } from "./CoverService.js"
 
 import { SystemConfigService } from "./SystemConfigService.js";
@@ -96,6 +97,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         repositories.webBookChapterRepository,
         repositories.webBookChapterURLRepository
     );
+    const webBookSync = new WebBookSyncService(repositories.webBookChapterRepository, task);
 
     return {
         bookQuery: new BookQueryService(ebookRepository),
@@ -130,7 +132,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer),
         ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner, task),
 
-        autoTaskScheduler: new AutoTaskSchedulerService({ systemConfigService, cron, taskScheduler: task }),
+        autoTaskScheduler: new AutoTaskSchedulerService({ systemConfigService, cron, taskScheduler: task, webBookSync }),
         assets: new AssetsService(fileScanner, fileWriter, config),
         import: new ImportService(fileWriter, config.archive?.path),
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),

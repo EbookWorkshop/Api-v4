@@ -61,13 +61,13 @@ export class FileCollector extends ICollector {
         const { url, filePath, fileName } = payload;
 
         if (ok) {
-            this.#emitter.success(COLLECT_EVENTS.FETCH_CHAPTER, {
+            this.#emitter?.success(COLLECT_EVENTS.FETCH_CHAPTER, {
                 ctx: { url },
                 data: { filePath, fileName },          // 成功时携带产出物信息
                 message,
             });
         } else {
-            this.#emitter.failure(COLLECT_EVENTS.FETCH_CHAPTER, {
+            this.#emitter?.failure(COLLECT_EVENTS.FETCH_CHAPTER, {
                 ctx: { url },
                 error: { message },
                 message,

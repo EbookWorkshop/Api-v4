@@ -106,7 +106,7 @@ export class TaskSchedulerService {
             throw new AppError("chapterIds 不能为空");
         }
 
-        const { bookId, isUpdate, bookName } = setting;
+        const { bookId, isUpdate, bookName, highPriority, ...rest } = setting;
         const batchId = crypto.randomUUID();
         const total = chapterIds.length;
 
@@ -126,12 +126,13 @@ export class TaskSchedulerService {
                 const taskId = crypto.randomUUID();
                 const task = new Task({
                     taskId,
-                    param: { bookId, isUpdate, chapterId: cid, batchId, taskId },
+                    param: { bookId, isUpdate, chapterId: cid, batchId, taskId, ...rest },
                     taskType: TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT,
+                    highPriority,
                     useDB: true,
                     maxTaskNum: 5,
                     callback: ({ data, error }) => {
-                        this.#progressTracker.onTaskSettled(batchId, cid, { data, error });
+                        if (!rest.keepsilent) this.#progressTracker.onTaskSettled(batchId, cid, { data, error });
                     },
                 });
                 this.#workerPool.addTask(task);

@@ -82,7 +82,7 @@ export class RuleForWebQueryService {
     /**
      * 按组获取规则
      * @param {string} urlOrHost 
-     * @param {RULE_GROUP} group 规则组，按页类型划分的规则组
+     * @param {RULE_GROUP|symbol} group 规则组，按页类型划分的规则组
      * @returns 公共规则+按页划分的规则
      */
     async getRulesWithGroup(urlOrHost, group) {
