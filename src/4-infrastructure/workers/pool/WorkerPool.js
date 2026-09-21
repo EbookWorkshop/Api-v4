@@ -210,7 +210,7 @@ export class WorkerPool {
         if (type === TASK_MESSAGE_TYPE.TASK_EVENT_ENVELOPE) return this.#remoteBroadcastEvent(message, worker);
         if (!this.#workerData.has(worker)) {
             console.warn("注意：线程数据已提前释放，但当前线程仍然活跃，需要确认调度逻辑。");
-            console.debug(worker, message, taskId, workerId, type);
+            console.debug(worker, type, message, taskId, workerId);
         } else {
             const callback = this.#workerData.get(worker)[kTaskCallback];
             //线程完成后-执行回调

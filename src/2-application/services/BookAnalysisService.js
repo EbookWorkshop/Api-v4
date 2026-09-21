@@ -7,7 +7,7 @@ export class BookAnalysisService {
     #ebookRepository;
     #systemConfigService;
     // #transaction;
-    constructor(ebookRepository, chapterRepository, systemConfigService, transaction) {
+    constructor(ebookRepository, chapterRepository, systemConfigService) {
         this.#ebookRepository = ebookRepository;
         this.#chapterRepository = chapterRepository;
         this.#systemConfigService = systemConfigService;

@@ -96,6 +96,7 @@ export class ${_TaskName}Executor extends ITaskExecutor {
             throw error;
         }
     }
+    async close(){}
 }
 export default ${_TaskName}Executor;
 `, { flag: 'wx' });
