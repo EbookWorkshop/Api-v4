@@ -1,11 +1,13 @@
 
 export class WebBookSyncService {
-    #webBookChapterRepository;
     #taskScheduler;
+    #webBookRepository;
+    #webBookChapterRepository;
 
-    constructor(webBookChapterRepository, taskScheduler) {
-        this.#webBookChapterRepository = webBookChapterRepository;
+    constructor(taskScheduler, webBookChapterRepository, webBookRepository) {
         this.#taskScheduler = taskScheduler;
+        this.#webBookRepository = webBookRepository;
+        this.#webBookChapterRepository = webBookChapterRepository;
     }
 
     //抽取一个空章节更新
@@ -16,5 +18,19 @@ export class WebBookSyncService {
         return this.#taskScheduler.submitUpdateChapters([upChap.id], {
             bookId: upChap.BookId, bookName: upChap.BookName, highPriority: "lazy", keepsilent: true
         });
+    }
+
+    /**
+     * 更新书籍目录
+     */
+    async SyncIndex(paylaod) {
+        //paylaod= {tagId:22}
+        const bookId = await this.#webBookRepository.findOldest(paylaod);
+        console.log("WebBookSyncService::SyncIndex", paylaod, bookId);
+
+        this.#taskScheduler.submitUpdateIndex({
+            bookId, keepsilent: true,
+        })
+        await this.#webBookRepository.update(bookId, { AutoSyncEnabled: true });//开启自动抓取章节，主要是触发updatedAt，调整排队顺序到队尾
     }
 }

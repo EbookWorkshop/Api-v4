@@ -98,13 +98,13 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         repositories.webBookChapterRepository,
         repositories.webBookChapterURLRepository
     );
-    const webBookSync = new WebBookSyncService(repositories.webBookChapterRepository, task);
+    const webBookSync = new WebBookSyncService(task,repositories.webBookChapterRepository,repositories.webBookRepository);
 
     return {
         bookQuery: new BookQueryService(ebookRepository),
         bookDetailQuery: bookDetailQueryService,
         bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction, coverService),
-        bookAnalysis: new BookAnalysisService(ebookRepository, chapterRepository, systemConfigService, databaseTransaction),
+        bookAnalysis: new BookAnalysisService(ebookRepository, chapterRepository, systemConfigService),
 
         webBookQuery: webBookQueryService,
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),

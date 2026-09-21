@@ -157,7 +157,8 @@ export class TaskSchedulerService {
 
     /**
      * 更新章节——合并章节目录
-     * @param {*} setting 
+     * @param {object} setting 
+     * @param {number} setting.bookId 
      * @returns 
      */
     submitUpdateIndex(setting) {
@@ -181,7 +182,7 @@ export class TaskSchedulerService {
      * 更新系统版本信息
      * @returns 
      */
-    async submitUpdateVersion() {
+    submitUpdateVersion() {
         try {
             const task = new Task({ taskType: TASK_TYPES.SYSTEM_VERSION });
             this.#workerPool.addTask(task);
@@ -197,7 +198,7 @@ export class TaskSchedulerService {
      * @param {*} rule 
      * @returns 
      */
-    async submitBotRuleVis(testUrl, rule) {
+    submitBotRuleVis(testUrl, rule) {
         try {
             const task = new Task({
                 taskType: TASK_TYPES.BOTRULE_VIS,
@@ -214,7 +215,7 @@ export class TaskSchedulerService {
         }
     }
 
-    async submitCompressDdatabase() {
+    submitCompressDdatabase() {
         try {
             const task = new Task({
                 taskType: TASK_TYPES.COMPRESS_DATABASE,
@@ -231,7 +232,7 @@ export class TaskSchedulerService {
      * 更新书籍的字数
      * @returns 
      */
-    async submitUpdateBookWord() {
+    submitUpdateBookWord() {
         try {
             const task = new Task({
                 taskType: TASK_TYPES.UPDATE_BOOK_WORD,
