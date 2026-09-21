@@ -15,6 +15,7 @@ export function createBookRoutes(bookController) {
     router.post("/book", (ctx) => bookController.createBook(ctx));
     router.post('/book/heat', (ctx) => bookController.updateBookHeat(ctx));
     router.post('/emptybook', (ctx) => bookController.createEmptyBook(ctx));
+    router.post("/book/analytics/text", (ctx) => bookController.analyzeBook(ctx));
 
     router.patch("/book/metadata", (ctx) => bookController.updateBookMetadata(ctx));
 

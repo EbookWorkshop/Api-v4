@@ -47,7 +47,7 @@ import { ServiceServer } from "../../4-infrastructure/server/ServiceServer.js"
  * @param {Object} config 
  * @param {TASK_TYPES} taskType 
  * @param {Object} resources 
- * @returns {ITaskExecutor}
+ * @returns {import("../ports/ITaskExecutor.js").ITaskExecutor}
  */
 export function create${_TaskName}Executor(config, taskType, resources) {
     //TODO: 为执行器注入必须的服务

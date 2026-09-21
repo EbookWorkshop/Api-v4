@@ -77,6 +77,11 @@ export class SmartCharacterAnalyzer {
         return freqMap;
     }
 
+    /**
+     * 分析出文本中的可疑字符
+     * @param {*} text 
+     * @returns 
+     */
     detectSuspiciousCharacters(text) {
         const charMap = new Map();
         const freqMap = this.analyzeCharacterFrequency(text);

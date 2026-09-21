@@ -33,7 +33,7 @@ export function createControllers(services, config) {
 
     //注意：路由聚合器的设计要求了，路由对应的控制器必须是路由模块名字的小骆峰名字。即：abcRouter必须对应的控制器为abc。
     return {
-        book: new BookController(bookQuery, bookCommand, bookDetailQuery),
+        book: new BookController(bookQuery, bookCommand, bookDetailQuery, services.bookAnalysis),
         webBook: new WebBookController(services.webBookQuery, services.webBookCommand, services.webBookDetailQuery, bookCommand, services.task),
         webBookSourceURL: new WebBookSourceURLController(services.webBookSourceURL),
         webBookChapterURL: new WebBookChapterURLController(services.webBookChapterURL),

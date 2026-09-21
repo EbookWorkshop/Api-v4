@@ -442,4 +442,33 @@ export class ChapterRepository {
         }
         return true;
     }
+
+    /**
+     * 统计用：取有正文且未隐藏的章节（只取必要字段，别拖全表）
+     */
+    async findChaptersForStats(bookId) {
+        return this.#ChapterModel.findAll({
+            where: {
+                BookId: bookId,
+                Content: { [Op.ne]: null },
+                OrderNum: { [Op.gte]: 0 },
+            },
+            attributes: ['id', 'Title', 'Content'],   // ← 原来的 findAll 拖了全字段
+            order: [['OrderNum', 'ASC']],
+            raw: true,
+        });
+    }
+
+    /**
+     * 统计用：数空章节数量
+     */
+    async countEmptyChapters(bookId) {
+        return this.#ChapterModel.count({
+            where: {
+                BookId: bookId,
+                Content: { [Op.eq]: null },
+                OrderNum: { [Op.gte]: 0 },
+            },
+        });
+    }
 }

@@ -12,6 +12,7 @@ export class BookController {
     #bookQueryService;
     #bookCommandService;
     #bookDetailQuery;
+    #bookAnalysisService;
 
     /**
      * 
@@ -19,10 +20,11 @@ export class BookController {
      * @param {BookCommandService} bookCommandService 
      * @param {BookDetailQueryService} bookDetailQuery 
      */
-    constructor(bookQueryService, bookCommandService, bookDetailQuery) {
+    constructor(bookQueryService, bookCommandService, bookDetailQuery, bookAnalysisService) {
         this.#bookQueryService = bookQueryService;
         this.#bookCommandService = bookCommandService;
         this.#bookDetailQuery = bookDetailQuery;
+        this.#bookAnalysisService = bookAnalysisService;
     }
 
     /**
@@ -428,5 +430,33 @@ export class BookController {
         const { id, ...metadata } = UpdateBookMetadataRequest.fromRequest(ctx.request);
 
         ctx.body = await this.#bookCommandService.updateMetadata(id, metadata);
+    }
+
+    /**
+     * @swagger
+     * /library/book/analytics/text:
+     *   post:
+     *     summary: 重新统计书籍文本规模
+     *     description: 遍历章节正文，统计字数、段落数、预计阅读时长，并回写 Ebook.TotalWord（统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Book
+     *     parameters:
+     *       - $ref: '#/components/parameters/BookIdQuery'
+     *     responses:
+     *       200:
+     *         description: 统计完成
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BookAnalysisResponse'
+     *       404:
+     *         description: 书籍没有章节或章节内容为空
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async analyzeBook(ctx) {
+        const bookId = BookIdRequest.fromQuery(ctx.query);
+        ctx.body = await this.#bookAnalysisService.analyze(bookId);
     }
 }

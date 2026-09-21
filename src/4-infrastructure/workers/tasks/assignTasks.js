@@ -34,6 +34,9 @@ export async function assignTasks(taskType, config, resources) {
         case TASK_TYPES.COMPRESS_DATABASE:
             createTask = "compressDB.assembler.js";
             break;
+        case TASK_TYPES.UPDATE_BOOK_WORD:
+            createTask = "updateBookWord.assembler.js";
+            break;
         default:
             throw new AppError(`尚未开发对接的任务类型：${taskType}\n\n需要修改文件： ${import.meta.filename} \n\n`);
     }

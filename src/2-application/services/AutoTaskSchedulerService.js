@@ -25,8 +25,8 @@ export class AutoTaskSchedulerService {
         const jobs = await this.#getJobs();
         for (const job of jobs) {
             this.startJob(job);
-            console.debug(`已启动${this.#jobs.length}个任务。`)
         }
+        console.debug(`已启动${this.#jobs.length}个任务。`)
     }
 
     async startJob(job) {
@@ -52,6 +52,8 @@ export class AutoTaskSchedulerService {
         switch (job.type) {
             case TASK_TYPES.SYSTEM_VERSION:
                 return this.#taskScheduler.submitUpdateVersion();
+            case TASK_TYPES.UPDATE_BOOK_WORD:
+                return this.#taskScheduler.submitUpdateBookWord();
 
             case TASK_TYPES.WEB_BOOK_AUTO_SYNC_CHAPTER:
                 return this.#webBookSync.SyncOneChapter();
@@ -60,7 +62,7 @@ export class AutoTaskSchedulerService {
             //     return this.#webBookSync.SyncOneChapter();
 
             default:
-                console.warn(`[AutoTask] 未知任务类型: ${job.type}`);
+                console.warn(`[AutoTask] 未知任务类型: ${job.type}。需要在这里改代码：${import.meta.filename}`);
         }
     }
 
@@ -117,7 +119,7 @@ export class AutoTaskSchedulerService {
     async saveJob(job) {
         try {
             const { type, name, id, ...value } = job;
-            this.stopJob(name);
+            this.stopJob(name ?? type);
             const setting = await this.#systemConfigService.setConfig(SYSTEM_AUTO_TASK, job.type, JSON.stringify(value));
             this.startJob({ type, name: type, id: setting.id, ...value });
             return { ok: true };

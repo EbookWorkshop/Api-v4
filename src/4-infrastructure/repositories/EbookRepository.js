@@ -159,4 +159,24 @@ export class EbookRepository {
     async updateMetadata(id, metadata, { transaction } = {}) {
         return this.#EbookModel.update(metadata, { where: { id: id }, transaction });
     }
+
+    /**
+     * 找到需要更新字数的书籍
+     * @returns 
+     */
+    async findBookToCalc() {
+        let book = await this.#EbookModel.findOne({
+            where: {
+                TotalWord: { [Op.eq]: 0 }
+            },
+            order: [["updatedAt", "ASC"]]
+        });
+        if (!book) {
+            book = await this.#EbookModel.findOne({
+                order: [["updatedAt", "ASC"]]
+            });
+        }
+
+        return book.id
+    }
 }

@@ -8,6 +8,7 @@ import { VolumeCommandService } from './VolumeCommandService.js';
 import { ChapterQueryService } from "./ChapterQueryService.js"
 import { ChapterCommandService } from './ChapterCommandService.js';
 import { BookmarkService } from './BookmarkService.js';
+import { BookAnalysisService } from './BookAnalysisService.js';
 
 import { WebBookQueryService } from "./WebBookQueryService.js"
 import { WebBookDetailQueryService } from './WebBookDetailQueryService.js';
@@ -103,6 +104,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         bookQuery: new BookQueryService(ebookRepository),
         bookDetailQuery: bookDetailQueryService,
         bookCommand: new BookCommandService(ebookRepository, chapterRepository, databaseTransaction, coverService),
+        bookAnalysis: new BookAnalysisService(ebookRepository, chapterRepository, systemConfigService, databaseTransaction),
 
         webBookQuery: webBookQueryService,
         webBookDetailQuery: new WebBookDetailQueryService(repositories.webBookRepository, bookDetailQueryService),

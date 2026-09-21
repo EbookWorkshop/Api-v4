@@ -226,4 +226,21 @@ export class TaskSchedulerService {
             throw new AppError("添加任务失败：" + error.message);
         }
     }
+
+    /**
+     * 更新书籍的字数
+     * @returns 
+     */
+    async submitUpdateBookWord() {
+        try {
+            const task = new Task({
+                taskType: TASK_TYPES.UPDATE_BOOK_WORD,
+                useDB: true,
+            });
+            this.#workerPool.addTask(task);
+            return '已添加任务：$_{task.taskId}'
+        } catch (error) {
+            throw new AppError("添加任务失败：" + error.message);
+        }
+    }
 }
