@@ -1,3 +1,6 @@
+
+const LAST_EROR = Symbol("Last.Error");
+
 export class MemoryCache {
     #cache;
     #timers;
@@ -49,6 +52,8 @@ export class MemoryCache {
         return this.#cache.delete(key);
     }
 
+
+
     #evictExpired() {
         // 简单策略：清理掉一半
         const keys = Array.from(this.#cache.keys());
@@ -57,6 +62,15 @@ export class MemoryCache {
             this.delete(key);
         }
     }
+
+    /**
+     * 获取注册了【最近一次错误】的模块发生的错误
+     */
+    get lastError() { return this.get(LAST_EROR); }
+    /**
+     * 设置【最近一次发生的错误】
+     */
+    set lastError(error) { this.set(LAST_EROR, error); }
 
     // 可选：获取统计信息（用于调试）
     getStats() {

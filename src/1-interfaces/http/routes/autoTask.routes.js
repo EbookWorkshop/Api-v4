@@ -9,6 +9,7 @@ export function createAutoTaskRoutes(autoTaskController) {
     const router = new Router({ prefix: '/autotask' });
     router.get('/list', (ctx) => autoTaskController.listJobs(ctx));
     router.post('/', (ctx) => autoTaskController.saveJob(ctx));
+    router.post('/validate-cron', (ctx) => autoTaskController.validateCron(ctx));
     router.patch('/', (ctx) => autoTaskController.eidtJob(ctx));
     router.delete('/', (ctx) => autoTaskController.deleteJob(ctx));
 

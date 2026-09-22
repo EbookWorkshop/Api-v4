@@ -108,7 +108,8 @@ export class CoverService {
      * @returns 
      */
     async saveCoverAndGetFilePath(converFile, coverFileName, embelBookName) {
-        const newFileName = `${coverFileName}_${converFile.originalFilename}`;
+        const ext = path.extname(converFile.originalFilename);
+        const newFileName = `${coverFileName}_${randomBytes(2).toString('hex')}${ext}`;
         let filePath = await this.#fileWriter.moveFile(converFile.filepath, [this.#coverDir, newFileName]);
         if (embelBookName) filePath += SHOW_BOOKNAME;
         return filePath;

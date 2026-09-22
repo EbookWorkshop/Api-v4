@@ -1,18 +1,20 @@
 // 2-application/services/AutoTaskSchedulerService.js
 import { UserInputError } from '../../5-shared/errors/index.js';
 import { SYSTEM_AUTO_TASK } from '../constants/SystemConfigGroup.js';
-import { TASK_TYPES } from "../constants/Task.js"
+import { TASK_TYPES } from "../constants/Task.js";
 
 export class AutoTaskSchedulerService {
     #systemConfigService;
+    #cache;
     #cron;
     #taskScheduler;
     #webBookSync;
     #jobs = [];//已启动的任务
     #started = false;
 
-    constructor({ systemConfigService, cron, taskScheduler, webBookSync }) {
+    constructor({ systemConfigService, cache, cron, taskScheduler, webBookSync }) {
         this.#systemConfigService = systemConfigService;
+        this.#cache = cache;
         this.#cron = cron;
         this.#taskScheduler = taskScheduler;
         this.#webBookSync = webBookSync;
@@ -29,7 +31,7 @@ export class AutoTaskSchedulerService {
         console.debug(`已启动${this.#jobs.length}个任务。`)
     }
 
-    async startJob(job) {
+    startJob(job) {
         if (job.enabled === false) return;
 
         const scheduledTask = this.#cron.addCron(job.cron, () => {
@@ -37,10 +39,14 @@ export class AutoTaskSchedulerService {
                 console.error(`[AutoTask] ${job.name} 执行失败`, err);
             });
         });
+        if (!scheduledTask && this.#cache.lastError) {
+            return false;
+        }
         this.#jobs.push({
             handler: scheduledTask,
             ...job
         });
+        return true;
     }
 
     /**
@@ -119,9 +125,15 @@ export class AutoTaskSchedulerService {
     async saveJob(job) {
         try {
             const { type, name, id, ...value } = job;
+            const valid = this.#cron.validateDetailed(value.cron);
+            // console.debug(valid);
+            if (!valid.valid) throw new UserInputError(valid.errors.map(err => err.message).join("；\n") + "。");
+
             this.stopJob(name ?? type);
-            const setting = await this.#systemConfigService.setConfig(SYSTEM_AUTO_TASK, job.type, JSON.stringify(value));
-            this.startJob({ type, name: type, id: setting.id, ...value });
+            const success = this.startJob({ type, name: type, ...value });
+            if (!success) throw this.#cache.lastError;
+            //保存任务到数据库
+            await this.#systemConfigService.setConfig(SYSTEM_AUTO_TASK, job.type, JSON.stringify(value));
             return { ok: true };
         } catch (error) {
             return { ok: false, error }
@@ -148,5 +160,14 @@ export class AutoTaskSchedulerService {
         else this.stopJob(job.name)
         // console.log(enabled, type)
         return true;
+    }
+
+    /**
+     * 验证表达式并返回校验结果
+     * @param {*} expression 
+     * @returns {{valid:boolean,errors:Array<{field:string,value:string,message:string}>,fields?:{second:Array<number>,minute:Array<number>,hour:Array<number>,dayOfMonth:Array<number>,month:Array<number>,dayOfWeek:Array<number>}}}
+     */
+    validateCron(expression) {
+        return this.#cron.validateDetailed(expression);
     }
 }

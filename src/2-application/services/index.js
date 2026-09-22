@@ -49,7 +49,7 @@ import { TaskSchedulerService } from "./TaskSchedulerService.js";
 import { ServiceQueryService } from './ServiceQueryService.js';
 import { ImportService } from "./ImportService.js"
 
-import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js";
+// import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js";
 import { PdfGenerator } from '../../4-infrastructure/server/generators/PdfGenerator.js';
 /**
  * 服务层 组装所有 Service
@@ -61,7 +61,7 @@ import { PdfGenerator } from '../../4-infrastructure/server/generators/PdfGenera
  * @param {Object} config 
  * @returns 
  */
-export function createServices(repositories, databaseTransaction, workerPool, eventManager, cron, config = {}) {
+export function createServices(repositories, databaseTransaction, memoryCache, workerPool, eventManager, cron, config = {}) {
     const { ebookRepository, volumeRepository, indexRepository, chapterRepository, bookmarkRepository } = repositories;
     const { tagRepository, systemConfigRepository, } = repositories;
 
@@ -79,7 +79,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         config.font.path,        //字体目录路径
         '/font'
     );
-    const memoryCache = new MemoryCache();
+    // const memoryCache = new MemoryCache();
     const textCleanup = new TextCleanupService(repositories.reviewRuleRepository, memoryCache);
     const batchProgressTracker = new BatchProgressTracker(eventManager);
     const task = new TaskSchedulerService(workerPool, batchProgressTracker);
@@ -98,7 +98,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         repositories.webBookChapterRepository,
         repositories.webBookChapterURLRepository
     );
-    const webBookSync = new WebBookSyncService(task,repositories.webBookChapterRepository,repositories.webBookRepository);
+    const webBookSync = new WebBookSyncService(task, repositories.webBookChapterRepository, repositories.webBookRepository);
 
     return {
         bookQuery: new BookQueryService(ebookRepository),
@@ -134,7 +134,7 @@ export function createServices(repositories, databaseTransaction, workerPool, ev
         ruleForWebQuery: new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer),
         ruleForWebCommand: new RuleForWebCommandService(repositories.ruleForWebRepository, rdSer, systemConfigService, databaseTransaction, fileScanner, task),
 
-        autoTaskScheduler: new AutoTaskSchedulerService({ systemConfigService, cron, taskScheduler: task, webBookSync }),
+        autoTaskScheduler: new AutoTaskSchedulerService({ systemConfigService, cron, taskScheduler: task, webBookSync, cache: memoryCache }),
         assets: new AssetsService(fileScanner, fileWriter, config),
         import: new ImportService(fileWriter, config.archive?.path),
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),

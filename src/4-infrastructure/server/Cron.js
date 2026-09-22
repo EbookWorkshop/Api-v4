@@ -45,9 +45,9 @@ export class CronTimmer {
 }
 
 export class Cron {
-    // #config
-    constructor(config) {
-        // this.#config = config;
+    #cache
+    constructor(cache) {
+        this.#cache = cache;
     }
 
     /**
@@ -60,6 +60,7 @@ export class Cron {
             return cron.schedule(cronText, func);
         } catch (error) {
             console.warn(`加入定时任务失败，表达式【${cronText}】。\n`, error);
+            this.#cache.lastError = error;
             return null;
         }
     }
@@ -74,6 +75,12 @@ export class Cron {
         return this.addCron(timmer.toCron(), func);
     }
 
+    /**
+     * 校验表达式是否正确
+     */
+    validateDetailed(expression) {
+        return cron.validateDetailed(expression);
+    }
 }
 
 /**

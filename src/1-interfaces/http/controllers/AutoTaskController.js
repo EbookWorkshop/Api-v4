@@ -1,5 +1,6 @@
 import { UserInputError } from "../../../5-shared/errors/UserInputError.js";
 import { TASK_TYPES } from "../../../2-application/constants/Task.js";
+import { AppError } from "../../../5-shared/errors/AppError.js";
 
 
 export class AutoTaskController {
@@ -84,7 +85,9 @@ export class AutoTaskController {
         if (!type) throw new UserInputError("保存定时任务失败：未设定任务运行类型！");
         if (!cron) throw new UserInputError("保存定时任务失败：没有设置定时表达式！");
 
-        ctx.body = await this.#autoTaskScheduler.saveJob(ctx.request.body);
+        const result = await this.#autoTaskScheduler.saveJob(ctx.request.body);
+        if (!result.ok) throw new AppError(result.error.message);
+        ctx.body = result;
     }
 
     /**
@@ -208,5 +211,53 @@ export class AutoTaskController {
         const { id, type } = ctx.query;
         if (isNaN(id)) throw new UserInputError("待删除的任务ID必须为数字！");
         ctx.body = await this.#autoTaskScheduler.deleteJob(id * 1, type);
+    }
+
+    /**
+     * @swagger
+     * /autotask/validate-cron:
+     *   post:
+     *     summary: 校验 Cron 表达式
+     *     description: 校验传入的 Cron 表达式是否合法，返回校验结果、错误列表及解析后的字段值（统一包装格式）
+     *     tags:
+     *       - Services - 基础 —— 系统服务：基础
+     *       - AutoTask
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ValidateCronRequest'
+     *           examples:
+     *             default:
+     *               $ref: '#/components/examples/ValidateCronRequestExample'
+     *     responses:
+     *       200:
+     *         description: 校验完成（返回结果中的 valid 字段标识是否通过）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ValidateCronResponse'
+     *             examples:
+     *               success:
+     *                 $ref: '#/components/examples/ValidateCronSuccess'
+     *               invalid:
+     *                 $ref: '#/components/examples/ValidateCronInvalid'
+     *       400:
+     *         description: 请求参数错误（如 cron 缺失）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "cron 为必填字段"
+     *               timestamp: "2026-09-22T10:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async validateCron(ctx) {
+        const { cron } = ctx.request.body;
+        ctx.body = this.#autoTaskScheduler.validateCron(cron);
     }
 }
