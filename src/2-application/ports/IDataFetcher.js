@@ -3,9 +3,10 @@ export class IDataFetcher {
      * 采集数据
      * @param {string} url
      * @param {Object} options - { timeout, userAgent, scraping, rules }
+     * @param {Array<string>} promise 承诺的结果，用于检查是否成功采集到关注的内容，判断是否执行成功
      * @returns {Promise<Map<string, Array<{text, url}>>>}
      */
-    async fetch(url, options) { throw new Error('尚未实现～！'); }
+    async fetch(url, options, promise = []) { throw new Error('尚未实现～！'); }
 
     /**
     * 使用 Puppeteer 通过 URL 获取的 Buffer

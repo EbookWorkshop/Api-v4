@@ -3,8 +3,11 @@ import { IDataFetcher } from "../../2-application/ports/IDataFetcher.js"
 import { RuleEngine } from './engines/RuleEngine.js';
 import { AppError } from '../../5-shared/errors/index.js';
 
+import { promiseResult } from "./utils.js"
+
+
 export class PuppeteerDataFetcher extends IDataFetcher {
-    // #config;
+    #config;
     /** @type {RuleEngine} */
     #ruleEngine;
 
@@ -14,7 +17,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
     #keep;
     constructor(config, ruleEngine, isKeep = false) {
         super();
-        // this.#config = config;
+        this.#config = config;
         this.#ruleEngine = ruleEngine;
 
         this.#browser = null;
@@ -27,7 +30,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
      * @param {Object} setting - { timeout, userAgent, scraping, rules }
      * @returns {Promise<Map<string, Array<{text, url}>>>}
      */
-    async fetch(url, setting) {
+    async fetch(url, setting, promise = []) {
         const { isVis } = setting;
         // const startTime = performance.now();
         let browser = await this.#getBrowser(setting);
@@ -47,7 +50,10 @@ export class PuppeteerDataFetcher extends IDataFetcher {
             // 配置需要访问网址
             const pageResult = await page.goto(url, { timeout: setting.timeout, waitUntil: 'networkidle2' });
 
-            if (!pageResult || pageResult.status() >= 400) throw new AppError(`目标地址访问出错：地址-${url};状态-${pageResult?.status() ?? null}。`)
+            if (!pageResult || pageResult.status() >= 400) {
+                const logFile = await promiseResult(promise, null, this.#config, url, page.url(), await page.content());
+                throw new AppError(`目标地址访问出错：地址-${url};状态-${pageResult?.status() ?? null}。\n参考：${logFile}`);
+            }
 
             //数据分析采集
             const { rules, dictionaries } = setting;
@@ -59,7 +65,9 @@ export class PuppeteerDataFetcher extends IDataFetcher {
                     message: "请求地址与实际地址不一致，发生过重定向。",
                 });
             }
-            // await fs.writeFile(`/temp/html/${randomBytes(6).toString("hex")}.html`, await page.content());
+            // await fs.writeFile(`${this.#config.repository.path}/temp/html/${randomBytes(6).toString("hex")}.html`, await page.content());
+            await promiseResult(promise, result, this.#config, url, page.url(), await page.content());
+
             if (this.#keep) await page.close();
         } catch (err) {
             // console.warn("[执行失败]PuppeteerDataFetcher::fetch", err.message, `\t耗时：${(performance.now() - startTime) / 1000}秒`, url);

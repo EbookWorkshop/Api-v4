@@ -99,12 +99,13 @@ export class BatchProgressTracker {
             lastEmitAt: 0,
             progressTimer: null,
             cleanupTimer: null,
+            errors: {},
         };
 
         this.#batches.set(batchId, batch);
 
         // 立即广播一次 0% 进度，让前端拿到 total
-        this.#emitProgress(batch, true);
+        this.#scheduleProgress(batch, true);
     }
 
     /**
@@ -131,7 +132,10 @@ export class BatchProgressTracker {
 
         batch.done++;
         if (ok) batch.success++;
-        else batch.fail++;
+        else {
+            batch.fail++;
+            batch.errors[chapterId] = settled.error;
+        }
         batch.updatedAt = Date.now();
 
         if (batch.done >= batch.total) {
@@ -172,12 +176,18 @@ export class BatchProgressTracker {
     // 内部
     // ============================================================
 
-    #scheduleProgress(batch) {
+    /**
+     * 安排广播执行计划-防止执行太快消息拥堵
+     * @param {*} batch 
+     * @param {*} force 直接广播
+     * @returns 
+     */
+    #scheduleProgress(batch, force = false) {
         const now = Date.now();
         const elapsed = now - batch.lastEmitAt;
 
-        if (elapsed >= PROGRESS_THROTTLE_MS) {
-            this.#emitProgress(batch, false);
+        if (force || elapsed >= PROGRESS_THROTTLE_MS) {
+            this.#emitProgress(batch);
             return;
         }
         if (batch.progressTimer) return;
@@ -185,11 +195,15 @@ export class BatchProgressTracker {
         const wait = PROGRESS_THROTTLE_MS - elapsed;
         batch.progressTimer = setTimeout(() => {
             batch.progressTimer = null;
-            if (batch.status === 'running') this.#emitProgress(batch, false);
+            if (batch.status === 'running') this.#emitProgress(batch);
         }, wait);
     }
 
-    #emitProgress(batch, force) {
+    /**
+     * 广播指定批的进度
+     * @param {*} batch 
+     */
+    #emitProgress(batch) {
         const now = Date.now();
         batch.lastEmitAt = now;
 
@@ -217,6 +231,10 @@ export class BatchProgressTracker {
         });
     }
 
+    /**
+     * 结束处理-结束广播
+     * @param {*} batch 
+     */
     #finalize(batch) {
         batch.status = batch.fail > 0 ? 'partial' : 'completed';
 
@@ -239,6 +257,7 @@ export class BatchProgressTracker {
                 doneNum: batch.success,
                 failNum: batch.fail,
                 status: batch.status,
+                errors: batch.status === 'completed' ? null : batch.errors,
             },
             message: batch.status === 'completed'
                 ? `批量更新完成，共 ${batch.success} 章`
@@ -266,6 +285,7 @@ export class BatchProgressTracker {
             status: batch.status,
             startedAt: batch.startedAt,
             updatedAt: batch.updatedAt,
+            errors: batch.errors,
         };
     }
 

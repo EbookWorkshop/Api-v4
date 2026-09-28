@@ -4,8 +4,10 @@ import { IDataFetcher } from '../../2-application/ports/IDataFetcher.js';
 import { RuleEngine } from './engines/RuleEngine.js';
 import { AppError } from '../../5-shared/errors/index.js';
 
+import { promiseResult } from "./utils.js"
+
 export class AxiosDataFetcher extends IDataFetcher {
-    // #config;
+    #config;
     /** @type {RuleEngine} */
     #ruleEngine;
     #browser;
@@ -13,20 +15,22 @@ export class AxiosDataFetcher extends IDataFetcher {
     #keep;
     constructor(config, ruleEngine, isKeep = false) {
         super();
-        // this.#config = config;
+        this.#config = config;
         this.#ruleEngine = ruleEngine;
         this.#browser = null;
         this.#keep = isKeep;
     }
 
-    async fetch(url, options) {
+    async fetch(url, options, promise) {
         const response = await axios.get(url, {
             timeout: options.timeout,
             headers: { 'User-Agent': options.userAgent }
         });
         //response.headers.getContentType()     //'text/html; charset=gbk'
 
-        return await this.#parseHtmlString(response.data, url, options);
+        const result = await this.#parseHtmlString(response.data, url, options);
+        await promiseResult(promise, result, this.#config, url, response?.request?.res?.responseUrl ?? "", response.data);
+        return result;
     }
 
     /**

@@ -23,6 +23,11 @@ export class ChapterCollector extends ICollector {
         if (!isUpdate) {    //检查是否已覆盖更新
             const chapt = await this.#indexService.find(chapterId);
             if (chapt.IsHasContent) return this.#resultHandle(payload, true, `章节 ${chapterId} 已有内容，跳过更新。`);
+            //先设置默认值
+            await this.#chapterCommandService.upsertChapter({
+                IndexId: chapterId,
+                Content: "",
+            });
         }
         this.#emitter?.start(COLLECT_EVENTS.UPDATE_CHAPTER_START, {
             ctx: { chapterId },
@@ -33,7 +38,7 @@ export class ChapterCollector extends ICollector {
         let urlPage = payload.url;
         let runTime = 0;
         do {
-            const result = await this.#fetcher.fetch(urlPage, setting);
+            const result = await this.#fetcher.fetch(urlPage, setting, [RuleName.Content]);
             const ctx = result.get(RuleName.Content);
             if (!ctx || !ctx[0].text) { runTime++; console.debug(`内容采集失败，重试${runTime}次：`, urlPage); continue; }
             const { text: content } = ctx[0];

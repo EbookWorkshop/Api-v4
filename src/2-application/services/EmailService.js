@@ -61,7 +61,7 @@ export class EmailService {
 
     /**
      * @param {Object} params
-     * @param {import("koa-body").ScalarOrArrayFiles[string]} params.files
+     * @param {import("koa-body").ScalarOrArrayFiles[string]|Array<{filename:string,path:string}>} params.files
      * @param {string} [params.title]
      * @param {string} [params.content]
      * @param {string} [params.mailto]
@@ -92,9 +92,10 @@ export class EmailService {
         }
 
         // 3. 转换附件格式
-        const attachments = files?.map((f) => ({
-            filename: f.originalFilename || f.filename || '附件',
-            path: f.filepath || f.path,
+        const fileArr = Array.isArray(files) ? files : files ? [files] : [];
+        const attachments = fileArr?.map((f) => ({
+            filename: f.originalFilename ?? f.filename ?? '附件',
+            path: f.filepath ?? f.path,
         }));
 
         let firstFile = attachments[0]?.filename;

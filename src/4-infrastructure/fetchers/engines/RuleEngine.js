@@ -28,7 +28,9 @@ export class RuleEngine {
                 await pageObj.$$eval(sR, (node, isVis) => {
                     for (let nO of node)
                         if (!isVis) nO.parentNode?.removeChild(nO);
-                        else nO.style.border = "5px solid blue";
+                        else if (nO instanceof HTMLElement) {
+                            nO.style.border = "5px solid blue";
+                        }
                 }, isVis);
             } catch (err) { }//尝试删除干扰元素，失败不管
 

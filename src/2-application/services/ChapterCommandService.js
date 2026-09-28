@@ -86,8 +86,7 @@ export class ChapterCommandService {
         if ((isNaN(id) || id <= 0) && (chapter.BookId ?? 0) > 0)
             return await this.#chapterRepository.addChapter(chp);
         else if (id > 0) {
-            chp.id = id;
-            return await this.#chapterRepository.updateChapter(chp);
+            return await this.#chapterRepository.updateChapter({ ...chp, id });
         }
         return false;
     }
@@ -140,5 +139,58 @@ export class ChapterCommandService {
         return this.#transactionManager.runInTransaction((transaction) => {
             return this.#chapterRepository.setAsIntroduction(chapterId, { transaction });
         });
+    }
+
+    async restructureChapters(bookId, settings) {
+        const _setChapter = (baseCp) => {
+            let chapterSetting = {
+                id: baseCp.chapterId,
+                updateTime: new Date()
+            };
+            if (baseCp.bookId) chapterSetting.BookId = baseCp.bookId;
+            if (baseCp.title) chapterSetting.Title = baseCp.title;
+            if (baseCp.content) chapterSetting.Content = baseCp.content;
+            if (baseCp.orderNum) chapterSetting.OrderNum = baseCp.orderNum;
+            if (baseCp.volumeId) chapterSetting.VolumeId = baseCp.volumeId;
+            return chapterSetting;
+        }
+
+        try {
+            await this.#transactionManager.runInTransaction(async (t) => {
+                const baseCp = settings?.baseChapter;
+                if (baseCp?.chapterId) {
+                    const chapterSetting = _setChapter(baseCp);
+                    await this.#chapterRepository.updateChapter(chapterSetting, { transaction: t });
+                    const operations = settings?.operations;
+                    if (!operations || operations.length <= 0) return;  //只修改一章的情况
+
+                    //计算总章节偏移量：
+                    let moveLength = operations.filter(item => item.operationType !== "delete").reduce((sum, item) => sum + item.chapters.length, 0);
+
+                    //基准章节后续章节后移
+                    await this.#chapterRepository.batchMoveOrder(bookId, baseCp.orderNum, moveLength, { transaction: t });
+                }
+
+                for (let chap of settings?.operations) {
+                    for (let cp of chap.chapters) {
+                        const curChapSetting = chap.operationType !== "delete" ? _setChapter(cp) : { id: -1 };
+                        switch (chap.operationType) {        //[update, delete, create]
+                            case "delete":
+                                await this.#chapterRepository.deleteChapter(cp, { transaction: t });
+                                break;
+                            case "create":
+                                curChapSetting.BookId = bookId;
+                                await this.#chapterRepository.addChapter(curChapSetting, { transaction: t });
+                                break;
+                            case "update":
+                                await this.#chapterRepository.updateChapter(curChapSetting, { transaction: t });
+                                break;
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            throw err;
+        }
     }
 }

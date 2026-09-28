@@ -473,6 +473,7 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
             failNum: data.failNum || 0,
             total: data.total || 0,
             status: data.status || 'completed',
+            errors: data.errors,
         });
     });
 

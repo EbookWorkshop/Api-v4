@@ -28,7 +28,7 @@ export class AutoTaskSchedulerService {
         for (const job of jobs) {
             this.startJob(job);
         }
-        console.debug(`已启动${this.#jobs.length}个任务。`)
+        console.debug(`[${new Date().toLocaleString()}]\t已启动${this.#jobs.length}个任务。`)
     }
 
     startJob(job) {

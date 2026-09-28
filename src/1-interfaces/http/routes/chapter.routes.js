@@ -22,6 +22,7 @@ export function createChapterRoutes(chapterController) {
     router.patch('/chapter/order', (ctx) => chapterController.updateChapterOrder(ctx));
     router.patch('/chapter/order/overvolume', (ctx) => chapterController.sortChapterOverVolume(ctx));
     router.patch('/chapter/toggleHide', (ctx) => chapterController.toggleHide(ctx));
+    router.patch('/chapter/restructure', (ctx) => chapterController.restructureChapters(ctx));
 
     router.delete('/chapter', (ctx) => chapterController.deleteChapter(ctx));
 

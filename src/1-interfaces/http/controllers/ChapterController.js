@@ -617,6 +617,79 @@ export class ChapterController {
 
     /**
      * @swagger
+     * /library/book/chapter/restructure:
+     *   patch:
+     *     tags:
+     *       - Library —— 图书馆
+     *     summary: 【章】章节重组操作
+     *     description: 对书籍章节进行结构调整（拆分、合并、批量更新/删除）
+     *     parameters:
+     *     - name: body
+     *       in: body
+     *       required: true
+     *       schema:
+     *         type: object
+     *         properties:
+     *           bookId:
+     *             type: integer
+     *             format: int64
+     *           baseChapter:
+     *             type: object
+     *             description: 基准章节（用于拆分/合并定位）。使用基准章节可令后续章节排序序号后移。若不使用则可作为批量更新接口。
+     *             properties:
+     *               chapterId:
+     *                 type: integer
+     *                 format: int64
+     *               content:
+     *                 type: string
+     *               orderNum:
+     *                 type: integer
+     *               title:
+     *                 type: string
+     *           operations:
+     *             type: array
+     *             description: 操作指令集
+     *             items:
+     *               type: object
+     *               required: [operationType, chapters]
+     *               properties:
+     *                 operationType:
+     *                   type: string
+     *                   enum: [update, delete, create]
+     *                 chapters:
+     *                   type: array
+     *                   description: 当operationType为delete时，chapters类型为数字数组
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       chapterId:
+     *                         type: integer?
+     *                         format: int64
+     *                       volumeId:
+     *                         type: integer?
+     *                         format: int64
+     *                       content:
+     *                         type: string?
+     *                       orderNum:
+     *                         type: integer?
+     *                       title:
+     *                         type: string?
+     *     consumes:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: 重组操作结果
+     *       600:
+     *         description: 无效的操作参数
+     */
+
+    async restructureChapters(ctx) {
+        const { bookId, ...settings } = ctx.request.body;
+        ctx.body = await this.#chapterCommandService.restructureChapters(bookId, settings);
+    }
+
+    /**
+     * @swagger
      * /library/book/chapter/tointroduction:
      *   post:
      *     summary: 【章】将章节设为简介

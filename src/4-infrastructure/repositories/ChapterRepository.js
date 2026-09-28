@@ -5,11 +5,13 @@ export class ChapterRepository {
     #ChapterModel;
     #EbookModel;
     #VolumeModel;
+    #sequelize;
 
     constructor(sequelize) {
         this.#ChapterModel = sequelize.models.EbookChapter;
         this.#EbookModel = sequelize.models.Ebook;
         this.#VolumeModel = sequelize.models.Volume;
+        this.#sequelize = sequelize;
     }
 
     /**
@@ -222,6 +224,44 @@ export class ChapterRepository {
         });
     }
 
+    async getMaxOrder(bookId) {
+        return this.#ChapterModel.max('OrderNum', { where: { BookId: bookId } }) || 1;
+    }
+
+
+    /**
+     * 统计用：取有正文且未隐藏的章节（只取必要字段，别拖全表）
+     */
+    async findChaptersForStats(bookId) {
+        return this.#ChapterModel.findAll({
+            where: {
+                BookId: bookId,
+                Content: { [Op.ne]: null },
+                OrderNum: { [Op.gte]: 0 },
+            },
+            attributes: ['id', 'Title', 'Content'],
+            order: [['OrderNum', 'ASC']],
+            raw: true,
+        });
+    }
+
+    /**
+     * 统计用：数空章节数量
+     */
+    async countEmptyChapters(bookId) {
+        return this.#ChapterModel.count({
+            where: {
+                BookId: bookId,
+                Content: { [Op.eq]: null },
+                OrderNum: { [Op.gte]: 0 },
+            },
+        });
+    }
+
+    /*************
+     *  修改 
+     *************/
+
     /**
      * 从卷中移除指定章节
      * @param {number[]} chapterIds 
@@ -258,7 +298,7 @@ export class ChapterRepository {
     /**
      * 插入或更新一章
      * @param {Object} chapter 章节信息
-     * @param {number} [chapter.id] 章节ID
+     * @param {number} chapter.id 章节ID
      * @param {number} [chapter.BookId] 书籍ID
      * @param {string} [chapter.Title] 章节标题     
      * @param {string} [chapter.Content] 章节正文
@@ -290,12 +330,8 @@ export class ChapterRepository {
      * @param {*} chapterId 需要删除的章节
      * @returns 
      */
-    async deleteChapter(chapterId) {
-        return await this.#ChapterModel.destroy({ where: { id: chapterId } });
-    }
-
-    async getMaxOrder(bookId) {
-        return this.#ChapterModel.max('OrderNum', { where: { BookId: bookId } }) || 1;
+    async deleteChapter(chapterId, { transaction = undefined } = {}) {
+        return await this.#ChapterModel.destroy({ where: { id: chapterId }, transaction });
     }
 
     /**
@@ -371,6 +407,27 @@ export class ChapterRepository {
     }
 
     /**
+     * 批量后移基准序号的章节
+     * ——插入操作中将插入点章节序号开始后移
+     * @param {*} bookId 指定书籍
+     * @param {*} baseOrder 开始移动的章节
+     * @param {*} moveLength 每个章节移动多长
+     */
+    async batchMoveOrder(bookId, baseOrder, moveLength, { transaction }) {
+        return this.#ChapterModel.update({
+            OrderNum: this.#sequelize.literal('OrderNum + ' + moveLength)
+        }, {
+            where: {
+                BookId: bookId,
+                OrderNum: {
+                    [Op.gt]: baseOrder
+                }
+            },
+            transaction
+        });
+    }
+
+    /**
      * 切换是否隐藏章节
      * @param {number} chapterId 章节ID
      * @returns 
@@ -441,34 +498,5 @@ export class ChapterRepository {
             await ins.save({ transaction });
         }
         return true;
-    }
-
-    /**
-     * 统计用：取有正文且未隐藏的章节（只取必要字段，别拖全表）
-     */
-    async findChaptersForStats(bookId) {
-        return this.#ChapterModel.findAll({
-            where: {
-                BookId: bookId,
-                Content: { [Op.ne]: null },
-                OrderNum: { [Op.gte]: 0 },
-            },
-            attributes: ['id', 'Title', 'Content'],   // ← 原来的 findAll 拖了全字段
-            order: [['OrderNum', 'ASC']],
-            raw: true,
-        });
-    }
-
-    /**
-     * 统计用：数空章节数量
-     */
-    async countEmptyChapters(bookId) {
-        return this.#ChapterModel.count({
-            where: {
-                BookId: bookId,
-                Content: { [Op.eq]: null },
-                OrderNum: { [Op.gte]: 0 },
-            },
-        });
     }
 }

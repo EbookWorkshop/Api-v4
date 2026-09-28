@@ -61,7 +61,7 @@ export class WebBookCollector extends ICollector {
         const { sourcePage, infoPage, isEmbedBookName } = payload;
         let urlPage = sourcePage;
         if (infoPage) urlPage = infoPage;
-        const result = await this.#fetcher.fetch(urlPage, this.#setting);
+        const result = await this.#fetcher.fetch(urlPage, this.#setting, [RuleName.BookName]);
         const info = new Map();
         RULE_INFO.map(r => info.set(r, result.get(r)));
         const infoResult = await this.#handleInfo(info, isEmbedBookName);
@@ -120,6 +120,18 @@ export class WebBookCollector extends ICollector {
             }
             //求差集
             chapterList = difference(chapterList, excludeChapters, key);
+            if (chapterList.length > excludeChapters.length * 0.8) {        //新增超过已有数量的80% 尝试将章节名删除再合并
+                const fixTitle = new RegExp("第[^章回]+[章回](\s+)?", "g");
+                chapterList = chapterList.map(c => {
+                    const title = c.text.replace(fixTitle, "").trim();
+                    return { title, ...c };
+                });
+                excludeChapters = excludeChapters.map(c => {
+                    const title = c.text.replace(fixTitle, "").trim();
+                    return { title, ...c };
+                });
+                chapterList = difference(chapterList, excludeChapters, ["title"]);
+            }
         }
 
         //去重后的结果
@@ -234,7 +246,7 @@ export class WebBookCollector extends ICollector {
 
             while (!success && retries < MAX_RETRIES) {
                 try {
-                    const resultMap = await this.#fetcher.fetch(currentUrl, this.#setting);
+                    const resultMap = await this.#fetcher.fetch(currentUrl, this.#setting, [RuleName.ChapterList]);
                     const { chapters: newChaps, nextUrl } = extractPageData(resultMap);
 
                     // 只要有新章节就算成功

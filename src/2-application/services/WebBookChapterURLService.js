@@ -39,7 +39,9 @@ export class WebBookChapterURLService {
 
         const defHost = getHost(defBookSource);
         const chapterList = await this.getChapterSources(chapterId);
-        return chapterList.find(chap => chap.Path?.includes(defHost));
+        let result = chapterList.find(chap => chap.Path?.includes(defHost));
+        if (!result && chapterList.length == 1) result = chapterList[0];        //NOTE: 如果默认没找到网址，则尝试返回唯一来源地址（如有）。用于应对目录页与阅读页在不同的二级域名的情况
+        return result;
     }
 
     /**
