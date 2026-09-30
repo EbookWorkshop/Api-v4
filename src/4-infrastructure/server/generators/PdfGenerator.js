@@ -113,7 +113,7 @@ export class PdfGenerator extends IGenerator {
             content.push(titleNode);
 
             // 章节正文
-            let lines = chap.content.split("\n");
+            let lines = chap.rows || chap.content.split("\n");
             for (const line of lines) {
                 content.push({ text: line, leadingIndent: fontSize * 2 * (enableIndent ? 1 : 0) });
             }

@@ -161,11 +161,11 @@ export class BookExportService {
      * 应用排版
      * @param {Array<any>} volumes
      * @param {Array<{Title,Content,VolumeId?}>} chapters 
-     * @returns {Array<{title,content,volume?,VolumeId?}>}
+     * @returns {Array<{title,content,rows?,volume?,VolumeId?}>}
      */
     #applyTypography(volumes, chapters) {
-        /** @type{Array<{ title: any; content: any; volume?: boolean;VolumeId?: number;}>}  */
-        let resultChapt = chapters.map(({ Title: title, Content: content, VolumeId }) => ({ title, content, VolumeId }));
+        /** @type{Array<{ title: any; content: any; volume?: boolean;VolumeId?: number;rows?:Array<string>;}>}  */
+        let resultChapt = chapters.map(({ Title: title, Content: content, VolumeId }) => ({ title, content, rows: [], VolumeId }));
 
         for (let chap of resultChapt) {
             if (!chap.content) {
@@ -181,6 +181,7 @@ export class BookExportService {
             for (let i = 0; i < rows.length; i++) rows[i] = rows[i].trim();
 
             chap.content = rows.join("\n");
+            chap.rows = rows;
         }
 
         //按卷重组

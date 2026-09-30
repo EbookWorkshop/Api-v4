@@ -54,10 +54,6 @@ export class ExportBookRequest {
      *           type: string
      *           description: 封面图片数据（base64 格式，可选，Txt无效。不含【data:image/png;base64,】）
      *           example: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
-     *         isCompact:
-     *           type: boolean
-     *           description: 是否紧凑排版——删除空行
-     *           example: false
      *       required:
      *         - bookId
      *
@@ -75,7 +71,6 @@ export class ExportBookRequest {
      *         embedBookName: false
      *         enableIndent: true
      *         coverImageData: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
-     *         isCompact: false
      */
     static fromBody(body) {
         const setting = body;

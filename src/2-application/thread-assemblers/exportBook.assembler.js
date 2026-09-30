@@ -47,12 +47,15 @@ export async function createExportBookTask(config, taskType, { repositories }) {
 
 
     //注册监听后处理事件
-    eventMgr.on(EXPORT_EVENTS.INVENTORY_ARCHIVE, async ({ files }) => {   //转存
-        for (const ff of files) await fileServ.moveFile(ff.filepath, [config.archive.path, ff.originalFilename]);
+    eventMgr.once(EXPORT_EVENTS.INVENTORY_ARCHIVE, ({ files, delay }) => {   //转存
+        setTimeout(async () => {
+            for (const ff of files) await fileServ.moveFile(ff.filepath, [config.archive.path, ff.originalFilename]);
+        }, delay);
     });
-    eventMgr.on(EXPORT_EVENTS.TEMP_CLEANUP, (param) => {    //清理文件
-        const { filePath, delay } = param;
-        if (filePath) setTimeout(async () => { try { await fileServ.deleteFile(filePath, true); } catch (e) { } }, delay || 0);
+    eventMgr.once(EXPORT_EVENTS.TEMP_CLEANUP, ({ filePath, delay }) => {    //清理文件
+        if (filePath) setTimeout(async () => {
+            try { await fileServ.deleteFile(filePath, true); } catch (e) { }//兜底的，如果转移了就会出错，直接忽略。
+        }, delay || 0);
     });
     new EmailService(new NodemailerEmailSender(), systemConfigService, null, eventMgr);//注册邮件发送事件
     new ExportOrchestrator(eventMgr, config);//注册文件生成完成事件

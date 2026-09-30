@@ -621,6 +621,7 @@ export class ChapterController {
      *   patch:
      *     tags:
      *       - Library —— 图书馆
+     *       - Chapter
      *     summary: 【章】章节重组操作
      *     description: 对书籍章节进行结构调整（拆分、合并、批量更新/删除）
      *     parameters:

@@ -41,7 +41,7 @@ export class ExportOrchestrator {
 
         // 2. 根据配置决定是否转存到库存
         if (setting.isExportToInventory) {
-            this.#eventMgr.emit(EXPORT_EVENTS.INVENTORY_ARCHIVE, { files });
+            this.#eventMgr.emit(EXPORT_EVENTS.INVENTORY_ARCHIVE, { files, delay: 30_000 });
             jobDone.push("已尝试转存到库存");
         }
 

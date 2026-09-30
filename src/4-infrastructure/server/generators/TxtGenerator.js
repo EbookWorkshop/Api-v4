@@ -41,7 +41,7 @@ export class TxtGenerator extends IGenerator {
                 else if (embedTitle) await writeOnStream(writeStream, `\n✦ ${chap.title}\n`);
                 let content = chap.content;
                 if (enableIndent) {
-                    let multiLine = content.split("\n");
+                    let multiLine = chap.rows || content.split("\n");
                     multiLine = multiLine.map(t => `\t${t.trimStart()}`);    //去除行首空格
                     content = multiLine.join("\n");
                 }
