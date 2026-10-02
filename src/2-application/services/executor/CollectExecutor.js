@@ -173,6 +173,7 @@ export class CollectExecutor extends ITaskExecutor {
 
         const timeout = rules.find(({ ruleName }) => RuleCommon.Timeout === ruleName);
         if (timeout?.selector) setting.timeout = timeout?.selector;
+        setting.timeout = setting.timeout ?? 40_000;
         const userAgent = rules.find(({ ruleName }) => RuleCommon.UserAgent === ruleName);
         if (userAgent?.selector) setting.userAgent = userAgent?.selector;
         const dictionaries = rules.find(({ ruleName }) => RuleCommon.Dictionary === ruleName);

@@ -55,6 +55,7 @@ export class ChapterRepository {
                 VolumeId: { [Op.in]: volumeIds },
                 OrderNum: { [Op.gt]: 0 },
             },
+            order: [["OrderNum", "ASC"]],
             raw: true
         });
     }
@@ -72,6 +73,7 @@ export class ChapterRepository {
                 BookId: bookId,
                 id: { [Op.in]: chapterIds },
             },
+            order: [["OrderNum", "ASC"]],
             raw: true
         });
     }
@@ -87,6 +89,7 @@ export class ChapterRepository {
                 BookId: bookId,
                 OrderNum: { [Op.gt]: 0 },
             },
+            order: [["OrderNum", "ASC"]],
             raw: true
         });
     }

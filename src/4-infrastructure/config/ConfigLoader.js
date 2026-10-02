@@ -7,6 +7,7 @@ import packJSON from "../../../package.json" with {type: "json"}
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEFAULT_CONFIG = {
+    repository: { path: "./data" },
     server: { port: 3000, host: '0.0.0.0' },
     database: { path: './data/dev.sqlite', logging: false },
     debug: { mode: false, level: 'info' },
@@ -52,6 +53,13 @@ export class ConfigLoader {
         //加载程序版本
         const { version } = packJSON;
         finalConfig.version = version;
+
+        //处理相对地址
+        for (const c in finalConfig) {
+            if (!finalConfig[c].path || !finalConfig[c].path.startsWith("@")) continue;
+            // console.log(finalConfig[c].path, path.join(finalConfig.repository.path, finalConfig[c].path.replace("@", "")));
+            finalConfig[c].path = path.join(finalConfig.repository.path, finalConfig[c].path.replace("@", ""))
+        }
 
         return Object.freeze(finalConfig);
     }

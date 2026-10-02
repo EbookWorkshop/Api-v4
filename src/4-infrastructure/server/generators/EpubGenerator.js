@@ -93,6 +93,7 @@ export class EpubGenerator extends IGenerator {
      */
     #isDivider(text) {
         if (text == "……") return true;
+        text = text.replaceAll(/[\s　 ]/g, "");
         return /^(.)\1{2,}$/.test(text);//三个以上相同的内容占一行
     }
 }

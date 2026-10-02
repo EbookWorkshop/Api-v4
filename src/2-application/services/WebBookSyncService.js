@@ -26,7 +26,7 @@ export class WebBookSyncService {
     async SyncIndex(paylaod) {
         //paylaod= {tagId:22}
         const bookId = await this.#webBookRepository.findOldest(paylaod);
-        console.log("WebBookSyncService::SyncIndex", paylaod, bookId);
+        // console.log("WebBookSyncService::SyncIndex", paylaod, bookId);
 
         this.#taskScheduler.submitUpdateIndex({
             bookId, keepsilent: true,
