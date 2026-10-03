@@ -5,7 +5,7 @@ import { COLLECT_EVENTS } from "../../constants/Event.js";
 // import { AppError } from "../../../5-shared/errors/index.js";
 import { getHost } from "../../../5-shared/utils/site.js";
 
-
+const TitleReg = "第[^章回]+[章回](\\s+)?";
 
 export class WebBookCollector extends ICollector {
     // #rules;
@@ -14,6 +14,7 @@ export class WebBookCollector extends ICollector {
     #emitter;
     #webBookService;
     #webBookChapterService;
+    #webBookChapterURLService;
     #coverService;
 
     constructor(config, rules, fetcher, services) {
@@ -23,6 +24,7 @@ export class WebBookCollector extends ICollector {
         this.#emitter = services.emitter;
         this.#webBookService = services.webBookService;
         this.#webBookChapterService = services.webBookChapterService;
+        this.#webBookChapterURLService = services.webBookChapterURLService;
         this.#coverService = services.coverService;
         this.#coverService.dataFetcher = fetcher;
     }
@@ -100,12 +102,15 @@ export class WebBookCollector extends ICollector {
     async updateChapter(option) {
         const { sourcePage, bookId } = option;
         //从页面获取的章节
-        let chapterList = await this.#getChapterList(sourcePage);
-        if (chapterList.length === 0) return this.#failureHandle(option, { message: "获取的章节列表为空！", name: "更新章节列表失败" }, `从地址采集数据失败：${sourcePage}。`);
+        const newChapterList = await this.#getChapterList(sourcePage);
+        if (newChapterList.length === 0) return this.#failureHandle(option, { message: "获取的章节列表为空！", name: "更新章节列表失败" }, `从地址采集数据失败：${sourcePage}。`);
+
+        let chapterList = [...newChapterList];
         chapterList = deduplicateByMultKey(chapterList, ["text", "url"]);//同目录内自我去重
 
         //【新数据：chapterList】与【已在数据库的数据:hasChaptList】 进行差集计算
         const hasChaptList = await this.#webBookChapterService.findChapterWithURL(bookId);
+
         if (hasChaptList.length > 0) {
             //判断是否同源，如果是则将url也加入比较
             const curHost = getHost(sourcePage);
@@ -121,7 +126,7 @@ export class WebBookCollector extends ICollector {
             //求差集
             chapterList = difference(chapterList, excludeChapters, key);
             if (chapterList.length > excludeChapters.length * 0.8) {        //新增超过已有数量的80% 尝试将章节名删除再合并
-                const fixTitle = new RegExp("第[^章回]+[章回](\s+)?", "g");
+                const fixTitle = new RegExp(TitleReg, "g");
                 chapterList = chapterList.map(c => {
                     const title = c.text.replace(fixTitle, "").trim();
                     return { title, ...c };
@@ -131,6 +136,26 @@ export class WebBookCollector extends ICollector {
                     return { title, ...c };
                 });
                 chapterList = difference(chapterList, excludeChapters, ["title"]);
+            }
+
+            //补充没有的地址
+            const addSourceUrl = [];
+            const fixReg = new RegExp(TitleReg, "g");
+            for (const chp of hasChaptList) {
+                const nChp = newChapterList.find(c => c.text.replace(fixReg, "") == chp.title.replace(fixReg, ""));
+                if (!nChp) continue;
+                if (chp.urls.some(t => t == nChp?.url)) continue;
+                addSourceUrl.push({ ...nChp, webBookChapterId: chp.WebBookChapterId });
+            }
+            // console.log(addSourceUrl);
+            if (addSourceUrl.length > 0) {
+                const chapterURLs = addSourceUrl.map(t => {
+                    return {
+                        WebBookChapterId: t.webBookChapterId,
+                        Path: t.url
+                    }
+                })
+                await this.#webBookChapterURLService.batchInsert({ chapterURLs });
             }
         }
 
@@ -185,7 +210,7 @@ export class WebBookCollector extends ICollector {
     }
 
     /**
-     * 获取书籍章节列表（支持分页）
+     * 抓取书籍章节列表（支持分页）
      * @param {string} sourcePage - 目录页 URL
      * @param {Map} [initialMap] - 若已从信息页获取过数据，可传入初始结果 Map
      * @returns {Promise<Array<{text: string, url: string}>>} 章节数组

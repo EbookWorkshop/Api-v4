@@ -59,7 +59,8 @@ export class WebBookChapterURLRepository {
 
     /**
      * 批量插入
-     * @param {*} param0 
+     * @param {Object} param0 
+     * @param {Array<{WebBookChapterId,Path}>} param0.chapterURLs 
      * @param {{ transaction?: import('sequelize').Transaction }} [options]
      * @returns 
      */

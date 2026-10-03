@@ -53,4 +53,14 @@ export class WebBookChapterURLService {
     async upsertChapterSource(id, url) {
         return this.#webBookChapterURLRepository.updateSourcePath(id, url);
     }
+
+    /**
+     * 
+     * @param {*} param0 
+     * @param {*} options 
+     * @returns 
+     */
+    async batchInsert({ chapterURLs }, options) {
+        return this.#webBookChapterURLRepository.batchInsert({ chapterURLs }, options);
+    }
 }

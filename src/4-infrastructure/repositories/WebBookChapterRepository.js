@@ -75,12 +75,12 @@ export class WebBookChapterRepository {
                 model: this.#WebBookChapterModel, as: "WebBookChapter",
                 include: [{
                     model: this.#WebBookChapterURLModel,
-                    attributes: ["Path"]
+                    attributes: ["Path", "WebBookChapterId"]
                 }]
             }]
         });
-        return result.map(({ Title, WebBookChapter }) => {
-            return { title: Title, webTitle: WebBookChapter?.WebTitle ?? Title, urls: WebBookChapter?.WebBookChapterURLs?.map(url => url.Path) || [] }
+        return result.map(({ Title, WebBookChapter, id }) => {
+            return { id, WebBookChapterId: WebBookChapter?.id, title: Title, webTitle: WebBookChapter?.WebTitle ?? Title, urls: WebBookChapter?.WebBookChapterURLs?.map(url => url.Path) || [] }
         })
     }
 

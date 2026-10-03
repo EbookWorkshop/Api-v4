@@ -14,7 +14,8 @@ import { ChapterCommandService } from "../ChapterCommandService.js";
 
 import { WebBookQueryService } from "../WebBookQueryService.js";
 import { WebBookCommandService } from "../WebBookCommandService.js";
-import { WebBookChapterService } from "../WebBookChapterService.js"
+import { WebBookChapterService } from "../WebBookChapterService.js";
+import { WebBookChapterURLService } from "../WebBookChapterURLService.js";
 
 import { CoverService } from "../CoverService.js"
 
@@ -193,10 +194,12 @@ export class CollectExecutor extends ITaskExecutor {
     #createWebBookServices() {
         const { webBookRepository, ebookRepository, chapterRepository, webBookChapterRepository, webBookSourceURLRepository, webBookChapterURLRepository } = this.#repositories;
         const webBookChapterService = new WebBookChapterService(this.#transactionManager, chapterRepository, webBookChapterRepository, webBookChapterURLRepository);
+        const webBookQueryService = new WebBookQueryService(webBookRepository, webBookSourceURLRepository);
         return {
             webBookService: new WebBookCommandService(webBookRepository, this.#transactionManager, ebookRepository, chapterRepository, webBookSourceURLRepository, webBookChapterService),
             coverService: new CoverService(this.#fileWriter, null, this.#config),
             webBookChapterService,
+            webBookChapterURLService: new WebBookChapterURLService(webBookChapterURLRepository, webBookQueryService),
         }
     }
 }
