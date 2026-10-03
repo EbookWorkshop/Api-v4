@@ -127,6 +127,14 @@ export class CoverService {
         return { type: 'file', path: value };
     }
 
+    updateEmbelBookName(coverValue, embelBookName) {
+        const coverInfo = this.#normalizeCoverValue(coverValue);
+        if (coverInfo?.type != "file") return coverInfo;
+        let newCover = coverInfo.path;
+        if (embelBookName) newCover += SHOW_BOOKNAME;
+        return { ...coverInfo, newCover }
+    }
+
     async isSameCoverFile(a, b) {
         const na = this.#normalizeCoverValue(a);
         const nb = this.#normalizeCoverValue(b);

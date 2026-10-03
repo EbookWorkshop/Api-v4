@@ -103,11 +103,15 @@ export class BookCommandService {
             const { Introduction, converFile, coverShowName, embelBookName, ...data } = metadata;
             if (Introduction) await this.#chapterRepository.updateIntroduction({ bookId: id, content: Introduction }, { transaction });
 
-            if (converFile) {
+            if (converFile) {       //有图片文件要更新
                 data.CoverImg = await this.#coverService.saveCoverAndGetFilePath(converFile, coverShowName, embelBookName);
+                updateCover = data.CoverImg;
+            } else if (typeof (embelBookName) !== "undefined") {//仅更新嵌入名称
+                const coverInfo = this.#coverService.updateEmbelBookName(oldBookInfo.CoverImg, embelBookName);
+                data.CoverImg = coverInfo.newCover;
+                updateCover = coverInfo.path;
             }
 
-            updateCover = data.CoverImg;
             return this.#ebookRepository.updateMetadata(id, data, { transaction });
         });
 
