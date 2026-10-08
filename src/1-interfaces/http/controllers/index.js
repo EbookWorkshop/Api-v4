@@ -17,10 +17,12 @@ import { ImportController } from './ImportController.js';
 import { ExportController } from './ExportController.js';
 import { ServiceController } from "./ServiceController.js"
 import { BookmarkController } from "./BookmarkController.js";
+import { AutoTaskController } from "./AutoTaskController.js";
+import { StorageController } from "./StorageController.js";
 //文档
-import { AutoTaskController } from "./AutoTaskController.js"
 import { AsyncApiController } from "./AsyncApiController.js"
-import { SwaggerController } from "./SwaggerController.js"
+import { SwaggerController } from "./SwaggerController.js";
+
 
 /**
  * 
@@ -53,7 +55,7 @@ export function createControllers(services, config) {
         import: new ImportController(services.import),
         export: new ExportController(services.task),
         service: new ServiceController(services.serviceQuery, services.task, services.batchProgressTracker, services.pdf),
-
+        storage: new StorageController(services.storage),
         autoTask: new AutoTaskController(services.autoTaskScheduler),
         asyncApi: new AsyncApiController(config),
         swagger: new SwaggerController(config),

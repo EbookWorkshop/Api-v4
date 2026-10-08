@@ -55,22 +55,44 @@ export class RuleEngine {
                     let acExp = action.split("/");
                     //配置的动作表达式
                     switch (acExp[0]) {
-                        case "attr": result = myNode[acExp[1]]; break;
+                        case "attr": {
+                            const attribute = acExp[1].split(".");
+                            result = myNode;
+                            while (attribute.length > 0) result = result[attribute.shift()];
+                            break;
+                        }
                         case "fun": result = myNode[acExp[1]](...acExp.slice(2)); break;  //执行节点上的方法
-                        case "cache": result = "cache::" + myNode[acExp[1]]; break;       //缓存的
                         case "reg": result = "ToDo:RegExp"; break;
+                        // case "node": result = getDataFromNode(myNode, rule); break;
                     }
                     return result?.trim();
+                }
+
+                let getDataFromNode = (node, rule) => {
+                    let result = [];
+                    const actArr = [rule.getContentAction, rule.getUrlAction, rule.getContentAction2, rule.getUrlAction2];
+                    for (let act of actArr) {
+                        const a = act.split("/");
+                        const nn = node.querySelector(a[1]);
+                        result.push(ActionHandle(`attr/${a[2]}`, nn))
+                    }
+                    return result;
                 }
 
                 let myRsl = [];
                 if (option.type !== "List") node = [node];
                 for (let n of node) {
-                    myRsl.push({
-                        Rule: option,
-                        text: ActionHandle(option.getContentAction, n),
-                        url: ActionHandle(option.getUrlAction, n),
-                    });
+                    if (option.getContentAction.startsWith("node"))//(option.type === "NodeList")
+                        myRsl.push({
+                            Rule: option,
+                            text: getDataFromNode(n, option),
+                        });
+                    else
+                        myRsl.push({
+                            Rule: option,
+                            text: ActionHandle(option.getContentAction, n),
+                            url: ActionHandle(option.getUrlAction, n),
+                        });
 
                     if (isVis) {
                         n.style.border = "5px solid red";

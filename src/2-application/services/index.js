@@ -47,7 +47,8 @@ import { BatchProgressTracker } from "./BatchProgressTracker.js";
 
 import { TaskSchedulerService } from "./TaskSchedulerService.js";
 import { ServiceQueryService } from './ServiceQueryService.js';
-import { ImportService } from "./ImportService.js"
+import { ImportService } from "./ImportService.js";
+import { StorageService } from "./StorageService.js";
 
 // import { MemoryCache } from "../../4-infrastructure/cache/MemoryCache.js";
 import { PdfGenerator } from '../../4-infrastructure/server/generators/PdfGenerator.js';
@@ -140,5 +141,6 @@ export function createServices(repositories, databaseTransaction, memoryCache, w
         serviceQuery: new ServiceQueryService(config, new ServiceServer(config)),
         batchProgressTracker, task,
         workerPool,
+        storage: new StorageService(repositories.storageRepository),
     };
 }

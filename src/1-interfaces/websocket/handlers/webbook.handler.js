@@ -205,7 +205,7 @@ export function registerSocketEvents(socket, services, eventManager) {
      */
     socket.on('webBook:updateChapter', async (payload, callback) => {
         try {
-            const result = await services.task.submitUpdateChapters(payload.chapterIds, payload);
+            const result = await services.task.submitUpdateChapters(payload.chapterIds, payload.bookId, payload);
             // 阶段 2 之后，submitUpdateChapters 返回 { batchId, total, taskIds, message }
             callback({
                 success: true,

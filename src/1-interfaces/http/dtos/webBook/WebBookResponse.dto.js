@@ -193,12 +193,17 @@
  *           items:
  *             type: integer
  *           example: [101, 102, 103]
+ *         bookId:
+ *           type: integer
+ *           description: 图书 ID
+ *           example: 5
  *         isUpdate:
  *           type: boolean
  *           description: 是否执行覆盖更新
  *           example: true
  *       required:
  *         - chapterIds
+ *         - bookId
  *         - isUpdate
  *
  *   examples:
@@ -206,5 +211,6 @@
  *       summary: 更新网页图书章节请求示例
  *       value:
  *         chapterIds: [101, 102, 103]
+ *         bookId: 5
  *         isUpdate: true
  */

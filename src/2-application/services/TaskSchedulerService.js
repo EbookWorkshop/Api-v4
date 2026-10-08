@@ -98,15 +98,16 @@ export class TaskSchedulerService {
      * 提交批量更新章节任务
      * 每个章节拆为一个子任务，通过 BatchProgressTracker 汇总进度
      * @param {number[]} chapterIds
-     * @param {{ bookId: number, isUpdate: boolean, bookName?: string }} setting 接口提交的参数
+     * @param {number} bookId
+     * @param {{ isUpdate: boolean, bookName?: string }} setting 接口提交的参数
      * @returns {{ batchId: string, total: number, taskIds: string[], message: string }}
      */
-    submitUpdateChapters(chapterIds, setting) {
+    submitUpdateChapters(chapterIds, bookId, setting) {
         if (!Array.isArray(chapterIds) || chapterIds.length === 0) {
             throw new AppError("chapterIds 不能为空");
         }
 
-        const { bookId, isUpdate, bookName, highPriority, ...rest } = setting;
+        const { isUpdate, bookName, highPriority, ...rest } = setting;
         const batchId = crypto.randomUUID();
         const total = chapterIds.length;
 
@@ -169,6 +170,28 @@ export class TaskSchedulerService {
                 taskType: TASK_TYPES.WEB_BOOK_UPDATE_INDEX,
                 useDB: true,
                 maxTaskNum: 8,
+            })
+
+            this.#workerPool.addTask(task);
+            return `已添加任务：${task.taskId}` //{ taskId: task.taskId };
+        } catch (error) {
+            throw new AppError("添加采集任务失败：" + error.message);
+        }
+    }
+
+    /**
+     * 抓取列表
+     * @param {*} url 
+     * @returns 
+     */
+    async submitFetchListTask(url) {
+        try {
+            const task = new Task({
+                taskId: crypto.randomUUID(),
+                param: { url },
+                taskType: TASK_TYPES.WEB_BOOK_LIST_CACHE,
+                useDB: true,
+                maxTaskNum: 1,
             })
 
             this.#workerPool.addTask(task);

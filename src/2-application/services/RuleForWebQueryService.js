@@ -87,6 +87,12 @@ export class RuleForWebQueryService {
      */
     async getRulesWithGroup(urlOrHost, group) {
         const rules = await this.getRulesByHost(urlOrHost);
+        const r1 = rules.find(t => t.ruleName === "BookList");
+        const r2 = rules.find(t => t.ruleName === "BookList2");
+        if (r1 && r2) {
+            r1.getContentAction2 = r2.getContentAction;
+            r1.getUrlAction2 = r2.getUrlAction;
+        }
         return this.divideRulesWithGroup(rules, group);
     }
 

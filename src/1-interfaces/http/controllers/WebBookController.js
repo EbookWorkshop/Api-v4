@@ -445,8 +445,9 @@ export class WebBookController {
      */
     async updateWebBookChapters(ctx) {
         const chapterIds = ChapterRequest.fromBodyIds(ctx.request.body);
+        const bookId = BookIdRequest.fromBody(ctx.request.body);
         const setting = ctx.request.body;
-        ctx.body = await this.#taskSchedulerService.submitUpdateChapters(chapterIds, setting);
+        ctx.body = await this.#taskSchedulerService.submitUpdateChapters(chapterIds, bookId, setting);
     }
 
     /**
@@ -552,4 +553,43 @@ export class WebBookController {
         const bookId = BookIdRequest.fromQuery(ctx.query);
         ctx.body = await this.#bookCommandService.deleteBook(bookId);
     }
+
+    /**
+     * @swagger
+     * /library/webbook/fetchlist:
+     *   post:
+     *     summary: 🧵缓存图书列表
+     *     description: 抓取列表页面内容（统一包装格式）
+     *     tags:
+     *       - Library - WebBook —— 网文图书馆
+     *       - WebBook
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               url: string
+     *           examples:
+     *             url: https://example.com/path/a/
+     *     responses:
+     *       200:
+     *         description: 创建成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-08-31T14:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async fetchList(ctx) {
+        const { url } = ctx.request.body;
+        ctx.body = await this.#taskSchedulerService.submitFetchListTask(url);
+    }
+
 }

@@ -48,7 +48,7 @@ export class WebBookCollector extends ICollector {
             else if (mode === "update")
                 result = await this.updateChapter(payload);
         } catch (error) {
-            return this.#failureHandle(payload, error, "采集执行失败");
+            return this.#failureHandle(payload, error, `采集执行失败：${error.message}\n${error.original?.message ?? ""}`);
         }
         return result;
     }
@@ -117,7 +117,7 @@ export class WebBookCollector extends ICollector {
             let testCount = Math.min(hasChaptList.length, 800);
             const tempURLs = hasChaptList.slice(0, testCount).flatMap(t => t.urls);
             let diffSource = tempURLs.some(u => !u.includes(curHost));
-            let excludeChapters = hasChaptList.map(({ title, urls }) => ({ text: title, urls }));
+            let excludeChapters = hasChaptList.map(({ webTitle, urls }) => ({ text: webTitle, urls }));
             const key = ["text"];           //不同源下的比较
             if (!diffSource) {             //同源情况下的比较
                 key.push("url");
@@ -142,9 +142,10 @@ export class WebBookCollector extends ICollector {
             const addSourceUrl = [];
             const fixReg = new RegExp(TitleReg, "g");
             for (const chp of hasChaptList) {
-                const nChp = newChapterList.find(c => c.text.replace(fixReg, "") == chp.title.replace(fixReg, ""));
+                const nChp = newChapterList.find(c => c.text.replace(fixReg, "") == chp.title.replace(fixReg, ""));//NOTE: 同书内章节有重名时会出现判断错误
                 if (!nChp) continue;
                 if (chp.urls.some(t => t == nChp?.url)) continue;
+                if (chp.WebBookChapterId == null) continue;
                 addSourceUrl.push({ ...nChp, webBookChapterId: chp.WebBookChapterId });
             }
             // console.log(addSourceUrl);
@@ -154,7 +155,7 @@ export class WebBookCollector extends ICollector {
                         WebBookChapterId: t.webBookChapterId,
                         Path: t.url
                     }
-                })
+                });
                 await this.#webBookChapterURLService.batchInsert({ chapterURLs });
             }
         }

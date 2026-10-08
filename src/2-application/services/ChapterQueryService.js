@@ -23,14 +23,12 @@ export class ChapterQueryService {
     async getChapterById(chapterId) {
         const cpt = await this.#chapterRepository.findByPkWithEbook(chapterId);
         if (!cpt) throw new AppError('章节不存在', 404);
-        const { Ebook: book, Title, Content, Volume, ...chapter } = cpt;
-        const newTitle = await this.#textCleanup.cleanup(book.id, Title);
-        const content = await this.#textCleanup.cleanup(book.id, Content);
+        const { Ebook: book, Volume, } = cpt;
 
         //注入动态校阅
         return {
-            Book: book, Title: newTitle, Content: content, VolumeTitle: Volume?.VolumeTitle,
-            ...chapter
+            Book: book, VolumeTitle: Volume?.VolumeTitle,
+            ...await this.#cleanChapter(book.id, cpt)
         }
     }
 
@@ -81,7 +79,8 @@ export class ChapterQueryService {
      * @param {Array<number>} volumeIds 
      */
     async listChaptersByVolumes(bookId, volumeIds) {
-        return this.#chapterRepository.findChaptersByVolumes(bookId, volumeIds);
+        let list = await this.#chapterRepository.findChaptersByVolumes(bookId, volumeIds);
+        return Promise.all(list.map((chap) => this.#cleanChapter(bookId, chap)));
     }
 
     /**
@@ -91,7 +90,8 @@ export class ChapterQueryService {
      * @returns 
      */
     async listChaptersByIds(bookId, chapterIds) {
-        return this.#chapterRepository.findChaptersByIds(bookId, chapterIds);
+        let list = await this.#chapterRepository.findChaptersByIds(bookId, chapterIds);
+        return Promise.all(list.map((chap) => this.#cleanChapter(bookId, chap)));
     }
 
     /**
@@ -100,7 +100,8 @@ export class ChapterQueryService {
      * @returns 
      */
     async listChaptersByBook(bookId) {
-        return this.#chapterRepository.findChaptersByBookId(bookId);
+        let list = await this.#chapterRepository.findChaptersByBookId(bookId);
+        return Promise.all(list.map((chap) => this.#cleanChapter(bookId, chap)));
     }
 
     /**
@@ -110,5 +111,12 @@ export class ChapterQueryService {
      */
     async getIntroduction(bookId) {
         return this.#chapterRepository.findIntroduction(bookId);
+    }
+
+    async #cleanChapter(bookId, chapter) {
+        const Title = await this.#textCleanup.cleanup(bookId, chapter.Title);
+        const Content = await this.#textCleanup.cleanup(bookId, chapter.Content);
+
+        return { ...chapter, Title, Content };
     }
 }

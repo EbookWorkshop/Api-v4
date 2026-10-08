@@ -67,6 +67,9 @@ export class AutoTaskSchedulerService {
             case TASK_TYPES.WEB_BOOK_AUTO_SYNC_INDEX:
                 return this.#webBookSync.SyncIndex(job.param);
 
+            case TASK_TYPES.WEB_BOOK_LIST_CACHE:
+                return this.#taskScheduler.submitFetchListTask();
+
             default:
                 console.warn(`[AutoTask] 未知任务类型: ${job.type}。需要在这里改代码：${import.meta.filename}`);
         }

@@ -15,8 +15,8 @@ export class WebBookSyncService {
         const upChap = await this.#webBookChapterRepository.findLatestEmpty();
         if (!upChap.id) return;
         console.debug(`【${new Date().toLocaleString()}】自动更新章节任务即将进行：`, upChap.BookName, upChap.Title, upChap.id)
-        return this.#taskScheduler.submitUpdateChapters([upChap.id], {
-            bookId: upChap.BookId, bookName: upChap.BookName, highPriority: "lazy", keepsilent: true
+        return this.#taskScheduler.submitUpdateChapters([upChap.id], upChap.BookId, {
+            bookName: upChap.BookName, highPriority: "lazy", keepsilent: true
         });
     }
 

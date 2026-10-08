@@ -4,7 +4,7 @@ import { TASK_TYPES } from '../../constants/Task.js';
 import { COLLECT_EVENTS } from "../../constants/Event.js";
 import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
-import { WebBookCollector, ChapterCollector, FileCollector, ICollector } from "../collectors/index.js";
+import { WebBookCollector, ChapterCollector, FileCollector, ListCollector, ICollector } from "../collectors/index.js";
 import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine } from "../../../4-infrastructure/fetchers/index.js";
 import { EventManager } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
@@ -20,7 +20,8 @@ import { WebBookChapterURLService } from "../WebBookChapterURLService.js";
 import { CoverService } from "../CoverService.js"
 
 import { FileSystemWriter } from "../../../4-infrastructure/server/adapters/FileSystemWriter.js"
-import { CollectEventEmitter } from "../../events/index.js"
+import { CollectEventEmitter } from "../../events/index.js";
+import { StorageService } from "../StorageService.js";
 
 export class CollectExecutor extends ITaskExecutor {
     #config;
@@ -107,6 +108,13 @@ export class CollectExecutor extends ITaskExecutor {
                     msgEvent = COLLECT_EVENTS.UPDATE_CHAPTER;
                     break;
                 }
+                case TASK_TYPES.WEB_BOOK_LIST_CACHE: {
+                    ruleGroup = RULE_GROUP.BOOK_LIST;
+                    Collector = ListCollector;
+                    services.storageService = new StorageService(this.#repositories.storageRepository);
+                    if (!payload.url) payload.url = pageURL;
+                    break;
+                }
                 default:
                     throw new AppError('未知任务类型！');
             }
@@ -156,6 +164,11 @@ export class CollectExecutor extends ITaskExecutor {
                 const { chapterId, bookId } = payload;
                 const urlInfo = await this.#chapService.getDefaultChapterSource(chapterId, bookId);
                 return urlInfo.Path;
+            }
+            case TASK_TYPES.WEB_BOOK_LIST_CACHE: {
+                if (payload.url) return payload.url;
+                const s = new StorageService(this.#repositories.storageRepository);
+                return await s.getLastPage()
             }
             default:
                 throw new AppError('未知任务类型，未能获取采集主机！');

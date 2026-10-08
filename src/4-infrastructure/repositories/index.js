@@ -16,6 +16,7 @@ import { RuleForWebRepository } from './RuleForWebRepository.js';
 import { ReviewRuleUsingRepository } from './ReviewRuleUsingRepository.js';
 import { ReviewDictionaryRepository } from './ReviewDictionaryRepository.js';
 
+import { StorageRepository } from './StorageRepository.js';
 
 export function createRepositories(sequelize) {
     return {
@@ -39,6 +40,9 @@ export function createRepositories(sequelize) {
         dictionaryRepository: new ReviewDictionaryRepository(sequelize),
         reviewRuleUsingRepository: new ReviewRuleUsingRepository(sequelize),
 
+        storageRepository: new StorageRepository(sequelize),
         sequelize,
     };
 }
+/*
+*/

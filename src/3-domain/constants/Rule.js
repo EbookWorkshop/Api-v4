@@ -10,6 +10,8 @@ export const RULE_GROUP = {
     INFO_INDEX_PAGE: Symbol("INFO_INDEX_PAGE"),
     /** 章节正文 */
     CHAPTER_PAGE: Symbol("CHAPTER_PAGE"),
+    /** 获取书本类表 */
+    BOOK_LIST: Symbol("BOOK_LIST"),
 }
 export const RuleName = {
     BookName: "BookName",
@@ -21,6 +23,8 @@ export const RuleName = {
     ContentNextPage: "ContentNextPage",
     Author: "Author",
     Introduction: "Introduction",
+    BookList: "BookList",
+    BookListNext: "BookListNext",
 }
 export const RuleCommon = {
     Timeout: "Timeout",
@@ -38,6 +42,10 @@ export const RULE_INDEX = [
     RuleName.IndexNextPage,
     RuleName.ChapterList,
 ]
+export const RULE_BOOK_LIST = [
+    RuleName.BookList,
+    RuleName.BookListNext,
+]
 export const RULE_INFO_INDEX = RULE_INFO.concat(RULE_INDEX)
 export const RULE_CHAPTER = [
     RuleName.CapterTitle,
@@ -50,6 +58,8 @@ export const RULE_GROUP_SETTING = {
     [RULE_GROUP.INDEX_PAGE]: RULE_INDEX,
     [RULE_GROUP.INFO_INDEX_PAGE]: RULE_INFO_INDEX,
     [RULE_GROUP.CHAPTER_PAGE]: RULE_CHAPTER,
+    [RULE_GROUP.BOOK_LIST]: RULE_BOOK_LIST,
 }
 
-export const RULE_ALL = RULE_INFO_INDEX.concat(RULE_CHAPTER)
+// export const RULE_ALL = RULE_INFO_INDEX.concat(RULE_CHAPTER).concat(RULE_BOOK_LIST)
+export const RULE_ALL = [...RULE_INFO_INDEX, ...RULE_CHAPTER, ...RULE_BOOK_LIST];
