@@ -245,7 +245,7 @@ export class RuleForWebController {
      * @swagger
      * /services/botrule:
      *   post:
-     *     summary: 批量创建或更新 Bot 规则
+     *     summary: 新增/保存一套规则
      *     description: 接收一个规则对象数组，用于批量添加或更新爬虫规则（统一包装格式）
      *     tags:
      *       - Services - BotRule —— 系统服务：机器人爬网规则
@@ -304,7 +304,7 @@ export class RuleForWebController {
      */
     async batchUpsertBotRules(ctx) {
         const rules = ctx.request.body;//TODO: 接入DTO层
-        if (!Array.isArray(rules) || rules.length == 0) throw new UserInputError("未发现导入规则。");
+        if (!Array.isArray(rules) || rules.length == 0) throw new UserInputError("未发现保存规则。");
         const result = await this.#ruleForWebCommandService.batchUpsertRules(rules);
         ctx.body = result;
     }
@@ -493,7 +493,7 @@ export class RuleForWebController {
      */
     async deleteBotRules(ctx) {
         const host = HostRequest.inQuery(ctx.query) ?? "";
-        const result = await this.#ruleForWebCommandService.deleteRulesByHost(host);
+        const result = await this.#ruleForWebCommandService.deleteRulesByHost(host, true);
         ctx.body = result;
     }
 }

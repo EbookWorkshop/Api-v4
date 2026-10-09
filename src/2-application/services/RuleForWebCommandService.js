@@ -34,19 +34,23 @@ export class RuleForWebCommandService {
 
     async importRulesFromFile(file) {
         const rules = await this.#fileScanner.readFileData(file, { format: "json" });
-        return this.batchUpsertRules(rules);
+        return this.batchUpsertRules(rules, true);
     }
 
     /**
-     * 完整导入时用
+     * 保存一套规则（先删除后创建）
      * @param {*} rules 
+     * @param {*} updateDict 是否修改字典配置
      * @returns 
      */
-    async batchUpsertRules(rules) {
+    async batchUpsertRules(rules, updateDict = false) {
         return this.#transaction.runInTransaction(async (trans) => {
+            const dict = rules.find(d => d.ruleName == RuleCommon.Dictionary);
+            if (dict && dict.data) updateDict = true;       //发现更新了字典配置，删除字典覆盖旧配置
+            
             //全套规则删除并更新
             const oneHost = rules[0].host;      //NOTE: 如果要兼容单文件多个配置的情况...
-            await this.deleteRulesByHost(oneHost, { transaction: trans });
+            await this.deleteRulesByHost(oneHost, updateDict, { transaction: trans });
 
             const timeoutRule = rules.find(r => r.ruleName == RuleCommon.Timeout);
             if (timeoutRule && timeoutRule.selector != DEFAULT_TIME_OUT) {
@@ -63,7 +67,6 @@ export class RuleForWebCommandService {
                 await this.#sysConfig.setConfig(WEBSITE_SCRAPING, oneHost, scraping.selector, { transaction: trans });
             }
             rules = rules.filter(r => r.ruleName != RuleCommon.Scraping);
-            const dict = rules.find(d => d.ruleName == RuleCommon.Dictionary);
             if (dict && dict.data) {
                 await this.#reviewDictionaryService.saveDictionaries(oneHost, dict.data, { transaction: trans });
                 rules = rules.filter(r => r.ruleName != RuleCommon.Dictionary);
@@ -96,16 +99,17 @@ export class RuleForWebCommandService {
     /**
      * 删除全套规则
      * @param {string} host 
+     * @param {boolean} updateDict 是否删除字典
      * @param {*} transaction 
      */
-    async deleteRulesByHost(host, { transaction } = {}) {
+    async deleteRulesByHost(host, updateDict, { transaction } = {}) {
         let deleter = async (tran) => {
             //删除附加配置
             await this.#sysConfig.deleteConfig(undefined, host, { transaction: tran });
             //删除Bot规则
             await this.#ruleForWebRepository.delete(host, { transaction: tran })
             //删除校阅字典
-            await this.#reviewDictionaryService.deleteDictionaries(host, { transaction: tran });
+            if (updateDict) await this.#reviewDictionaryService.deleteDictionaries(host, { transaction: tran });
             return true;
         }
         if (!transaction) return this.#transaction.runInTransaction(deleter.bind(this));
