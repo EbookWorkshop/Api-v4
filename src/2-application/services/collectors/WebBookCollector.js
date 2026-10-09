@@ -48,7 +48,7 @@ export class WebBookCollector extends ICollector {
             else if (mode === "update")
                 result = await this.updateChapter(payload);
         } catch (error) {
-            return this.#failureHandle(payload, error, `采集执行失败：${error.message}\n${error.original?.message ?? ""}`);
+            return this.#failureHandle(payload, error, `采集执行失败：${error.message}—\n—${error.original?.message ?? ""}`);
         }
         return result;
     }
@@ -346,10 +346,13 @@ export class WebBookCollector extends ICollector {
     #failureHandle(payload, error, message) {
         const eventType = this.#resolveEventType(payload);
         const ctx = this.#resolveCtx(payload);
+        if (error.parent) error = error.parent;
+        else if (error.original) error = error.original
         const normalized = {
             name: error.name,
             message: error.message,
             stack: error.stack,
+            sql: error.sql,
         };
         this.#emitter?.failure(eventType, { ctx, error: normalized, message });
         // 兼容返回：原代码此处的 result 里包含 error 字段供上游判错

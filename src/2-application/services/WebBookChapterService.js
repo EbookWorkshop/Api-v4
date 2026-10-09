@@ -44,7 +44,7 @@ export class WebBookChapterService {
                 return {
                     Path: c.Path, WebBookChapterId: orderOfId.find(o => o["EbookChapter.OrderNum"] === c.OrderNum)?.id
                 }
-            });
+            }).filter(t => t.Path);
             await this.#webBookChapterURLRepository.batchInsert({ chapterURLs: tempDTO }, { transaction });
         }
 

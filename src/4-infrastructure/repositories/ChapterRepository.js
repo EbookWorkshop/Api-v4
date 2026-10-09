@@ -295,6 +295,9 @@ export class ChapterRepository {
     }
 
     async addChapter(chapter, option) {
+        if (!chapter.OrderNum && chapter.BookId) {
+            chapter.OrderNum = await this.getMaxOrder(chapter.BookId);
+        }
         return this.#ChapterModel.create(chapter, option);
     }
 
