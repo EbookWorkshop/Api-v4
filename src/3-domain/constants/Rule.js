@@ -12,6 +12,8 @@ export const RULE_GROUP = {
     CHAPTER_PAGE: Symbol("CHAPTER_PAGE"),
     /** 获取书本类表 */
     BOOK_LIST: Symbol("BOOK_LIST"),
+    /** 更新书本列表封面 */
+    STORAGE_COVER: Symbol("STORAGE_COVER"),
 }
 export const RuleName = {
     BookName: "BookName",
@@ -52,6 +54,7 @@ export const RULE_CHAPTER = [
     RuleName.Content,
     RuleName.ContentNextPage,
 ]
+export const RULE_STORAGE_COVER = [RuleName.BookCover];
 
 export const RULE_GROUP_SETTING = {
     [RULE_GROUP.INFO_PAGE]: RULE_INFO,
@@ -59,6 +62,7 @@ export const RULE_GROUP_SETTING = {
     [RULE_GROUP.INFO_INDEX_PAGE]: RULE_INFO_INDEX,
     [RULE_GROUP.CHAPTER_PAGE]: RULE_CHAPTER,
     [RULE_GROUP.BOOK_LIST]: RULE_BOOK_LIST,
+    [RULE_GROUP.STORAGE_COVER]: RULE_STORAGE_COVER,
 }
 
 // export const RULE_ALL = RULE_INFO_INDEX.concat(RULE_CHAPTER).concat(RULE_BOOK_LIST)

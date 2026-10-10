@@ -70,6 +70,8 @@ export class AutoTaskSchedulerService {
             case TASK_TYPES.WEB_BOOK_LIST_CACHE:
                 return this.#taskScheduler.submitFetchListTask();
 
+            case TASK_TYPES.STORAGE_COVER_COLLECT:
+                return this.#taskScheduler.submitStorageCoverTask();
             default:
                 console.warn(`[AutoTask] 未知任务类型: ${job.type}。需要在这里改代码：${import.meta.filename}`);
         }

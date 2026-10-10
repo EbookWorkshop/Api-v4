@@ -24,6 +24,7 @@ export const TASK_TYPES = {
     BOTRULE_VIS: "BOTRULE_VIS",//预览规则
     COMPRESS_DATABASE: "COMPRESS_DATABASE",//压缩数据库
     COMMAND: "COMMAND", //控制命令
+    STORAGE_COVER_COLLECT: 'STORAGE_COVER_COLLECT',//更新书本封面
 };
 
 /**

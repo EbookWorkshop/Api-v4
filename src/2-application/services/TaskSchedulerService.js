@@ -267,4 +267,20 @@ export class TaskSchedulerService {
             throw new AppError("添加任务失败：" + error.message);
         }
     }
+
+    async submitStorageCoverTask() {
+        const taskId = crypto.randomUUID();
+        const task = new Task({
+            taskId,
+            taskType: TASK_TYPES.STORAGE_COVER_COLLECT,
+            param: { taskId },
+            useDB: true,
+            maxTaskNum: 1,      // 避免并发写同一批记录
+            callback: ({ data, error }) => {
+                console.log("更新库存图书封面：", data, error);
+            },
+        });
+        this.#workerPool.addTask(task);
+        return `已添加任务：${task.taskId}`;
+    }
 }

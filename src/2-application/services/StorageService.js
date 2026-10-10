@@ -32,6 +32,13 @@ export class StorageService {
     async findExistSource(source) {
         return this.#storageRepository.findExistSource(source);
     }
+    async findOneMissingCover() {
+        return this.#storageRepository.findOneMissingCover();
+    }
+
+    async findFrequentCovers(threshold = 5) {
+        return this.#storageRepository.findFrequentCovers(threshold);
+    }
 
     /** 更新  */
 
@@ -49,5 +56,8 @@ export class StorageService {
 
     async bulkCreate(books, transaction) {
         return this.#storageRepository.bulkCreate(books, transaction);
+    }
+    async updateCover(id, coverImage) {
+        return this.#storageRepository.updateCover(id, coverImage);
     }
 }

@@ -9,13 +9,13 @@ export function setupWebsocket(httpServer, services, eventManager) {
 
     // 2. 处理客户端连接
     io.on('connection', (socket) => {
-        console.log(`[⇅] Client connected: ${socket.id}`);
-        
+        console.debug(`[⇅] Client connected: ${socket.id}`);
+
         // 注册所有客户端事件（每个连接独立）
         registerAllClientEvents(socket, services, eventManager);
 
         socket.on('disconnect', () => {
-            console.log(`[⇅] Client disconnected: ${socket.id}`);
+            console.debug(`[⇅] Client disconnected: ${socket.id}`);
         });
     });
 

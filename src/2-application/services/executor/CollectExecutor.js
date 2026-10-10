@@ -4,7 +4,7 @@ import { TASK_TYPES } from '../../constants/Task.js';
 import { COLLECT_EVENTS } from "../../constants/Event.js";
 import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
-import { WebBookCollector, ChapterCollector, FileCollector, ListCollector, ICollector } from "../collectors/index.js";
+import { WebBookCollector, ChapterCollector, FileCollector, ListCollector, StorageCoverCollector, ICollector } from "../collectors/index.js";
 import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine } from "../../../4-infrastructure/fetchers/index.js";
 import { EventManager } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
@@ -46,7 +46,7 @@ export class CollectExecutor extends ITaskExecutor {
         this.#_fetcher;
     }
 
-    async execute(taskType, payload) {
+    async execute(taskType, payload = {}) {
         const { keepsilent } = payload;
 
         const emitter = keepsilent ? null : new CollectEventEmitter(this.#eventManager, {
@@ -62,6 +62,7 @@ export class CollectExecutor extends ITaskExecutor {
         let msgEvent = COLLECT_EVENTS.UNKNOW;
         try {
             let pageURL = await this.#getPageURL(taskType, payload);
+            if (pageURL === null) { return { success: true, message: "没有需要采集的地址。" }; }
             let Collector = ICollector;
             let ruleGroup;
             let services = { eventManager: this.#eventManager, emitter };
@@ -115,6 +116,13 @@ export class CollectExecutor extends ITaskExecutor {
                     if (!payload.url) payload.url = pageURL;
                     break;
                 }
+                case TASK_TYPES.STORAGE_COVER_COLLECT: {
+                    Collector = StorageCoverCollector;
+                    ruleGroup = RULE_GROUP.STORAGE_COVER;
+                    msgEvent = COLLECT_EVENTS.STORAGE_COVER;
+                    services.storageService = new StorageService(this.#repositories.storageRepository);
+                    break;
+                }
                 default:
                     throw new AppError('未知任务类型！');
             }
@@ -149,7 +157,7 @@ export class CollectExecutor extends ITaskExecutor {
      * 根据任务类型，获取任务开始页面地址
      * @param {*} taskType 
      * @param {*} payload 
-     * @returns {Promise<string>} 采集网址
+     * @returns {Promise<string|null>} 采集网址
      */
     async #getPageURL(taskType, payload) {
         switch (taskType) {
@@ -169,6 +177,13 @@ export class CollectExecutor extends ITaskExecutor {
                 if (payload.url) return payload.url;
                 const s = new StorageService(this.#repositories.storageRepository);
                 return await s.getLastPage()
+            }
+            case TASK_TYPES.STORAGE_COVER_COLLECT: {
+                const s = new StorageService(this.#repositories.storageRepository);
+                const record = await s.findOneMissingCover();
+                if (!record) return null;              // 哨兵值，上层据此判定"无工作"
+                payload.record = record;
+                return record.Source;
             }
             default:
                 throw new AppError('未知任务类型，未能获取采集主机！');

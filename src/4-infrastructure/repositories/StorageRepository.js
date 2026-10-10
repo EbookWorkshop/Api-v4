@@ -79,6 +79,44 @@ export class StorageRepository {
         return result.map(r => r.Source);
     }
 
+    /**
+     * 取出 CoverImage 为 null / 空串 的一条记录
+     * @returns {Promise<Object|null>}
+     */
+    async findOneMissingCover() {
+        return this.#StorageModel.findOne({
+            where: {
+                [Op.or]: [
+                    { CoverImage: null },
+                    { CoverImage: '' },
+                ],
+            },
+            order: [['id', 'ASC']],
+            raw: true,
+        });
+    }
+
+    /**
+     * 统计 CoverImage 出现次数超过阈值的封面列表
+     * @param {number} [threshold=5]
+     * @returns {Promise<string[]>}
+     */
+    async findFrequentCovers(threshold = 5) {
+        const rows = await this.#StorageModel.findAll({
+            attributes: [
+                'CoverImage',
+                [this.#sequelize.fn('COUNT', this.#sequelize.col('CoverImage')), 'Count'],
+            ],
+            where: {
+                CoverImage: { [Op.and]: [{ [Op.ne]: null }, { [Op.ne]: '' }] },
+            },
+            group: ['CoverImage'],
+            having: this.#sequelize.literal(`COUNT("CoverImage") > ${Number(threshold)}`),
+            raw: true,
+        });
+        return rows.map(r => r.CoverImage);
+    }
+
     async updateLastPage(page, host) {
         const [lp] = await this.#StorageStepModel.findOrCreate({
             where: { Host: host },
@@ -110,5 +148,17 @@ export class StorageRepository {
         if (!transaction) await trans.commit();
 
         return true;
+    }
+
+    /**
+     * 更新指定 Storage 记录的封面
+     * @param {number} id
+     * @param {string} coverImage
+     */
+    async updateCover(id, coverImage) {
+        return this.#StorageModel.update(
+            { CoverImage: coverImage },
+            { where: { id } }
+        );
     }
 }
