@@ -55,7 +55,7 @@ export class StorageCoverCollector extends ICollector {
                 );
             }
         } catch (error) {
-            console.error(`封面采集失败：${error.message}`, error);
+            // console.error(`封面采集失败：${error.message}`, error);
             return this.#resultHandle(
                 payload, false,
                 `封面采集失败：${error.message}`,

@@ -272,8 +272,8 @@ export class TaskSchedulerService {
         const taskId = crypto.randomUUID();
         const task = new Task({
             taskId,
-            taskType: TASK_TYPES.STORAGE_COVER_COLLECT,
             param: { taskId },
+            taskType: TASK_TYPES.STORAGE_COVER_COLLECT,
             useDB: true,
             maxTaskNum: 1,      // 避免并发写同一批记录
             callback: ({ data, error }) => {
@@ -282,5 +282,28 @@ export class TaskSchedulerService {
         });
         this.#workerPool.addTask(task);
         return `已添加任务：${task.taskId}`;
+    }
+
+    /**
+     * 提交封面本地化缓存任务（一次处理一条记录）
+     */
+    submitStorageCoverCacheTask() {
+        try {
+            const taskId = crypto.randomUUID();
+            const task = new Task({
+                taskId,
+                param: { taskId },
+                taskType: TASK_TYPES.STORAGE_COVER_CACHE,
+                useDB: true,
+                maxTaskNum: 1,           // 避免并发写入
+                callback: ({ data, error }) => {
+                    console.log("采集库存图书封面：", data, error);
+                },
+            });
+            this.#workerPool.addTask(task);
+            return `已添加任务：${task.taskId}`;
+        } catch (error) {
+            throw new AppError("添加封面缓存任务失败：" + error.message);
+        }
     }
 }

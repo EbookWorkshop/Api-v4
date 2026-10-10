@@ -49,6 +49,23 @@ export class StorageRepository {
         return books.map(book => book.toJSON());
     }
 
+    async search({ text, type, host }) {
+        const where = [], param = [];
+        const searchText = text.split(" ");
+        if (host) where.push({ host: { [Op.eq]: host } });
+        if (type == "书名" || type == "不限") for (const st of searchText) param.push({ BookName: { [Op.like]: `%${st}%` } });
+        if (type == "作者" || type == "不限") for (const st of searchText) param.push({ Author: { [Op.like]: `%${st}%` } });
+
+        if (type == "不限" || param.length > 1) where.push({ [Op.or]: param });
+        else where.push(...param);
+
+        const books = await this.#StorageModel.findAll({
+            where: { [Op.and]: where },
+        });
+
+        return books.map(book => book.toJSON());
+    }
+
     async listHosts() {
         const hosts = await this.#StorageModel.findAll({
             attributes: [[this.#sequelize.fn('DISTINCT', this.#sequelize.col('Host')), 'Host']],
@@ -117,6 +134,58 @@ export class StorageRepository {
         return rows.map(r => r.CoverImage);
     }
 
+    /**
+     * 找出需要做封面本地化缓存的记录
+     *
+     * 命中条件：
+     *   - CoverImage 非空
+     *   - CoverImage 不以 http 开头
+     *   - CoverImage 不以 Cache/ 开头（避免二次处理）
+     *   - CoverImage 在全表出现次数 <= threshold（超过则跳过，用户要求 > 3 跳过）
+     *
+     * @param {number} [threshold=3]
+     * @returns {Promise<Object|null>} { id, BookName, Source, Host, CoverImage }
+     */
+    async findOneNeedingCoverCache(threshold = 3) {
+        // 1. 取候选（限定数量，避免一次拉太多）
+        const freqCover = await this.findFrequentCovers(threshold);
+        const candidates = await this.#StorageModel.findAll({
+            where: {
+                CoverImage: {
+                    [Op.and]: [
+                        { [Op.like]: 'http%' },
+                        { [Op.notIn]: freqCover },
+                    ]
+                }
+            },
+            attributes: ['id', 'BookName', 'Source', 'Host', 'CoverImage'],
+            order: [['id', 'ASC']],
+            limit: 1,
+            raw: true,
+        });
+
+        if (candidates.length === 0) return null;
+
+        // 2. 统计候选封面在表中的出现次数
+        const uniqueCovers = [...new Set(candidates.map(r => r.CoverImage))];
+        const freqRows = await this.#StorageModel.findAll({
+            attributes: [
+                'CoverImage',
+                [this.#sequelize.fn('COUNT', this.#sequelize.col('CoverImage')), 'Count'],
+            ],
+            where: { CoverImage: { [Op.in]: uniqueCovers } },
+            group: ['CoverImage'],
+            raw: true,
+        });
+        const freqMap = new Map(freqRows.map(r => [r.CoverImage, Number(r.Count)]));
+
+        // 3. 返回第一条频率不超过阈值的记录
+        for (const row of candidates) {
+            if ((freqMap.get(row.CoverImage) || 0) <= threshold) return row;
+        }
+        return null;
+    }
+
     async updateLastPage(page, host) {
         const [lp] = await this.#StorageStepModel.findOrCreate({
             where: { Host: host },
@@ -157,7 +226,7 @@ export class StorageRepository {
      */
     async updateCover(id, coverImage) {
         return this.#StorageModel.update(
-            { CoverImage: coverImage },
+            { CoverImage: coverImage, Show: 0 },//NOTE: Show 为开发中临时特性
             { where: { id } }
         );
     }

@@ -63,4 +63,5 @@ export const COLLECT_EVENTS = {
     UPDATE_CHAPTER_BATCH_PROGRESS: "Update.Chapter.Batch.Progress",
     FETCH_CHAPTER: "Fetch.Chapter",     //单章抓取-存储为文件入库
     STORAGE_COVER: "Storage.Cover",     //更新缓存封面
+    STORAGE_COVER_CACHE: "Storage.Cover.Cache",   // 缓存库存封面
 }

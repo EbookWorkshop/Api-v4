@@ -4,7 +4,10 @@ import { TASK_TYPES } from '../../constants/Task.js';
 import { COLLECT_EVENTS } from "../../constants/Event.js";
 import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
-import { WebBookCollector, ChapterCollector, FileCollector, ListCollector, StorageCoverCollector, ICollector } from "../collectors/index.js";
+import {
+    WebBookCollector, ChapterCollector, FileCollector,
+    ListCollector, StorageCoverCollector, StorageCoverCacheCollector, ICollector
+} from "../collectors/index.js";
 import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine } from "../../../4-infrastructure/fetchers/index.js";
 import { EventManager } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
@@ -62,7 +65,7 @@ export class CollectExecutor extends ITaskExecutor {
         let msgEvent = COLLECT_EVENTS.UNKNOW;
         try {
             let pageURL = await this.#getPageURL(taskType, payload);
-            if (pageURL === null) { return { success: true, message: "没有需要采集的地址。" }; }
+            if (pageURL === null) { return { success: true, skipped: true, message: "没有需要处理的任务。" }; }
             let Collector = ICollector;
             let ruleGroup;
             let services = { eventManager: this.#eventManager, emitter };
@@ -123,16 +126,37 @@ export class CollectExecutor extends ITaskExecutor {
                     services.storageService = new StorageService(this.#repositories.storageRepository);
                     break;
                 }
+                case TASK_TYPES.STORAGE_COVER_CACHE: {
+                    Collector = StorageCoverCacheCollector;
+                    ruleGroup = null;
+                    msgEvent = COLLECT_EVENTS.STORAGE_COVER_CACHE;
+                    services.storageService = new StorageService(this.#repositories.storageRepository);
+                    services.fileWriter = this.#fileWriter;               // 用于保存图片
+                    break;
+                }
                 default:
                     throw new AppError('未知任务类型！');
             }
 
-            const rules = await this.#ruleService.getRulesWithGroup(pageURL, ruleGroup);
+            let rules = [];
+            try {
+                if (ruleGroup != null) {
+                    rules = await this.#ruleService.getRulesWithGroup(pageURL, ruleGroup);
+                }
+            } catch (err) {
+                // 本地缓存任务不依赖站点规则，站点未配置也不影响
+                if (taskType !== TASK_TYPES.STORAGE_COVER_CACHE) throw err;
+                console.debug(`[CollectExecutor] 站点未配置规则，使用默认下载器：${pageURL}`);
+            }
+
             const scraper = rules.find(({ ruleName }) => ruleName === RuleCommon.Scraping);
-            switch (scraper.selector) {
-                case "http": this.#_fetcher = new AxiosDataFetcher(this.#config, ruleEngine, true); break;
-                case "puppeteer":
-                default: this.#_fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine, true); break;
+            // 默认：本地缓存任务用 http 下载器（图片小、无需等待 JS）
+            const defaultScraper = taskType === TASK_TYPES.STORAGE_COVER_CACHE ? "http" : "puppeteer";
+            const scraperType = scraper?.selector ?? defaultScraper;
+            switch (scraperType) {
+                case "puppeteer": this.#_fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine, true); break;
+                case "http":
+                default: this.#_fetcher = new AxiosDataFetcher(this.#config, ruleEngine, true); break;
             }
             const collector = new Collector(this.#config, rules, this.#_fetcher, services);
 
@@ -184,6 +208,13 @@ export class CollectExecutor extends ITaskExecutor {
                 if (!record) return null;              // 哨兵值，上层据此判定"无工作"
                 payload.record = record;
                 return record.Source;
+            }
+            case TASK_TYPES.STORAGE_COVER_CACHE: {
+                const s = new StorageService(this.#repositories.storageRepository);
+                const record = await s.findOneNeedingCoverCache(3);
+                if (!record) return null;                              // 哨兵：无工作
+                payload.record = record;                               // 注入给 Collector
+                return record.Source;                                  // 仅作为 base URL
             }
             default:
                 throw new AppError('未知任务类型，未能获取采集主机！');

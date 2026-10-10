@@ -92,4 +92,10 @@ export class StorageController {
     async listHosts(ctx) {
         ctx.body = await this.#storageService.listHosts();
     }
+
+    async search(ctx) {
+        const { text, type, host } = ctx.request.body;
+        if (!text) throw new UserInputError("查找条件不能为空");
+        ctx.body = await this.#storageService.search({ text, type, host });
+    }
 }

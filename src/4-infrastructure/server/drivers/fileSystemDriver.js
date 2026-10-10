@@ -191,7 +191,7 @@ export async function writeOnStream(stream, chunk) {
             // 监听 'drain'，同时监听 'error' 防止永久等待
             const onDrain = () => {
                 stream.removeListener('error', onError);
-                resolve();
+                resolve(true);
             };
             const onError = (err) => {
                 stream.removeListener('drain', onDrain);

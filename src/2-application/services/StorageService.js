@@ -20,6 +20,10 @@ export class StorageService {
         return this.#storageRepository.listHosts();
     }
 
+    async search({ text, type, host }) {
+        return this.#storageRepository.search({ text, type, host });
+    }
+
     /**
      * 分页获取数据
      * @param {*} options 
@@ -38,6 +42,10 @@ export class StorageService {
 
     async findFrequentCovers(threshold = 5) {
         return this.#storageRepository.findFrequentCovers(threshold);
+    }
+
+    async findOneNeedingCoverCache(threshold = 3) {
+        return this.#storageRepository.findOneNeedingCoverCache(threshold);
     }
 
     /** 更新  */
