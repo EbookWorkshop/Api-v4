@@ -276,9 +276,9 @@ export function assertEnvelopeShape(envelope) {
     if (!envelope.ctx || typeof envelope.ctx !== 'object') {
         throw new Error(`[CollectEnvelope] ctx 必须是对象，event=${envelope.event}`);
     }
-    if (envelope.ctx?.taskId || envelope.ctx?.batchId) {
-        throw new Error(`[CollectEnvelope] ctx 出现了顶层属性：batchId / taskId`)
-    }
+    // if (envelope.ctx?.taskId || envelope.ctx?.batchId) {
+    //     throw new Error(`[CollectEnvelope] ctx 出现了顶层属性：batchId / taskId`)
+    // }
     if (envelope.data?.taskId || envelope.data?.batchId) {
         throw new Error(`[CollectEnvelope] data 出现了顶层属性：batchId / taskId`)
     }

@@ -103,7 +103,7 @@ export class CoverService {
     /**
      * 
      * @param {*} converFile 
-     * @param {*} coverFileName 
+     * @param {string} coverFileName 书名，用于设置文件名
      * @param {*} embelBookName 
      * @returns 
      */

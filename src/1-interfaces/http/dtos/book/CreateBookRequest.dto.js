@@ -75,14 +75,15 @@ export class CreateBookRequest {
      *             Content: "&lt;p&gt;第二章内容...&lt;/p&gt;"
      *             OrderNum: 2
      */
-    static fromBody(body) {
-        const { chapterList: chaptersDTO, type, ...bookDTO } = body;
+    static fromBody(body, files) {
+        const { chapterList, type, ...bookDTO } = body;
         if (!bookDTO.bookName) throw new UserInputError("导入时，书名不能为空。");
+        let chaptersDTO = JSON.parse(chapterList);
         const hasEmptyTitle = chaptersDTO.some(c => !c.Title)
         if (hasEmptyTitle) throw new UserInputError("章节名不能为空。");
-        if (!bookDTO.cover) {
-            if (type == "txt") bookDTO.cover = "#f2e3a4";
-        }
+        if (files && files.bookCover) bookDTO.cover = files.bookCover;
+        if (!bookDTO.cover) if (type == "txt") bookDTO.cover = "#f2e3a4";
+        bookDTO.embelBookName = bookDTO.embelBookName === "true";
         return { bookDTO, chaptersDTO };
     }
 }

@@ -16,13 +16,22 @@ export class EmptyBookRequest {
      *           type: string
      *           description: 作者
      *           example: "测试"
+     *         bookCover:
+     *           type: File
+     *           description: 封面文件
+     *         embelBookName:
+     *           type: boolean
+     *           description: 是否在封面嵌入标题
+     *           example: false
      *       required:
      *         - bookName
      */
-    static fromBody(body) {
+    static fromBody(body, files) {
         if (!body) throw new UserInputError("传入参数不正确!");
-        const { bookName, author } = body;
+        const { bookName, author, embelBookName } = body;
+        let cover = undefined;
         if (!bookName) throw new UserInputError("书名不能为空！");
-        return { bookName, author: author || "佚名" }
+        if (files && files.bookCover) cover = files.bookCover;
+        return { bookName, author: author || "佚名", cover, embelBookName: embelBookName === "true" }
     }
 }

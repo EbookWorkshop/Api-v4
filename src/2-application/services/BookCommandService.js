@@ -29,15 +29,20 @@ export class BookCommandService {
      * @param {object} book 
      * @param {string} book.bookName 
      * @param {string} book.author 
+     * @param {File} [book.cover] 
+     * @param {boolean} [book.embelBookName] 
      * @returns 
      */
-    async createEmptyBook({ bookName, author }) {
+    async createEmptyBook({ bookName, author, cover, embelBookName }) {
         const rawData = {
             BookName: bookName,
             Author: author,
             CoverImg: "#212f30",
             Hotness: 0,
         };
+        if (cover) {
+            rawData.CoverImg = await this.#coverService.saveCoverAndGetFilePath(cover, bookName, embelBookName);
+        }
         return this.#ebookRepository.create(rawData);
     }
 
@@ -49,6 +54,7 @@ export class BookCommandService {
     async createBook(bookDTO, chaptersDTO) {
         let result = null;
         await this.#transaction.runInTransaction(async (transaction) => {
+            if (bookDTO.cover && bookDTO.cover.originalFilename) bookDTO.cover = await this.#coverService.saveCoverAndGetFilePath(bookDTO.cover, bookDTO.bookName, bookDTO.embelBookName);
             const newBook = await this.#ebookRepository.create({
                 BookName: bookDTO.bookName,
                 Author: bookDTO.author,

@@ -275,7 +275,7 @@ export class BookController {
      *         description: 服务器内部错误
      */
     async createEmptyBook(ctx) {
-        const emptyBook = EmptyBookRequest.fromBody(ctx.request.body);
+        const emptyBook = EmptyBookRequest.fromBody(ctx.request.body, ctx.request.files);
         ctx.body = await this.#bookCommandService.createEmptyBook(emptyBook);
     }
 
@@ -322,7 +322,7 @@ export class BookController {
      *         description: 服务器内部错误
      */
     async createBook(ctx) {
-        const { bookDTO, chaptersDTO } = CreateBookRequest.fromBody(ctx.request.body);
+        const { bookDTO, chaptersDTO } = CreateBookRequest.fromBody(ctx.request.body, ctx.request.files);
         ctx.body = await this.#bookCommandService.createBook(bookDTO, chaptersDTO);
     }
 
