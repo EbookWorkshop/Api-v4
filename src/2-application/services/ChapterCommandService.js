@@ -122,11 +122,11 @@ export class ChapterCommandService {
 
     /**
      * 切换是否隐藏章节
-     * @param {number} chapterId 章节ID
+     * @param {Array<number>} chapterIds 章节ID
      * @returns 
      */
-    async toggleHide(chapterId) {
-        return this.#chapterRepository.toggleHide(chapterId);
+    async toggleHide(chapterIds) {
+        return this.#chapterRepository.toggleHide(chapterIds);
     }
 
     /**

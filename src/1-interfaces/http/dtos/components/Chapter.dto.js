@@ -134,7 +134,7 @@ export class ChapterRequest {
      *         chapterId:
      *           type: integer
      *           description: 章节 ID（目录项 ID）
-     *           example: 49017
+     *           example: [49017]
      *       required:
      *         - chapterId
      *
@@ -145,9 +145,9 @@ export class ChapterRequest {
      *         chapterId: 49017
      */
     static fromBodyId(body) {
-        const { chapterId } = body;
-        if (isNaN(chapterId)) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
-        return chapterId;
+        const { chapterIds } = body;
+        if (chapterIds.some(id => isNaN(Number(id)))) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
+        return chapterIds;
     }
     /**
      * @swagger

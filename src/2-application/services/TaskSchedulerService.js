@@ -297,7 +297,7 @@ export class TaskSchedulerService {
                 useDB: true,
                 maxTaskNum: 1,           // 避免并发写入
                 callback: ({ data, error }) => {
-                    console.log("采集库存图书封面：", data, error);
+                    console.debug("采集库存图书封面：", data?.message, error?.message);
                 },
             });
             this.#workerPool.addTask(task);

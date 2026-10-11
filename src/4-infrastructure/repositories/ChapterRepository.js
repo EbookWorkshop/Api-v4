@@ -435,15 +435,15 @@ export class ChapterRepository {
 
     /**
      * 切换是否隐藏章节
-     * @param {number} chapterId 章节ID
+     * @param {Array<number>} chapterIds 章节ID
      * @returns 
      */
-    async toggleHide(chapterId) {
+    async toggleHide(chapterIds) {
         const { sequelize } = this.#ChapterModel
         return this.#ChapterModel.update({
             OrderNum: await sequelize.literal('OrderNum * -1')
         }, {
-            where: { id: chapterId }
+            where: { id: { [Op.in]: chapterIds } }
         });
     }
 

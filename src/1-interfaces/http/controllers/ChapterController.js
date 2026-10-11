@@ -611,8 +611,8 @@ export class ChapterController {
      *         description: 服务器内部错误
      */
     async toggleHide(ctx) {
-        const chapterId = ChapterRequest.fromBodyId(ctx.request.body);
-        ctx.body = await this.#chapterCommandService.toggleHide(chapterId);
+        const chapterIds = ChapterRequest.fromBodyId(ctx.request.body);
+        ctx.body = await this.#chapterCommandService.toggleHide(chapterIds);
     }
 
     /**

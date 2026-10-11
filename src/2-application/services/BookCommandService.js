@@ -114,8 +114,10 @@ export class BookCommandService {
                 updateCover = data.CoverImg;
             } else if (typeof (embelBookName) !== "undefined") {//仅更新嵌入名称
                 const coverInfo = this.#coverService.updateEmbelBookName(oldBookInfo.CoverImg, embelBookName);
-                data.CoverImg = coverInfo.newCover;
-                updateCover = coverInfo.path;
+                if (coverInfo) {
+                    data.CoverImg = coverInfo.newCover;
+                    updateCover = coverInfo.path;
+                }
             }
 
             return this.#ebookRepository.updateMetadata(id, data, { transaction });
