@@ -159,7 +159,7 @@ export class StorageRepository {
                 }
             },
             attributes: ['id', 'BookName', 'Source', 'Host', 'CoverImage'],
-            order: [['id', 'ASC']],
+            order: [['Show', 'DESC'], ["id", "DESC"]],
             limit: 1,
             raw: true,
         });

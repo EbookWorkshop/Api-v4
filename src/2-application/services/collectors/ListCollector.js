@@ -22,13 +22,13 @@ export class ListCollector extends ICollector {
         const { url } = payload;
         const { rules } = setting;
         const host = rules[0].host;
-        let curRUL = url;
+        let curUrl = url;
 
         let tryTime = 0;
-        while (curRUL && tryTime < MAX_TRY_TIME) {
-            curRUL = await this.#getData(curRUL, host, setting);
-            if (!curRUL) await this.#storageService.deleteLastPage(host);
-
+        while (curUrl && tryTime < MAX_TRY_TIME) {
+            let newUrl = await this.#getData(curUrl, host, setting);
+            if (!newUrl || newUrl == curUrl) await this.#storageService.deleteLastPage(host);
+            curUrl = newUrl;
             tryTime++;
         }
 
@@ -55,7 +55,7 @@ export class ListCollector extends ICollector {
                         CoverImage: book[3],
                         Author: book[2]
                     };
-                    if (!data.CoverImage?.startsWith("http")) data.CoverImage = `${pageURL.origin}${data.CoverImage}`;
+                    if (data.CoverImage && !data.CoverImage?.startsWith("http")) data.CoverImage = `${pageURL.origin}${data.CoverImage}`;
                     if (data.Author.startsWith("作者")) data.Author = data.Author.replace(/作者[:：]?/g, "");
                     return data;
                 });
@@ -64,6 +64,7 @@ export class ListCollector extends ICollector {
 
             const nxPage = result.get(RuleName.BookListNext)?.[0];
             if (result.has(RuleName.BookListNext) && !(nxPage instanceof Error)) {
+                if (nxPage.text !== nxPage.Rule.checkSetting) return null;
                 curURL = nxPage?.url;
             } else {
                 curURL = null;

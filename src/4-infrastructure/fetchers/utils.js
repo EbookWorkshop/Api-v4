@@ -22,11 +22,12 @@ export async function promiseResult(promise, result, config, url, urlAnser, page
 
     if (!ok) {
         const urlPath = path.parse(url);
-        const hostname = new URL(url)?.hostname?.replaceAll(".", "_");
-        let fileName = `${hostname}-${urlPath.name}_${Date.now()}${urlPath.ext || ".html"}`;
+        const hostname = new URL(url)?.hostname;
+        let fileName = `${urlPath.name}_${Date.now()}${urlPath.ext || ".html"}`;
         let dir = path.join(config.repository.path, "temp", "html");
         await fs.mkdir(dir, { recursive: true });
-        const logFile = path.join(dir, fileName);
+        const logFile = path.join(dir, hostname, fileName);
+        await fs.mkdir(path.join(dir, hostname), { recursive: true });
         await fs.writeFile(logFile, `<!-- 请求地址：${url} -->\n<!-- 响应地址：${urlAnser} -->\n${pageContent}`);
         return logFile;
     }

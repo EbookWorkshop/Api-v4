@@ -50,7 +50,7 @@ export class RuleEngine {
                  * @returns {{text,url}|undefined}
                  */
                 let ActionHandle = (action, myNode) => {
-                    if (action == undefined) return;
+                    if (action == undefined || !action.includes("/")) return;
                     let result;
                     let acExp = action.split("/");
                     //配置的动作表达式
@@ -63,7 +63,11 @@ export class RuleEngine {
                         }
                         case "fun": result = myNode[acExp[1]](...acExp.slice(2)); break;  //执行节点上的方法
                         case "reg": result = "ToDo:RegExp"; break;
-                        // case "node": result = getDataFromNode(myNode, rule); break;
+                        case "node": {
+                            acExp.shift();
+                            result = ActionHandle(acExp.join("/"), myNode.querySelector(acExp[0]));
+                            break;
+                        }
                     }
                     return result?.trim();
                 }
@@ -72,6 +76,11 @@ export class RuleEngine {
                     let result = [];
                     const actArr = [rule.getContentAction, rule.getUrlAction, rule.getContentAction2, rule.getUrlAction2];
                     for (let act of actArr) {
+                        // console.log(act, act.includes("/"))
+                        if (!act.includes("/")) {//不采集
+                            result.push(null);
+                            continue;
+                        }
                         const a = act.split("/");
                         const nn = node.querySelector(a[1]);
                         result.push(ActionHandle(`attr/${a[2]}`, nn))
