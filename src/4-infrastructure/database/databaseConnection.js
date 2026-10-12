@@ -26,7 +26,7 @@ export async function createDatabaseConnection(dbPath, logging = false) {
         【OFF：性能最快但最危险。完全不执行强制写入，写入速度可能比FULL快几十倍，但一旦系统崩溃，数据库很可能会损坏】
         */
 
-        // await sequelize.query('PRAGMA busy_timeout = 5000;');       //超时设置，避免写入时长时间等待锁
+        await sequelize.query('PRAGMA busy_timeout = 2000;');       //超时设置，避免写入时长时间等待锁
 
         // console.log(`[DB] Connected to ${dbPath} with WAL mode enabled.`);
     } catch (error) {

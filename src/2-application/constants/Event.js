@@ -47,6 +47,8 @@ export const EXPORT_EVENTS = {
     // 清理相关
     TEMP_CLEANUP: Symbol('temp.cleanup'),
     TEMP_CLEANED: Symbol('temp.cleaned'),
+
+    Export_Last_Chapter: Symbol('Last.Chapter'),//导出的最后一章
 };
 
 /**

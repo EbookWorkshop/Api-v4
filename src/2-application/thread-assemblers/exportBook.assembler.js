@@ -2,14 +2,15 @@ import { EventEmitter } from 'node:events';
 
 import { ITaskExecutor } from "../ports/ITaskExecutor.js";
 import { EXPORT_EVENTS } from '../constants/Event.js';
-import { BookExportExecutor } from "../services/executor/BookExportExecutor.js";
-import { BookExportService } from "../services/BookExportService.js";
+import { BookExportExecutor } from "../services/export/executor/BookExportExecutor.js";
+import { BookExportService } from "../services/export/BookExportService.js";
 import { BookQueryService } from "../services/BookQueryService.js";
-import { VolumeQueryService } from "../services/VolumeQueryService.js"
+import { VolumeQueryService } from "../services/VolumeQueryService.js";
 import { ChapterQueryService } from "../services/ChapterQueryService.js";
 import { CoverService } from '../services/CoverService.js';
 import { TextCleanupService } from '../services/TextCleanupService.js';
 import { SystemConfigService } from "../services/SystemConfigService.js";
+import { BookmarkService } from "../services/BookmarkService.js";
 
 import { MemoryCache } from '../../4-infrastructure/cache/MemoryCache.js';
 import { EventManager } from "../../4-infrastructure/event/EventManager.js";
@@ -19,10 +20,15 @@ import { GeneratorFactory } from '../../4-infrastructure/server/generators/Gener
 
 import { EmailService } from '../services/EmailService.js';
 import { NodemailerEmailSender } from "../../4-infrastructure/email/NodemailerEmailSender.js";
-import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js";
+import { ExportOrchestrator } from "../services/export/ExportOrchestrator.js";
 
+// 后处理服务
+import { TimerScheduler } from "../services/export/postprocess/TimerScheduler.js";
+import { InventoryArchiver } from "../services/export/postprocess/InventoryArchiver.js";
+import { TempFileCleaner } from "../services/export/postprocess/TempFileCleaner.js";
+import { BookmarkRecorder } from "../services/export/postprocess/BookmarkRecorder.js";
 
-/** 
+/**
  * 负责组装出导出器
  * @param {Object} config 配置
  * @param {import("../constants/Task.js").TaskType} taskType 任务类型
@@ -30,7 +36,14 @@ import { ExportOrchestrator } from "../orchestrators/ExportOrchestrator.js";
  * @returns {Promise<ITaskExecutor>}
  */
 export async function createExportBookTask(config, taskType, { repositories }) {
-    const { ebookRepository, volumeRepository, chapterRepository, reviewRuleRepository } = repositories;
+    const {
+        ebookRepository,
+        volumeRepository,
+        chapterRepository,
+        reviewRuleRepository,
+        bookmarkRepository,
+    } = repositories;
+
     const textCleanup = new TextCleanupService(reviewRuleRepository, new MemoryCache());
 
     const bookServ = new BookQueryService(ebookRepository);
@@ -42,29 +55,61 @@ export async function createExportBookTask(config, taskType, { repositories }) {
     const tempFolder = await fileServ.accessDir(config.tempDir?.path);
     const factory = new GeneratorFactory(tempFolder);
     const coverService = new CoverService(fileServ, null, config);
+
     const eventMgr = new EventManager(new EventEmitter());
     const systemConfigService = new SystemConfigService(repositories.systemConfigRepository);
 
+    // ---------- 后处理服务 ----------
+    const scheduler = new TimerScheduler();
 
-    //注册监听后处理事件
-    eventMgr.once(EXPORT_EVENTS.INVENTORY_ARCHIVE, ({ files, delay }) => {   //转存
-        setTimeout(async () => {
-            for (const ff of files) await fileServ.moveFile(ff.filepath, [config.archive.path, ff.originalFilename]);
-        }, delay);
+    const inventoryArchiver = new InventoryArchiver({
+        fileWriter: fileServ,
+        archivePath: config.archive.path,
+        scheduler,
+        logger: console,
     });
-    eventMgr.once(EXPORT_EVENTS.TEMP_CLEANUP, ({ filePath, delay }) => {    //清理文件
-        if (filePath) setTimeout(async () => {
-            try { await fileServ.deleteFile(filePath, true); } catch (e) { }//兜底的，如果转移了就会出错，直接忽略。
-        }, delay || 0);
-    });
-    new EmailService(new NodemailerEmailSender(), systemConfigService, null, eventMgr);//注册邮件发送事件
-    new ExportOrchestrator(eventMgr, config);//注册文件生成完成事件
 
-    const bookExpServ = new BookExportService({
-        book: bookServ,
-        volume: volumeServ,
-        chapter: chapServ,
-    }, factory, coverService, fileScanServ, textCleanup, eventMgr, config);
-    return new BookExportExecutor(bookExpServ);
+    const tempFileCleaner = new TempFileCleaner({
+        fileWriter: fileServ,
+        scheduler,
+        logger: console,
+    });
+
+    const bookmarkService = new BookmarkService(bookmarkRepository);
+    const bookmarkRecorder = new BookmarkRecorder(bookmarkService);
+
+    // ---------- 邮件服务：已监听 MAIL_SENT ----------
+    new EmailService(
+        new NodemailerEmailSender(),
+        systemConfigService,
+        null,
+        eventMgr
+    );
+
+    // ---------- 编排器：直接注入后处理服务 ----------
+    const orchestrator = new ExportOrchestrator(eventMgr, config, {
+        inventoryArchiver,
+        tempFileCleaner,
+        bookmarkRecorder,
+        scheduler,
+    });
+
+    // ---------- 导出服务 ----------
+    const bookExpServ = new BookExportService(
+        {
+            book: bookServ,
+            volume: volumeServ,
+            chapter: chapServ,
+        },
+        factory,
+        coverService,
+        fileScanServ,
+        textCleanup,
+        eventMgr,
+        config
+    );
+
+    return new BookExportExecutor(bookExpServ, orchestrator);
 }
+
 export default createExportBookTask;

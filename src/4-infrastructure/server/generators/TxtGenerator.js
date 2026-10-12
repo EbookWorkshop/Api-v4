@@ -5,7 +5,7 @@ import { randomBytes } from "node:crypto";
 
 import { accessDir, writeOnStream } from "../drivers/fileSystemDriver.js"
 import { IGenerator } from '../../../2-application/ports/IGenerator.js';
-import { BookExportData } from "../../../2-application/dto/BookExportData.dto.js"
+import { BookExportData } from "../../../2-application/services/export/dto/BookExportData.dto.js"
 
 
 export class TxtGenerator extends IGenerator {

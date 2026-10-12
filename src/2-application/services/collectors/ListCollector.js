@@ -47,7 +47,7 @@ export class ListCollector extends ICollector {
             const bnURLs = bnRsl.map(({ text: book }) => book[1]);
             const existBook = await this.#storageService.findExistSource(bnURLs);
             if (bnRsl.length > existBook.length) {
-                const bookNew = bnRsl.filter(b => !existBook.includes(b[1])).map(({ text: book }) => {
+                const bookNew = bnRsl.filter(b => !existBook.includes(b.text[1])).map(({ text: book }) => {
                     const data = {
                         BookName: book[0],
                         Source: book[1],
@@ -70,7 +70,11 @@ export class ListCollector extends ICollector {
                 curURL = null;
             }
         } catch (err) {
-            console.log(err);
+            if (err?.name?.startsWith("Sequelize") || err.sql || err?.parent?.sql) {
+                console.log(err.message, '\n', err?.parent?.message, '\n', err?.original);
+                console.warn(err.sql || err?.original?.sql);
+            } else
+                console.warn("ListCollector:;fetch", err);
         }
 
         return curURL;

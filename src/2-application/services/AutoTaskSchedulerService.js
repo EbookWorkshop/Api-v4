@@ -3,6 +3,9 @@ import { UserInputError } from '../../5-shared/errors/index.js';
 import { SYSTEM_AUTO_TASK } from '../constants/SystemConfigGroup.js';
 import { TASK_TYPES } from "../constants/Task.js";
 
+/**
+ * 自动任务分派
+ */
 export class AutoTaskSchedulerService {
     #systemConfigService;
     #cache;
@@ -68,12 +71,12 @@ export class AutoTaskSchedulerService {
                 return this.#webBookSync.SyncIndex(job.param);
 
             case TASK_TYPES.WEB_BOOK_LIST_CACHE:
-                return this.#taskScheduler.submitFetchListTask();
+                return this.#taskScheduler.submitFetchListTask(null, { highPriority: "lazy" });
 
             case TASK_TYPES.STORAGE_COVER_COLLECT:
-                return this.#taskScheduler.submitStorageCoverTask();
+                return this.#taskScheduler.submitStorageCoverTask({ highPriority: "lazy" });
             case TASK_TYPES.STORAGE_COVER_CACHE:
-                return this.#taskScheduler.submitStorageCoverCacheTask();
+                return this.#taskScheduler.submitStorageCoverCacheTask({ highPriority: "lazy" });
 
             default:
                 console.warn(`[AutoTask] 未知任务类型: ${job.type}。需要在这里改代码：${import.meta.filename}`);

@@ -1,28 +1,24 @@
-import { ITaskExecutor } from '../../ports/ITaskExecutor.js';
-import { BookExportService } from "../BookExportService.js"
-
+import { ITaskExecutor } from '../../../ports/ITaskExecutor.js';
+import { BookExportService } from "../BookExportService.js";
 
 export class BookExportExecutor extends ITaskExecutor {
-    /** @type {BookExportService}  */
+    /** @type {BookExportService} */
     #bookExportService;
+    /** @type {import('../ExportOrchestrator.js').ExportOrchestrator} */
+    #orchestrator;
 
     /**
-     * 构造函数注入依赖（由子线程内部自行实例化）
+     * @param {BookExportService} bookExportService
+     * @param {import('../ExportOrchestrator.js').ExportOrchestrator} orchestrator
      */
-    constructor(bookExportService) {
+    constructor(bookExportService, orchestrator) {
         super();
         this.#bookExportService = bookExportService;
+        this.#orchestrator = orchestrator;
     }
 
-    /**
-     * 执行器
-     * @param {*} taskType 
-     * @param {Object} payload 
-     * @returns {Promise<{ path, filename }>} 执行结果
-     */
     async execute(taskType, payload) {
         try {
-            //执行
             const { bookId, format, ...setting } = payload;
             const result = await this.#bookExportService.exportBook(bookId, format, setting);
             return result;
@@ -32,7 +28,9 @@ export class BookExportExecutor extends ITaskExecutor {
         }
     }
 
-    async close() { }
-
+    async close() {
+        await this.#orchestrator?.close();
+    }
 }
+
 export default BookExportExecutor;

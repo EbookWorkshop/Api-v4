@@ -113,6 +113,13 @@ export class ChapterQueryService {
         return this.#chapterRepository.findIntroduction(bookId);
     }
 
+    /**
+     * 清洗文章
+     * 根据规则替换文章内容
+     * @param {*} bookId 
+     * @param {*} chapter 
+     * @returns 
+     */
     async #cleanChapter(bookId, chapter) {
         const Title = await this.#textCleanup.cleanup(bookId, chapter.Title);
         const Content = await this.#textCleanup.cleanup(bookId, chapter.Content);

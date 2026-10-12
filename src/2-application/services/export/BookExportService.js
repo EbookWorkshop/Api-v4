@@ -1,11 +1,11 @@
 import path from "node:path";
-import { EXPORT_EVENTS } from "../constants/Event.js";
-import { BookExportData } from '../dto/BookExportData.dto.js';
-import { BookQueryService } from "../services/BookQueryService.js"
-import { ChapterQueryService } from "../services/ChapterQueryService.js"
-import { GeneratorFactory } from "../../4-infrastructure/server/generators/GeneratorFactory.js"
-import { EventManager } from "../../4-infrastructure/event/EventManager.js";
-import { AppError } from "../../5-shared/errors/index.js";
+import { EXPORT_EVENTS } from "../../constants/Event.js";
+import { BookExportData } from './dto/BookExportData.dto.js';
+import { BookQueryService } from "../BookQueryService.js"
+import { ChapterQueryService } from "../ChapterQueryService.js"
+import { GeneratorFactory } from "../../../4-infrastructure/server/generators/GeneratorFactory.js"
+import { EventManager } from "../../../4-infrastructure/event/EventManager.js";
+import { AppError } from "../../../5-shared/errors/index.js";
 
 /**
  * 图书导出服务
@@ -13,14 +13,14 @@ import { AppError } from "../../5-shared/errors/index.js";
 export class BookExportService {
     /** @type {BookQueryService} */
     #bookQueryService;
-    /** @type {import('./VolumeQueryService.js').VolumeQueryService} */
+    /** @type {import('../VolumeQueryService.js').VolumeQueryService} */
     #volumeQueryService;
     /** @type {ChapterQueryService} */
     #chapterQueryService;
 
     // /** @type {IFileWriter} */
     #fileScanServ;
-    /** @type {import("./CoverService.js").CoverService} */
+    /** @type {import("../CoverService.js").CoverService} */
     #coverService;
 
     /** @type {GeneratorFactory} */
@@ -33,7 +33,7 @@ export class BookExportService {
     #resultWarning;
 
     /**
-     * @param {{book:BookQueryService,volume:import('./VolumeQueryService.js').VolumeQueryService,chapter:ChapterQueryService}} bookService 
+     * @param {{book:BookQueryService,volume:import('../VolumeQueryService.js').VolumeQueryService,chapter:ChapterQueryService}} bookService 
      * @param {GeneratorFactory} generatorFactory 
      * @param {EventManager} eventMgr 
      * @param {Object} config 
@@ -85,6 +85,7 @@ export class BookExportService {
         let result = null;
         let runErr = null;
         let bookName = "";
+        let fullBook = false;
         try {
             const { volumeIds, chapterIds, embedBookName, coverImageData, ...rest } = setting;
             let showChapters = chapterIds || [];
@@ -95,6 +96,14 @@ export class BookExportService {
                 showChapters = await this.#chapterQueryService.listChaptersByIds(bookId, chapterIds);
             } else {
                 showChapters = await this.#chapterQueryService.listChaptersByBook(bookId);
+                fullBook = true;
+            }
+
+            //部分导出时，将最后的一卷加入书签
+            if (!fullBook) {
+                const lastChapter = showChapters.sort((a, b) => a.OrderNum - b.OrderNum).pop();
+                this.#eventManager.emit(EXPORT_EVENTS.Export_Last_Chapter, { id: lastChapter.id });
+                // console.log(lastChapter.id);
             }
 
             //获取所有卷信息

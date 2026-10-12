@@ -184,14 +184,17 @@ export class TaskSchedulerService {
      * @param {*} url 
      * @returns 
      */
-    async submitFetchListTask(url) {
+    async submitFetchListTask(url, setting) {
         try {
             const task = new Task({
                 taskId: crypto.randomUUID(),
-                param: { url },
+                param: { url, ...setting },
                 taskType: TASK_TYPES.WEB_BOOK_LIST_CACHE,
                 useDB: true,
                 maxTaskNum: 1,
+                callback: ({ data, error }) => {
+                    console.log("【任务】网站书目列表抓取已完成。");
+                }
             })
 
             this.#workerPool.addTask(task);
@@ -268,16 +271,22 @@ export class TaskSchedulerService {
         }
     }
 
-    async submitStorageCoverTask() {
+    /**
+     * 库存列表为空的，抓取页面更新封面地址
+     * @param {*} setting 
+     * @returns 
+     */
+    async submitStorageCoverTask(setting) {
         const taskId = crypto.randomUUID();
         const task = new Task({
             taskId,
-            param: { taskId },
+            param: { taskId, ...setting },
             taskType: TASK_TYPES.STORAGE_COVER_COLLECT,
             useDB: true,
             maxTaskNum: 1,      // 避免并发写同一批记录
             callback: ({ data, error }) => {
-                console.log("更新库存图书封面：", data, error);
+                if (error) console.log(`[${new Date().toLocaleString()}]`, error);
+                else console.log(`[${new Date().toLocaleString()}]`, data?.message);
             },
         });
         this.#workerPool.addTask(task);
@@ -285,19 +294,21 @@ export class TaskSchedulerService {
     }
 
     /**
-     * 提交封面本地化缓存任务（一次处理一条记录）
+     * 提交封面本地化缓存任务
+     * 将网络的封面抓取到本地
      */
-    submitStorageCoverCacheTask() {
+    submitStorageCoverCacheTask(setting) {
         try {
             const taskId = crypto.randomUUID();
             const task = new Task({
                 taskId,
-                param: { taskId },
+                param: { taskId, ...setting },
                 taskType: TASK_TYPES.STORAGE_COVER_CACHE,
                 useDB: true,
                 maxTaskNum: 1,           // 避免并发写入
                 callback: ({ data, error }) => {
-                    console.debug("采集库存图书封面：", data?.message, error?.message);
+                    console.debug("采集库存图书封面：", data?.message);
+                    if (error) console.log(error);
                 },
             });
             this.#workerPool.addTask(task);

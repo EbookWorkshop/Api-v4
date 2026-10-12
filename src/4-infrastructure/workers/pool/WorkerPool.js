@@ -401,7 +401,10 @@ export class WorkerPool {
     addTask(task) {
         try {
             const { taskType, highPriority } = task;
-            if (highPriority === "lazy" && this.allTaskNum > 0) return false;
+            if (highPriority === "lazy" && this.allTaskNum > 0) {
+                console.debug(`系统非空闲（已有任务数：${this.allTaskNum}），已放弃任务：${taskType}。参数：${task.param}`)
+                return false;
+            }
 
             if (!this.#waitingTask.has(taskType)) {
                 this.#waitingTask.set(taskType, new Array());

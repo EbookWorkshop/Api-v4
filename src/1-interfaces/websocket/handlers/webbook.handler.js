@@ -575,5 +575,6 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
         console.warn('[采集任务初始化失败]', env.message);
         console.warn('[错误]', env.error);
         console.warn('[上下文]', env.ctx);
+        console.log(env);
     });
 }

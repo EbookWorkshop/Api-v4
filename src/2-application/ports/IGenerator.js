@@ -1,4 +1,4 @@
-import { BookExportData } from "../dto/BookExportData.dto.js"
+import { BookExportData } from "../services/export/dto/BookExportData.dto.js"
 /**
  * 电子书生成器接口（端口）
  * 所有具体生成器（Epub、Pdf）必须实现此接口

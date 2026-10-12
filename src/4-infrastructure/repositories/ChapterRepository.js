@@ -49,7 +49,7 @@ export class ChapterRepository {
      */
     async findChaptersByVolumes(bookId, volumeIds) {
         return this.#ChapterModel.findAll({
-            attributes: ["id", "VolumeId", "Title", "Content"],
+            attributes: ["id", "VolumeId", "Title", "Content", "OrderNum"],
             where: {
                 BookId: bookId,
                 VolumeId: { [Op.in]: volumeIds },
@@ -68,7 +68,7 @@ export class ChapterRepository {
      */
     async findChaptersByIds(bookId, chapterIds) {
         return this.#ChapterModel.findAll({
-            attributes: ["id", "VolumeId", "Title", "Content"],
+            attributes: ["id", "VolumeId", "Title", "Content", "OrderNum"],
             where: {
                 BookId: bookId,
                 id: { [Op.in]: chapterIds },
@@ -84,7 +84,7 @@ export class ChapterRepository {
      */
     async findChaptersByBookId(bookId) {
         return this.#ChapterModel.findAll({
-            attributes: ["id", "VolumeId", "Title", "Content"],
+            attributes: ["id", "VolumeId", "Title", "Content", "OrderNum"],
             where: {
                 BookId: bookId,
                 OrderNum: { [Op.gt]: 0 },

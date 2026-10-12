@@ -1,7 +1,7 @@
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { EPub } from '@publiwrite/html-to-epub';
-import { BookExportData } from "../../../2-application/dto/BookExportData.dto.js"
+import { BookExportData } from "../../../2-application/services/export/dto/BookExportData.dto.js"
 import { IGenerator } from '../../../2-application/ports/IGenerator.js';
 
 export class EpubGenerator extends IGenerator {

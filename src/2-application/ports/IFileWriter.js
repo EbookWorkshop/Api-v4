@@ -17,8 +17,8 @@ export class IFileWriter {
 
     /**
      * 移动文件——地址基于仓库为基础
-     * @param {string} oldPath 源地址
-     * @param {string} newPath 新地址
+     * @param {string|string[]} oldPath 源地址
+     * @param {string|string[]} newPath 新地址
      * @returns {Promise<string>} 新的相对地址
      */
     async moveFile(oldPath, newPath) { throw new Error('接口方法尚未实现'); }
