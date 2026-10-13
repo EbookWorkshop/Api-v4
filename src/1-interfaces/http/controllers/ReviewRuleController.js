@@ -2,6 +2,7 @@
 import { ReviewRuleQueryService } from "../../../2-application/services/ReviewRuleQueryService.js";
 import { ReviewRuleRequest } from "../dtos/reviewRule/ReviewRuleRequest.dto.js";
 import { IdRequest } from "../dtos/components/IdRequest.dto.js";
+import { UserInputError } from "../../../5-shared/errors/UserInputError.js";
 
 export class ReviewRuleController {
     #reviewRuleQueryService;
@@ -206,7 +207,10 @@ export class ReviewRuleController {
      */
     async testReviewRule(ctx) {
         const { ruleId, chapterId } = ctx.request.body;
-        const result = await this.#reviewRuleCommandService.testRule(ruleId, chapterId);
+        if (isNaN(ruleId) || isNaN(chapterId)) {
+            throw new UserInputError('ruleId 和 chapterId 为必填字段且必须为有效整数');
+        }
+        const result = await this.#reviewRuleCommandService.testRule(ruleId * 1, chapterId * 1);
         ctx.body = result;
     }
 }

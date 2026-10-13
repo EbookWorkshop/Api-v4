@@ -106,7 +106,12 @@ export class RuleForWebController {
      *       - $ref: '#/components/parameters/BotRuleHostQuery'
      *     responses:
      *       200:
-     *         description: 请求成功
+     *         description: 返回规则 JSON 文件下载
+     *         content:
+     *           application/octet-stream:
+     *             schema:
+     *               type: string
+     *               format: binary
      *       600:
      *         description: 参数错误，参数类型错误
      */
@@ -138,7 +143,7 @@ export class RuleForWebController {
      *               $ref: '#/components/schemas/DictionaryListResponse'
      *             examples:
      *               success:
-     *                 $ref: '#/components/examples/DictionaryListResponse'
+     *                 $ref: '#/components/examples/DictionaryListSuccess'
      *               empty:
      *                 $ref: '#/components/examples/ResultListEmpty'
      *       400:

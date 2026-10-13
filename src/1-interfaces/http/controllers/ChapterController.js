@@ -619,71 +619,182 @@ export class ChapterController {
      * @swagger
      * /library/book/chapter/restructure:
      *   patch:
+     *     summary: 【章】章节重组操作
+     *     description: |
+     *       对书籍章节进行结构调整，支持「拆分、合并、批量更新、批量删除、批量新增」。
+     *
+     *       **两种使用方式：**
+     *       1. **带基准章节（拆分/合并）**：传入 `baseChapter`，服务端会先更新该章节，
+     *          然后把 `baseChapter.orderNum` 之后的章节整体后移，
+     *          后移长度为 `operations` 中所有非 delete 操作的章节数之和。
+     *       2. **不带基准章节（纯批量操作）**：只传 `operations`，可作为批量更新/删除/新增接口使用。
+     *
+     *       **operations 语义：**
+     *       - `create`：新增章节，`BookId` 强制使用顶层 `bookId`，其余字段取元素值
+     *       - `update`：按 `chapterId` 更新章节
+     *       - `delete`：按章节 ID 删除，此时 `chapters` 数组元素为**整数**
      *     tags:
      *       - Library —— 图书馆
      *       - Chapter
-     *     summary: 【章】章节重组操作
-     *     description: 对书籍章节进行结构调整（拆分、合并、批量更新/删除）
-     *     parameters:
-     *     - name: body
-     *       in: body
+     *     requestBody:
      *       required: true
-     *       schema:
-     *         type: object
-     *         properties:
-     *           bookId:
-     *             type: integer
-     *             format: int64
-     *           baseChapter:
+     *       content:
+     *         application/json:
+     *           schema:
      *             type: object
-     *             description: 基准章节（用于拆分/合并定位）。使用基准章节可令后续章节排序序号后移。若不使用则可作为批量更新接口。
      *             properties:
-     *               chapterId:
+     *               bookId:
      *                 type: integer
      *                 format: int64
-     *               content:
-     *                 type: string
-     *               orderNum:
-     *                 type: integer
-     *               title:
-     *                 type: string
-     *           operations:
-     *             type: array
-     *             description: 操作指令集
-     *             items:
-     *               type: object
-     *               required: [operationType, chapters]
-     *               properties:
-     *                 operationType:
-     *                   type: string
-     *                   enum: [update, delete, create]
-     *                 chapters:
-     *                   type: array
-     *                   description: 当operationType为delete时，chapters类型为数字数组
-     *                   items:
-     *                     type: object
-     *                     properties:
-     *                       chapterId:
-     *                         type: integer?
-     *                         format: int64
-     *                       volumeId:
-     *                         type: integer?
-     *                         format: int64
-     *                       content:
-     *                         type: string?
-     *                       orderNum:
-     *                         type: integer?
-     *                       title:
-     *                         type: string?
-     *     consumes:
-     *       - application/json
+     *                 description: 目标图书 ID（必填）
+     *                 example: 209
+     *               baseChapter:
+     *                 type: object
+     *                 description: |
+     *                   基准章节（用于拆分/合并定位）。
+     *                   提供该对象时，服务端会先更新该章节，
+     *                   再把 baseChapter.orderNum 之后的章节整体后移。
+     *                   不提供时，本次调用作为纯批量操作接口使用。
+     *                 properties:
+     *                   chapterId:
+     *                     type: integer
+     *                     format: int64
+     *                     description: 基准章节 ID
+     *                     example: 49017
+     *                   title:
+     *                     type: string
+     *                     description: 新的章节标题
+     *                     example: "一、演绎法的研究"
+     *                   content:
+     *                     type: string
+     *                     description: 新的章节正文
+     *                     example: "<p>福尔摩斯正在研究...</p>"
+     *                   orderNum:
+     *                     type: integer
+     *                     description: 新的排序号；当存在 operations 时，必须提供该字段用于计算后移长度
+     *                     example: 10
+     *                   volumeId:
+     *                     type: integer
+     *                     format: int64
+     *                     description: 所属分卷 ID
+     *                     example: 53
+     *               operations:
+     *                 type: array
+     *                 description: 操作指令集；为空或不传时，仅执行 baseChapter 的更新
+     *                 items:
+     *                   type: object
+     *                   required:
+     *                     - operationType
+     *                     - chapters
+     *                   properties:
+     *                     operationType:
+     *                       type: string
+     *                       enum: [update, delete, create]
+     *                       description: 操作类型
+     *                       example: "create"
+     *                     chapters:
+     *                       type: array
+     *                       description: |
+     *                         章节数据列表：
+     *                         - operationType=delete 时，元素为**整数**（章节 ID）
+     *                         - operationType=create / update 时，元素为**章节对象**
+     *                       items:
+     *                         oneOf:
+     *                           - type: integer
+     *                             format: int64
+     *                             description: 章节 ID（仅 delete 时使用）
+     *                             example: 49018
+     *                           - type: object
+     *                             properties:
+     *                               chapterId:
+     *                                 type: integer
+     *                                 format: int64
+     *                                 description: 章节 ID；update 时必填，create 时可省略
+     *                                 example: 49017
+     *                               title:
+     *                                 type: string
+     *                                 example: "一、演绎法的研究"
+     *                               content:
+     *                                 type: string
+     *                                 example: "<p>福尔摩斯正在研究...</p>"
+     *                               orderNum:
+     *                                 type: integer
+     *                                 example: 11
+     *                               volumeId:
+     *                                 type: integer
+     *                                 format: int64
+     *                                 example: 53
+     *             required:
+     *               - bookId
+     *           examples:
+     *             batchUpdate:
+     *               summary: 纯批量更新示例（不带基准章节）
+     *               value:
+     *                 bookId: 209
+     *                 operations:
+     *                   - operationType: "update"
+     *                     chapters:
+     *                       - chapterId: 49017
+     *                         title: "一、演绎法的研究（修订）"
+     *                       - chapterId: 49018
+     *                         orderNum: 2
+     *             splitWithBase:
+     *               summary: 拆分/合并示例（带基准章节）
+     *               value:
+     *                 bookId: 209
+     *                 baseChapter:
+     *                   chapterId: 49017
+     *                   title: "一、演绎法的研究"
+     *                   content: "<p>福尔摩斯正在研究...</p>"
+     *                   orderNum: 10
+     *                 operations:
+     *                   - operationType: "create"
+     *                     chapters:
+     *                       - title: "插入的新章节 A"
+     *                         content: "<p>新内容 A</p>"
+     *                         orderNum: 11
+     *                       - title: "插入的新章节 B"
+     *                         content: "<p>新内容 B</p>"
+     *                         orderNum: 12
+     *             batchDelete:
+     *               summary: 批量删除示例（chapters 为整数数组）
+     *               value:
+     *                 bookId: 209
+     *                 operations:
+     *                   - operationType: "delete"
+     *                     chapters: [49019, 49020]
      *     responses:
      *       200:
-     *         description: 重组操作结果
+     *         description: 重组操作成功
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiSuccessResponse'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-10-13T12:00:00.000Z"
      *       600:
-     *         description: 无效的操作参数
+     *         description: 无效的操作参数（如 bookId 缺失、chapterId 不存在、volumeId 与书不一致等）
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 60000
+     *               msg: "设置的卷不属于当前书籍。"
+     *               timestamp: "2026-10-13T12:00:00.000Z"
+     *       500:
+     *         description: 服务器内部错误
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ApiErrorResponse'
+     *             example:
+     *               code: 50000
+     *               msg: "服务器内部错误"
+     *               timestamp: "2026-10-13T12:00:00.000Z"
      */
-
     async restructureChapters(ctx) {
         const { bookId, ...settings } = ctx.request.body;
         ctx.body = await this.#chapterCommandService.restructureChapters(bookId, settings);

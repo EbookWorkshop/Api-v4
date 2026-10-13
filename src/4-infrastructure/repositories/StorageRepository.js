@@ -204,19 +204,21 @@ export class StorageRepository {
 
     async bulkCreate(books, transaction) {
         const { sequelize } = this.#StorageModel;
-        const trans = transaction ? transaction : await sequelize.transaction();
-
-        const processedBooks = books;
-
-        //分批插入
+        const run = async (batch, trans) => {
+            await this.#StorageModel.bulkCreate(batch, {
+                transaction: trans,
+                ignoreDuplicates: true,//遇到重复数据跳过插入
+            });
+            return true;
+        };
         const BATCH_SIZE = 500;
-        for (let i = 0; i < processedBooks.length; i += BATCH_SIZE) {
-            const batch = processedBooks.slice(i, i + BATCH_SIZE);
-            await this.#StorageModel.bulkCreate(batch, { transaction: trans });
-        }
-        if (!transaction) await trans.commit();
+        for (let i = 0; i < books.length; i += BATCH_SIZE) {
+            const batch = books.slice(i, i + BATCH_SIZE);
 
-        return true;
+            if (transaction) await run(batch, transaction);
+            else await sequelize.transaction((trans) => run(batch, trans));
+        }
+
     }
 
     /**

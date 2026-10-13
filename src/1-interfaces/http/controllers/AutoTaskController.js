@@ -1,6 +1,5 @@
-import { UserInputError } from "../../../5-shared/errors/UserInputError.js";
+import { UserInputError, AppError } from "../../../5-shared/errors/index.js";
 import { TASK_TYPES } from "../../../2-application/constants/Task.js";
-import { AppError } from "../../../5-shared/errors/AppError.js";
 
 
 export class AutoTaskController {
@@ -258,6 +257,7 @@ export class AutoTaskController {
      */
     async validateCron(ctx) {
         const { cron } = ctx.request.body;
+        if (!cron) throw new UserInputError("cron 为必填字段");
         ctx.body = this.#autoTaskScheduler.validateCron(cron);
     }
 }

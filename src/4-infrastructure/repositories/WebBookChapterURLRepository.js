@@ -66,16 +66,17 @@ export class WebBookChapterURLRepository {
      */
     async batchInsert({ chapterURLs }, { transaction } = {}) {
         const { sequelize } = this.#WebBookChapterModel;
-        const trans = transaction ? transaction : await sequelize.transaction();
         const processedChapters = chapterURLs;
 
-        //分批插入
-        const BATCH_SIZE = 500;
-        for (let i = 0; i < processedChapters.length; i += BATCH_SIZE) {
-            const batch = processedChapters.slice(i, i + BATCH_SIZE);
-            await this.#WebBookChapterURLModel.bulkCreate(batch, { transaction: trans });
+        const run = async (trans) => {
+            //分批插入
+            const BATCH_SIZE = 500;
+            for (let i = 0; i < processedChapters.length; i += BATCH_SIZE) {
+                const batch = processedChapters.slice(i, i + BATCH_SIZE);
+                await this.#WebBookChapterURLModel.bulkCreate(batch, { transaction: trans });
+            }
         }
-        if (!transaction) await trans.commit();
-        return true;
+        if (transaction) return run(transaction);
+        return sequelize.transaction(run);
     }
 }

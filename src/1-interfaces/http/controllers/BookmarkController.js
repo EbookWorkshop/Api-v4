@@ -84,7 +84,7 @@ export class BookmarkController {
      *           schema:
      *             $ref: '#/components/schemas/ChapterIdRequest'
      *           example:
-     *             chapterId: 3403
+     *             chapterId: [3403]
      *     responses:
      *       200:
      *         description: 添加成功

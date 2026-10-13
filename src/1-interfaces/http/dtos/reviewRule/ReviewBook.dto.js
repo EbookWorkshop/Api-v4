@@ -6,6 +6,10 @@
  *       type: object
  *       description: 预览审核效果的请求体
  *       properties:
+ *         bookId:
+ *           type: integer
+ *           description: 图书 ID
+ *           example: 1
  *         chapterIds:
  *           type: array
  *           items:
@@ -21,9 +25,9 @@
  *           description: 替换文本
  *           example: "bar"
  *       required:
+ *         - bookId
  *         - chapterIds
  *         - regex
- *         - replace
  *
  *     SaveReviewRequest:
  *       type: object

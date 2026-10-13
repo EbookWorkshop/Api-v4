@@ -70,6 +70,11 @@ export class ListCollector extends ICollector {
                 curURL = null;
             }
         } catch (err) {
+            const isBusy = /SQLITE_BUSY|database is locked/i.test(err?.message || '');
+            if (isBusy) {
+                console.warn('[ListCollector] 数据库繁忙，终止本轮采集', err.message);
+                throw err;   // 让上层 Executor 结束这个任务
+            }
             if (err?.name?.startsWith("Sequelize") || err.sql || err?.parent?.sql) {
                 console.log(err.message, '\n', err?.parent?.message, '\n', err?.original);
                 console.warn(err.sql || err?.original?.sql);

@@ -129,20 +129,22 @@ export class ChapterRequest {
      *   schemas:
      *     ChapterIdRequest:
      *       type: object
-     *       description: 将章节设为引言的请求体
+     *       description: 章节 ID 列表请求体
      *       properties:
-     *         chapterId:
-     *           type: integer
-     *           description: 章节 ID（目录项 ID）
+     *         chapterIds:
+     *           type: array
+     *           items:
+     *             type: integer
+     *           description: 章节 ID（目录项 ID）列表
      *           example: [49017]
      *       required:
-     *         - chapterId
+     *         - chapterIds
      *
      *   examples:
      *     ChapterIdRequestExample:
      *       summary: 将章节设为引言的请求示例
      *       value:
-     *         chapterId: 49017
+     *         chapterId: [49017]
      */
     static fromBodyId(body) {
         const { chapterIds } = body;

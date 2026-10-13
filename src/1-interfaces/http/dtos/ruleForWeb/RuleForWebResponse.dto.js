@@ -123,7 +123,7 @@ import { getHost } from "../../../../5-shared/utils/site.js"
  *       required:
  *         - data
  *   examples:
- *     DictionaryListResponse:
+ *     DictionaryListSuccess:
  *       summary: 规则列表成功响应示例
  *       value:
  *         code: 20000

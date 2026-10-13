@@ -350,7 +350,6 @@ export class ChapterRepository {
      */
     async batchInsertChapters({ bookId, volumeId, chapters }, { transaction } = {}) {
         const { sequelize } = this.#ChapterModel;
-        const trans = transaction ? transaction : await sequelize.transaction();
 
         let maxOrderNum = await this.getMaxOrder(bookId);
         if (volumeId == -1) volumeId = null;
@@ -368,15 +367,18 @@ export class ChapterRepository {
             VolumeId: (volumeId || VolumeId || null)
         }));
 
-        //分批插入 避免生成的 SQL 超出 SQLite 的 SQL 长度限制（默认约 1e6 字符）
-        const BATCH_SIZE = 500;
-        for (let i = 0; i < processedChapters.length; i += BATCH_SIZE) {
-            const batch = processedChapters.slice(i, i + BATCH_SIZE);
-            await this.#ChapterModel.bulkCreate(batch, { transaction: trans });
-        }
+        const run = async (trans) => {
+            //分批插入 避免生成的 SQL 超出 SQLite 的 SQL 长度限制（默认约 1e6 字符）
+            const BATCH_SIZE = 500;
+            for (let i = 0; i < processedChapters.length; i += BATCH_SIZE) {
+                const batch = processedChapters.slice(i, i + BATCH_SIZE);
+                await this.#ChapterModel.bulkCreate(batch, { transaction: trans });
+            }
+            return true;
+        };
 
-        if (!transaction) await trans.commit();
-        return true;
+        if (transaction) return run(transaction);
+        return sequelize.transaction(run);
     }
 
     /**

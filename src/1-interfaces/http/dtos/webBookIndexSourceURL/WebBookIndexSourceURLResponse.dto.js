@@ -23,6 +23,10 @@
  *           nullable: true
  *           description: 源类型（可能为 null）
  *           example: null | index | info
+ *         defSource:
+ *           type: boolean
+ *           description: 是否为默认源
+ *           example: true
  *       required:
  *         - id
  *         - Path
