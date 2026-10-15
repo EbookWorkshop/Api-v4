@@ -118,8 +118,9 @@ export class ExportOrchestrator {
     }
 
     async close() {
+        // NOTE: 虽然挂着等定时器生效。但线程池每60s会清理空闲线程，存在误关闭的风险
+        await this.#scheduler?.waitAll();   // 等转存/清理跑完
         this.#eventMgr.off(EXPORT_EVENTS.FILE_GENERATED, this.#boundOnFileGenerated);
         this.#eventMgr.off(EXPORT_EVENTS.Export_Last_Chapter, this.#boundOnLastChapter);
-        this.#scheduler?.clearAll();
     }
 }

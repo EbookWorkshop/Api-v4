@@ -79,9 +79,10 @@ export class StorageCoverCacheCollector extends ICollector {
         try {
             buffer = await this.#fetcher.download(fullUrl, setting);
         } catch (error) {
+            if (error?.cause.status === 404) await this.#storageService.updateCover(id, fullUrl + "#404#check");
             return this.#resultHandle(
                 payload, false,
-                `下载封面失败：${error.message}`,
+                `下载封面失败：${error.message}——${fullUrl}`,
                 { storageId: id, url: fullUrl }
             );
         }

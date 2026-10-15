@@ -61,9 +61,16 @@ export class StorageRepository {
 
         const books = await this.#StorageModel.findAll({
             where: { [Op.and]: where },
+            order: [["BookName", "ASC"]],
         });
+        const result = books.map(book => book.toJSON());
 
-        return books.map(book => book.toJSON());
+        for (const b of books) {//搜索命中的条目通过更新CoverImage为‘’实现排队优先
+            if (b.CoverImage || b.CoverImage === '') continue;
+            b.CoverImage = '';
+            b.save();
+        }
+        return result;
     }
 
     async listHosts() {
@@ -108,7 +115,7 @@ export class StorageRepository {
                     { CoverImage: '' },
                 ],
             },
-            order: [['id', 'ASC']],
+            order: [["CoverImage", "DESC"], ['id', 'DESC']],//搜索命中的条目通过更新CoverImage为‘’实现排队优先
             raw: true,
         });
     }
@@ -155,6 +162,7 @@ export class StorageRepository {
                     [Op.and]: [
                         { [Op.like]: 'http%' },
                         { [Op.notIn]: freqCover },
+                        { [Op.notLike]: '%#check' },
                     ]
                 }
             },
@@ -184,6 +192,78 @@ export class StorageRepository {
             if ((freqMap.get(row.CoverImage) || 0) <= threshold) return row;
         }
         return null;
+    }
+
+    async listStorageStep() {
+        return this.#StorageStepModel.findAll({
+            order: [["updatedAt", "ASC"]]
+        });
+    }
+
+    /**
+     * 按 Host 汇总库存统计：
+     * - Total   该 Host 下记录总数
+     * - Cached  CoverImage 以 "Cache%" 开头的记录数（已本地化缓存）
+     * - Missing CoverImage 为 NULL 或空串的记录数（待抓封面）
+     * - Online CoverImage 为 "http" 开头但不含重复3次以上的数据
+     * @returns {Promise<Array<{Host:string,Total:number,Cached:number,Missing:number,CacheRate:number}>>}
+     */
+    async getHostStats() {
+        const sequelize = this.#sequelize;
+        const excludeCovers = await this.findFrequentCovers(3);
+
+        const covers = Array.isArray(excludeCovers) ? excludeCovers.filter(Boolean) : [];
+        const onlineCase = covers.length > 0
+            ? `CASE WHEN CoverImage LIKE 'http%' AND CoverImage NOT IN (:excludeCovers)
+                THEN 1 ELSE 0 END`
+            : `CASE WHEN CoverImage LIKE 'http%' THEN 1 ELSE 0 END`;
+        const rows = await this.#StorageModel.findAll({
+            attributes: [
+                'Host',
+                [sequelize.fn('COUNT', sequelize.col('*')), 'Total'],
+                [
+                    sequelize.fn(
+                        'SUM',
+                        sequelize.literal(
+                            `CASE WHEN CoverImage LIKE 'Cache%' THEN 1 ELSE 0 END`
+                        )
+                    ),
+                    'Cached',
+                ],
+                [
+                    sequelize.fn('SUM', sequelize.literal(onlineCase)),
+                    'Online',
+                ],
+                [
+                    sequelize.fn(
+                        'SUM',
+                        sequelize.literal(
+                            `CASE WHEN CoverImage IS NULL OR CoverImage = '' THEN 1 ELSE 0 END`
+                        )
+                    ),
+                    'Missing',
+                ],
+            ],
+            group: ['Host'],
+            order: [[sequelize.literal('Total'), 'DESC']],
+            replacements: covers.length > 0 ? { excludeCovers: covers } : {},
+            raw: true,
+        });
+
+        return rows.map((r) => {
+            const Total = Number(r.Total) || 0;
+            const Cached = Number(r.Cached) || 0;
+            const Missing = Number(r.Missing) || 0;
+            const Online = Number(r.Online) || 0;
+            return {
+                Host: r.Host,
+                Total,
+                Cached,
+                Missing,
+                Online,
+                CacheRate: Total > 0 ? Number(((Cached / Total) * 100).toFixed(2)) : 0,
+            };
+        });
     }
 
     async updateLastPage(page, host) {
@@ -231,5 +311,11 @@ export class StorageRepository {
             { CoverImage: coverImage, Show: 0 },//NOTE: Show 为开发中临时特性
             { where: { id } }
         );
+    }
+
+    async restartCover() {
+        return this.#StorageModel.update({ CoverImage: null }, {
+            where: { CoverImage: { [Op.eq]: "pending" } }
+        });
     }
 }

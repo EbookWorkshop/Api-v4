@@ -188,7 +188,8 @@ export class TaskSchedulerService {
         try {
             const task = new Task({
                 taskId: crypto.randomUUID(),
-                param: { url, ...setting },
+                param: { url },
+                ...setting,
                 taskType: TASK_TYPES.WEB_BOOK_LIST_CACHE,
                 useDB: true,
                 maxTaskNum: 1,
@@ -280,10 +281,11 @@ export class TaskSchedulerService {
         const taskId = crypto.randomUUID();
         const task = new Task({
             taskId,
-            param: { taskId, ...setting },
+            param: { taskId },
             taskType: TASK_TYPES.STORAGE_COVER_COLLECT,
+            ...setting,
             useDB: true,
-            maxTaskNum: 1,      // 避免并发写同一批记录
+            maxTaskNum: 2,      // 避免并发写同一批记录
             callback: ({ data, error }) => {
                 if (error) console.log(`[${new Date().toLocaleString()}]`, error);
                 else console.log(`[${new Date().toLocaleString()}]`, data?.message);
@@ -297,13 +299,14 @@ export class TaskSchedulerService {
      * 提交封面本地化缓存任务
      * 将网络的封面抓取到本地
      */
-    submitStorageCoverCacheTask(setting) {
+    submitStorageCoverCacheTask(setting = {}) {
         try {
             const taskId = crypto.randomUUID();
             const task = new Task({
                 taskId,
-                param: { taskId, ...setting },
+                param: { taskId },
                 taskType: TASK_TYPES.STORAGE_COVER_CACHE,
+                ...setting,
                 useDB: true,
                 maxTaskNum: 1,           // 避免并发写入
                 callback: ({ data, error }) => {

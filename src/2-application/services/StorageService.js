@@ -36,9 +36,6 @@ export class StorageService {
     async findExistSource(source) {
         return this.#storageRepository.findExistSource(source);
     }
-    async findOneMissingCover() {
-        return this.#storageRepository.findOneMissingCover();
-    }
 
     async findFrequentCovers(threshold = 5) {
         return this.#storageRepository.findFrequentCovers(threshold);
@@ -48,7 +45,28 @@ export class StorageService {
         return this.#storageRepository.findOneNeedingCoverCache(threshold);
     }
 
+    /**
+     * 统计库存情况
+     */
+    async getStats() {
+        // const getSto this.#storageRepository
+        const storageStep = await this.#storageRepository.listStorageStep();
+        const hostStats = await this.#storageRepository.getHostStats();
+
+        return { step: storageStep, hostStats };
+    }
+
     /** 更新  */
+    async findOneMissingCover() {
+        const nextCover = await this.#storageRepository.findOneMissingCover();
+        if (!nextCover) {
+            const rrrn = await this.#storageRepository.restartCover();
+            console.log("pending 回收", rrrn);
+        }
+        else
+            await this.#storageRepository.updateCover(nextCover.id, "pending");
+        return nextCover;
+    }
 
     /**
      * 

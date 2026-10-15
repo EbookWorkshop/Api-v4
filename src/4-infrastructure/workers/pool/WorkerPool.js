@@ -323,12 +323,15 @@ export class WorkerPool {
                 if (curTask) {
                     runningTask = this.#runningThreadCountByType.get(curTask.taskType) || 0;
                     if (curTask.taskType && curTask.maxTaskNum > 0) {//需要限制最大数量的线程
-                        if (runningTask >= curTask.maxTaskNum) continue;//当前k（taskType）的正在运行数达到最大值，换下一个任务类型尝试。
+                        if (runningTask >= curTask.maxTaskNum) {
+                            curTask = null;
+                            continue;
+                        }//当前k（taskType）的正在运行数达到最大值，换下一个任务类型尝试。
                     }
                     break;
                 };
             }
-            if (curTask == null) return false;//没有可用任务，直接退出
+            if (!curTask) return false;//没有可用任务，直接退出
             const worker = this.#getAvailableWorker(curTask.useDB);
             if (worker == null) return false; //无可用线程
             /********************* 已确定Task和可用的Worker ***********************/
@@ -402,7 +405,7 @@ export class WorkerPool {
         try {
             const { taskType, highPriority } = task;
             if (highPriority === "lazy" && this.allTaskNum > 0) {
-                console.debug(`系统非空闲（已有任务数：${this.allTaskNum}），已放弃任务：${taskType}。参数：${task.param}`)
+                console.debug(`系统非空闲（已有任务数：${this.allTaskNum}），已放弃任务：${taskType}。`);
                 return false;
             }
 

@@ -170,4 +170,55 @@ export class StorageController {
         if (!text) throw new UserInputError("查找条件不能为空");
         ctx.body = await this.#storageService.search({ text, type, host });
     }
+
+    /**
+     * @swagger
+     * /library/storage/stats:
+     *   get:
+     *     summary: 获取存储库各来源网站的封面统计
+     *     description: |
+     *       按 Host 分组汇总 Storage 记录，返回：
+     *       - `Total`：该 Host 下记录总数
+     *       - `Cached`：`CoverImage` 以 `Cache%` 开头（已本地化缓存）的记录数
+     *       - `Missing`：`CoverImage` 为 NULL 或空串（待抓封面）的记录数
+     *       - `CacheRate`：缓存率（Cached / Total，百分比，保留两位小数）
+     *       （统一包装格式）
+     *     tags:
+     *       - Library —— 图书馆
+     *       - Storage
+     *     responses:
+     *       200:
+     *         description: 成功返回各 Host 统计
+     *         content:
+     *           application/json:
+     *             schema:
+     *               allOf:
+     *                 - $ref: '#/components/schemas/ApiResponse'
+     *                 - type: object
+     *                   properties:
+     *                     data:
+     *                       type: array
+     *                       items:
+     *                         $ref: '#/components/schemas/StorageHostStat'
+     *             example:
+     *               code: 20000
+     *               msg: "success"
+     *               timestamp: "2026-10-13T10:00:00.000Z"
+     *               data:
+     *                 - Host: "www.example.com"
+     *                   Total: 120
+     *                   Cached: 95
+     *                   Missing: 12
+     *                   CacheRate: 79.17
+     *                 - Host: "www.test.org"
+     *                   Total: 40
+     *                   Cached: 18
+     *                   Missing: 6
+     *                   CacheRate: 45.00
+     *       500:
+     *         description: 服务器内部错误
+     */
+    async getHostStats(ctx) {
+        ctx.body = await this.#storageService.getStats();
+    }
 }

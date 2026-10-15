@@ -129,27 +129,25 @@ export class ChapterRequest {
      *   schemas:
      *     ChapterIdRequest:
      *       type: object
-     *       description: 章节 ID 列表请求体
+     *       description: 将章节设为引言的请求体
      *       properties:
-     *         chapterIds:
-     *           type: array
-     *           items:
-     *             type: integer
-     *           description: 章节 ID（目录项 ID）列表
-     *           example: [49017]
+     *         chapterId:
+     *           type: integer
+     *           description: 章节 ID（目录项 ID）
+     *           example: 49017
      *       required:
-     *         - chapterIds
+     *         - chapterId
      *
      *   examples:
      *     ChapterIdRequestExample:
      *       summary: 将章节设为引言的请求示例
      *       value:
-     *         chapterId: [49017]
+     *         chapterId: 49017
      */
     static fromBodyId(body) {
-        const { chapterIds } = body;
-        if (chapterIds.some(id => isNaN(Number(id)))) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
-        return chapterIds;
+        const { chapterId } = body;
+        if (isNaN(chapterId)) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
+        return chapterId;
     }
     /**
      * @swagger
@@ -172,6 +170,7 @@ export class ChapterRequest {
         const { chapterIds } = body;
         if (!Array.isArray(chapterIds)) throw new UserInputError("提供的章节格式不对。");
         if (chapterIds.length == 0) throw new UserInputError("章节 ID 列表不能为空。");
+        if (chapterIds.some(id => isNaN(Number(id)))) throw new UserInputError("章节ID出错：章节ID只能为正整数。");
         return chapterIds;
     }
 }
