@@ -1,12 +1,15 @@
 import { IGenerator } from '../../../2-application/ports/IGenerator.js';
 import path from 'node:path';
 import { randomBytes } from "node:crypto";
-import pdfmake from "pdfmake";
+import pdfmake from "pdfmake";  //https://pdfmake.github.io/docs/0.1/
+import { isDivider } from "../../../5-shared/utils/string.js";
 import { accessDir } from "../drivers/fileSystemDriver.js"
 
 const FONTNAME = "MyFont";
 const A4_WIDTH = 595.28;
 const A4_HEIGHT = 841.89;
+const PAGE_MARGIN_XY = 40;
+const CONTENT_WIDTH = A4_WIDTH - PAGE_MARGIN_XY * 2;   // 内容区宽度 （扣除左右边距的实际可视区宽度。
 const FONT_SIZE = 12;
 
 export class PdfGenerator extends IGenerator {
@@ -71,12 +74,13 @@ export class PdfGenerator extends IGenerator {
             fontSize: titleFontSize, alignment: 'center',
             absolutePosition: { y: A4_HEIGHT / 2 - titleFontSize / 2 },
         });
-        content.push({ text: ebook.author, alignment: 'center', pageBreak: 'after', absolutePosition: { y: A4_HEIGHT / 2 + titleFontSize * 2 } });
+        content.push({ text: ebook.author, alignment: 'center', absolutePosition: { y: A4_HEIGHT / 2 + titleFontSize * 2 } });
 
         // ========== 2. 简介 ==========
         if (ebook.introduction) {
-            content.push({ text: "简介", style: 'header' });
-            content.push({ text: ebook.introduction, leadingIndent: fontSize * 2 });
+            // content.push({ text: "简介", style: 'header' });
+            // content.push({ text: ebook.introduction, leadingIndent: fontSize * 2 });
+            content.push(...this.#setOneChapter({ title: "简介", content: ebook.introduction }, { embedTitle: true, enableIndent: true, fontSize }));
         }
 
         // ========== 3. 目录：单独新起一页 ==========
@@ -90,36 +94,10 @@ export class PdfGenerator extends IGenerator {
 
         // ========== 4. 每一章 ==========
         for (const chap of ebook.chapters) {
-            // 章节标题节点 —— 无论是否 embedTitle，都带 tocItem，所以都会进目录
-            const titleNode = {
-                text: chap.title,
-                tocItem: ['mainToc'],
-                pageBreak: 'before',   // 每章新起一页
-            };
-
-            if (embedTitle) {
-                // 显示标题：用 header 样式
-                Object.assign(titleNode, {
-                    style: 'header',
-                });
-            } else {
-                // 隐藏标题：白色 + 极小的字号，视觉上看不见，但目录里正常显示
-                Object.assign(titleNode, {
-                    color: 'white',
-                    fontSize: 0.1,
-                    margin: [0, 0, 0, 0],
-                });
-            }
-            content.push(titleNode);
-
-            // 章节正文
-            let lines = chap.rows || chap.content.split("\n");
-            for (const line of lines) {
-                content.push({ text: line, leadingIndent: fontSize * 2 * (enableIndent ? 1 : 0) });
-            }
+            content.push(...this.#setOneChapter(chap, { embedTitle, enableIndent, fontSize }));
         }
 
-        const docDefinition = this.#handlerDefinition(fontSize, ebook.setting.publisher);
+        const docDefinition = this.#handlerDefinition(fontSize, ebook.setting.publisher, { title: ebook.title, author: ebook.author, publisher: ebook.setting.publisher });
         docDefinition.content = content;
         const pdf = pdfmake.createPdf(docDefinition);
         await pdf.write(result.path);
@@ -199,15 +177,22 @@ export class PdfGenerator extends IGenerator {
      * @param {*} footerStr 页脚文本
      * @returns 
      */
-    #handlerDefinition(fontSize, footerStr) {
+    #handlerDefinition(fontSize, footerStr, metadata = {}) {
         const topAndbottomSpan = 30;
         const definition = {
             content: [{}],
             pageSize: 'A4',
-            pageMargins: [40, topAndbottomSpan, 40, topAndbottomSpan], // [左, 上, 右, 下]
+            pageMargins: [PAGE_MARGIN_XY, topAndbottomSpan, PAGE_MARGIN_XY, topAndbottomSpan], // [左, 上, 右, 下]
             defaultStyle: { font: FONTNAME, fontSize: fontSize, lineHeight: 1 },
             styles: {
                 header: { fontSize: Math.round(fontSize * 1.5), bold: true, alignment: 'center', margin: [0, 0, 0, 12] },
+            },
+            language: "zh-CN",
+            info: {      //metadata
+                title: metadata.title,
+                author: metadata.author ?? "佚名",
+                creator: metadata.publisher,        //创建者
+                producer: metadata.publisher,       //制作者
             },
         }
         if (footerStr) definition.footer = function (currentPage, pageCount) {
@@ -217,10 +202,63 @@ export class PdfGenerator extends IGenerator {
                 color: '#888888',
                 italics: true,
                 alignment: 'center', // 居中显示
-                margin: [40, 0, 40, topAndbottomSpan / 3]
+                margin: [PAGE_MARGIN_XY, 0, PAGE_MARGIN_XY, topAndbottomSpan / 3]
             }
         }
 
         return definition;
+    }
+
+    /**
+     * 
+     * @param {object} chap 
+     * @param {object} chap.title 
+     * @param {object} chap.content 
+     * @param {object} [chap.rows] 
+     * @param {*} setting 
+     * @returns 
+     */
+    #setOneChapter(chap, { embedTitle, fontSize, enableIndent }) {
+        const content = [];
+        // 章节标题节点 —— 无论是否 embedTitle，都带 tocItem，所以都会进目录
+        const titleNode = {
+            text: chap.title,
+            tocItem: ['mainToc'],
+            pageBreak: 'before',   // 每章新起一页
+        };
+
+        if (embedTitle) {
+            // 显示标题：用 header 样式
+            Object.assign(titleNode, {
+                style: 'header',
+            });
+        } else {
+            // 隐藏标题：白色 + 极小的字号，视觉上看不见，但目录里正常显示
+            Object.assign(titleNode, {
+                color: 'white',
+                fontSize: 0.1,
+                margin: [0, 0, 0, 0],
+            });
+        }
+        content.push(titleNode);
+
+        // 章节正文
+        let lines = chap.rows || chap.content.split("\n");
+        const hr_height = FONT_SIZE * 2;
+        for (const line of lines) {//拆分成每一行
+            if (isDivider(line)) {
+                content.push({
+                    svg: `<svg width="${CONTENT_WIDTH}" height="${hr_height}" viewBox="0 0 ${CONTENT_WIDTH} ${hr_height}">
+  <defs>
+    <pattern id="dot" width="16" height="${hr_height}" patternUnits="userSpaceOnUse">
+      <circle cx="8" cy="${hr_height / 2}" r="2.5" fill="#94a3b8"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#dot)"/></svg>` });
+            } else
+                content.push({ text: line, leadingIndent: fontSize * 2 * (enableIndent ? 1 : 0) });
+        }
+
+        return content;
     }
 }

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { EPub } from '@publiwrite/html-to-epub';
+import { isDivider } from "../../../5-shared/utils/string.js";
 import { BookExportData } from "../../../2-application/services/export/dto/BookExportData.dto.js"
 import { IGenerator } from '../../../2-application/ports/IGenerator.js';
 
@@ -76,7 +77,7 @@ export class EpubGenerator extends IGenerator {
             let rows = chap.rows || chap.content?.split("\n") || [];
 
             //统一化分割符
-            rows = rows.map((text) => this.#isDivider(text) ? `<hr class="hr-dashed" />` : text);
+            rows = rows.map((text) => isDivider(text) ? `<hr class="hr-dashed" />` : text);
 
             chapters.push({
                 title: chap.title,
@@ -87,13 +88,5 @@ export class EpubGenerator extends IGenerator {
         return chapters;
     }
 
-    /**
-     * 判断是否分隔内容
-     * @param {string} text 
-     */
-    #isDivider(text) {
-        if (text == "……") return true;
-        text = text.replaceAll(/[\s　 ]/g, "");
-        return /^(.)\1{2,}$/.test(text);//三个以上相同的内容占一行
-    }
+
 }

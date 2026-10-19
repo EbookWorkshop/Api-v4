@@ -99,9 +99,10 @@ export class BookExportService {
                 fullBook = true;
             }
 
-            //部分导出时，将最后的一卷加入书签
+            //部分导出时，将最后的一章加入书签
             if (!fullBook) {
-                const lastChapter = showChapters.sort((a, b) => a.OrderNum - b.OrderNum).pop();
+                showChapters.sort((a, b) => a.OrderNum - b.OrderNum);
+                const lastChapter = showChapters[showChapters.length - 1];
                 this.#eventManager.emit(EXPORT_EVENTS.Export_Last_Chapter, { id: lastChapter.id });
                 // console.log(lastChapter.id);
             }
