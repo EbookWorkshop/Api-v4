@@ -46,7 +46,7 @@ export class RuleForWebQueryService {
         }));
 
         if (rules.length == 0) {
-            throw new AppError(`站点【${host}】未配置提取规则。`);
+            throw new AppError(`站点【${host}】未配置提取规则。原参数：${urlOrHost}`);
         }
 
         // //超时设置

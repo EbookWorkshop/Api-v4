@@ -66,7 +66,7 @@ export class StorageRepository {
         const result = books.map(book => book.toJSON());
 
         for (const b of books) {//搜索命中的条目通过更新CoverImage为‘’实现排队优先
-            if (b.CoverImage || b.CoverImage === '') continue;
+            if (b.CoverImage || b.CoverImage === '' || b.CoverImage === 'pending') continue;
             b.CoverImage = '';
             b.save();
         }
@@ -115,7 +115,7 @@ export class StorageRepository {
                     { CoverImage: '' },
                 ],
             },
-            order: [["CoverImage", "DESC"], ['id', 'DESC']],//搜索命中的条目通过更新CoverImage为‘’实现排队优先
+            order: [["CoverImage", "DESC"], ['id', 'ASC']],//搜索命中的条目通过更新CoverImage为‘’实现排队优先
             raw: true,
         });
     }
@@ -214,9 +214,8 @@ export class StorageRepository {
 
         const covers = Array.isArray(excludeCovers) ? excludeCovers.filter(Boolean) : [];
         const onlineCase = covers.length > 0
-            ? `CASE WHEN CoverImage LIKE 'http%' AND CoverImage NOT IN (:excludeCovers)
-                THEN 1 ELSE 0 END`
-            : `CASE WHEN CoverImage LIKE 'http%' THEN 1 ELSE 0 END`;
+            ? `CASE WHEN CoverImage LIKE 'http%' AND CoverImage NOT LIKE '%#check' AND CoverImage NOT IN (:excludeCovers) THEN 1 ELSE 0 END`
+            : `CASE WHEN CoverImage LIKE 'http%' AND CoverImage NOT LIKE '%#check' THEN 1 ELSE 0 END`;
         const rows = await this.#StorageModel.findAll({
             attributes: [
                 'Host',

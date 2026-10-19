@@ -167,6 +167,7 @@ export class CollectExecutor extends ITaskExecutor {
             const message = "采集任务执行失败：" + (error.message || '未知错误');
             const { batchId, taskId, ...ctx } = payload;
             emitter?.failure(msgEvent, { error, message, ctx });
+            // console.warn(message, payload);// 临时输出
             throw error;
         } finally {
             await this.#_fetcher?.close?.();

@@ -13,7 +13,7 @@ export class StorageService {
 
     async getLastPage() {
         const p = await this.#storageRepository.findLastPage();
-        return p?.LastPage;
+        return p?.LastPage ?? null;
     }
 
     async listHosts() {
