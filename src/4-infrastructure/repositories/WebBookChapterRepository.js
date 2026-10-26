@@ -117,7 +117,7 @@ export class WebBookChapterRepository {
                 { Content: null },
                 { where: { Content: { [Op.eq]: "" } } }
             );
-            console.log("所有待办任务已处理，已重置任务数：", rows);
+            console.log("采集空章节任务已完成一轮，已重置任务数：", rows);
             return { id: null };
         }
 

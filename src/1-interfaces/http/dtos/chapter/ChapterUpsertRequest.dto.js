@@ -39,7 +39,7 @@ import { UserInputError } from "../../../../5-shared/errors/index.js"
 export class ChapterUpsertRequest {
     static fromBody(chapter) {
         if (chapter.IndexId <= 0 && !chapter.BookId) throw new UserInputError("新增章节需要指定添加的书籍。");
-        if (!chapter.Content && !chapter.Title) throw new UserInputError("请求参数错误：章节标题和内容不能同时为空。");
+        if (!chapter.Title) throw new UserInputError("请求参数错误：章节标题不能为空。");
         return chapter;
     }
 }

@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { randomBytes } from "node:crypto";
 export class StorageRepository {
     #StorageModel;
     #StorageStepModel;
@@ -28,20 +29,25 @@ export class StorageRepository {
             limit = 60,//每页数量
             offset = -1,//
         } = options;
+        let order = [["id", "ASC"]];
         let where = {};
+        if (offset < 0) order = [["Show", "ASC"]];
         if (host) where.Host = { [Op.in]: host };
-        if (author) where.Author = { [Op.eq]: author };
+        if (author) {
+            where.Author = { [Op.eq]: author };
+            order = [["Show", "ASC"], ["BookName", "ASC"]];
+        }
 
         const books = await this.#StorageModel.findAll({
             where,
-            order: offset >= 0 ? [["id", "ASC"]] : [["Show", "ASC"]],
+            order: order,
             limit,
             offset: offset == -1 ? 0 : offset,
         });
 
         //当不采用偏移量时，直接将当前已查看的数据往后移
         if (offset == -1)
-            this.#StorageModel.increment("Show", {
+            await this.#StorageModel.increment("Show", {
                 by: 1,
                 where: { id: { [Op.in]: books.map(b => b.id) } },
             });
@@ -156,6 +162,12 @@ export class StorageRepository {
     async findOneNeedingCoverCache(threshold = 3) {
         // 1. 取候选（限定数量，避免一次拉太多）
         const freqCover = await this.findFrequentCovers(threshold);
+        // 构造伪随机数据
+        const randomField = ["id", "BookName", "Author", "updatedAt", "createdAt", "Show"];
+        const orderBy = ["ASC", "DESC"];
+        const rfIndex = randomBytes(1)[0] % randomField.length;
+        const obIndex = randomBytes(1)[0] % 2;
+        const order = [[randomField[rfIndex], orderBy[obIndex]]];
         const candidates = await this.#StorageModel.findAll({
             where: {
                 CoverImage: {
@@ -167,7 +179,7 @@ export class StorageRepository {
                 }
             },
             attributes: ['id', 'BookName', 'Source', 'Host', 'CoverImage'],
-            order: [['Show', 'DESC'], ["id", "DESC"]],
+            order,
             limit: 1,
             raw: true,
         });
