@@ -1,6 +1,5 @@
 import { EbookRepository } from './EbookRepository.js';
 import { TagRepository } from "./TagRepository.js";
-import { FontRepository } from './FontRepository.js';
 import { SystemConfigRepository } from './SystemConfigRepository.js';
 import { IndexRepository } from "./IndexRepository.js";
 import { ChapterRepository } from "./ChapterRepository.js";
@@ -23,7 +22,6 @@ export function createRepositories(sequelize) {
         ebookRepository: new EbookRepository(sequelize),
         systemConfigRepository: new SystemConfigRepository(sequelize),
         tagRepository: new TagRepository(sequelize),
-        fontRepository: new FontRepository(sequelize),
 
         indexRepository: new IndexRepository(sequelize),
         chapterRepository: new ChapterRepository(sequelize),

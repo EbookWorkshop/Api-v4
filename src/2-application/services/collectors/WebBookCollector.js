@@ -1,8 +1,9 @@
 import { ICollector } from "../../ports/ICollector.js";
 import { RULE_INDEX, RULE_INFO, RuleName } from "../../../3-domain/constants/Rule.js";
 import { deduplicateByMultKey, difference } from "../../../5-shared/utils/array.js";
+import { logger } from "../../../5-shared/logging/index.js";
+import { normalizeError } from "../../../5-shared/errors/index.js";
 import { COLLECT_EVENTS } from "../../constants/Event.js";
-// import { AppError } from "../../../5-shared/errors/index.js";
 import { getHost } from "../../../5-shared/utils/site.js";
 
 const TitleReg = "第[^章回]+[章回](\\s+)?";
@@ -68,7 +69,7 @@ export class WebBookCollector extends ICollector {
         RULE_INFO.map(r => info.set(r, result.get(r)));
         const infoResult = await this.#handleInfo(info, isEmbedBookName);
         if (!infoResult) {
-            // console.log("书籍信息处理失败：", infoResult, info);
+            // logger.log("书籍信息处理失败：", infoResult, info);
             return this.#failureHandle(payload, { message: "获取书籍信息失败，可能是网页返回内容出错，也可能是配置采集规则不匹配！", name: "获取书籍信息失败！" }, `从地址采集数据失败：${urlPage}。`);
         }
 
@@ -148,7 +149,7 @@ export class WebBookCollector extends ICollector {
                 if (chp.WebBookChapterId == null) continue;
                 addSourceUrl.push({ ...nChp, webBookChapterId: chp.WebBookChapterId });
             }
-            // console.log(addSourceUrl);
+            // logger.log(addSourceUrl);
             if (addSourceUrl.length > 0) {
                 const chapterURLs = addSourceUrl.map(t => {
                     return {
@@ -283,16 +284,16 @@ export class WebBookCollector extends ICollector {
                     } else {
                         // 无章节数据，视为失败，重试
                         retries++;
-                        console.warn(`页面 ${currentUrl} 未提取到章节，重试 ${retries}/${MAX_RETRIES}`);
+                        logger.warn(`页面 ${currentUrl} 未提取到章节，重试 ${retries}/${MAX_RETRIES}`);
                     }
                 } catch (err) {
                     retries++;
-                    console.warn(`抓取页面失败 ${currentUrl}，重试 ${retries}/${MAX_RETRIES}，错误：${err.message}`);
+                    logger.warn(`抓取页面失败 ${currentUrl}，重试 ${retries}/${MAX_RETRIES}，错误：${err.message}`);
                 }
             }
             // 若重试耗尽仍未成功，终止循环
             if (!success) {
-                console.warn(`放弃页面 ${currentUrl}，已重试 ${MAX_RETRIES} 次`);
+                logger.warn(`放弃页面 ${currentUrl}，已重试 ${MAX_RETRIES} 次`);
                 break;
             }
             currentUrl = nextPageUrl;   // 移动到下一页
@@ -348,12 +349,7 @@ export class WebBookCollector extends ICollector {
         const ctx = this.#resolveCtx(payload);
         if (error.parent) error = error.parent;
         else if (error.original) error = error.original
-        const normalized = {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-            sql: error.sql,
-        };
+        const normalized = normalizeError(error);
         this.#emitter?.failure(eventType, { ctx, error: normalized, message });
         // 兼容返回：原代码此处的 result 里包含 error 字段供上游判错
         return { ...payload, result: { error: normalized }, message };

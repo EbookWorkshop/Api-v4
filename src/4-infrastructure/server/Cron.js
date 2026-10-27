@@ -1,6 +1,6 @@
 // const cron = require('node-cron');
 import cron from 'node-cron';
-
+import { logger } from '../../5-shared/logging/index.js';
 export class CronTimmer {
 
     /**
@@ -59,7 +59,7 @@ export class Cron {
         try {
             return cron.schedule(cronText, func);
         } catch (error) {
-            console.warn(`加入定时任务失败，表达式【${cronText}】。\n`, error);
+            logger.warn(`加入定时任务失败，表达式【${cronText}】。\n`, error);
             this.#cache.lastError = error;
             return null;
         }
@@ -85,6 +85,6 @@ export class Cron {
 
 /**
 cron.schedule('* * * * * *', () => {
-  console.log('每秒执行一次');
+  logger.log('每秒执行一次');
 }); 
  */

@@ -4,6 +4,7 @@ import { TASK_TYPES } from '../../constants/Task.js';
 import { COLLECT_EVENTS } from "../../constants/Event.js";
 import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
+import { logger } from "../../../5-shared/logging/index.js";
 import {
     WebBookCollector, ChapterCollector, FileCollector,
     ListCollector, StorageCoverCollector, StorageCoverCacheCollector, ICollector
@@ -65,7 +66,7 @@ export class CollectExecutor extends ITaskExecutor {
         let msgEvent = COLLECT_EVENTS.UNKNOW;
         try {
             let pageURL = await this.#getPageURL(taskType, payload);
-            if (pageURL === null) { return { success: true, skipped: true, message: "没有需要处理的任务。" }; }
+            if (pageURL === null) { return { success: true, skipped: true, message: `[${taskType}]没有需要处理的任务。` }; }
             let Collector = ICollector;
             let ruleGroup;
             let services = { eventManager: this.#eventManager, emitter };
@@ -146,7 +147,7 @@ export class CollectExecutor extends ITaskExecutor {
             } catch (err) {
                 // 本地缓存任务不依赖站点规则，站点未配置也不影响
                 if (taskType !== TASK_TYPES.STORAGE_COVER_CACHE) throw err;
-                console.debug(`[CollectExecutor] 站点未配置规则，使用默认下载器：${pageURL}`);
+                logger.debug(`[CollectExecutor] 站点未配置规则，使用默认下载器：${pageURL}`);
             }
 
             const scraper = rules.find(({ ruleName }) => ruleName === RuleCommon.Scraping);
@@ -167,7 +168,6 @@ export class CollectExecutor extends ITaskExecutor {
             const message = "采集任务执行失败：" + (error.message || '未知错误');
             const { batchId, taskId, ...ctx } = payload;
             emitter?.failure(msgEvent, { error, message, ctx });
-            // console.warn(message, payload);// 临时输出
             throw error;
         } finally {
             await this.#_fetcher?.close?.();

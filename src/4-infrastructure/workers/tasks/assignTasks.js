@@ -2,6 +2,7 @@
 import { TASK_TYPES } from "../../../2-application/constants/Task.js";
 import { ITaskExecutor } from "../../../2-application/ports/ITaskExecutor.js"
 import { AppError } from "../../../5-shared/errors/index.js";
+import { logger } from "../../../5-shared/logging/index.js";
 
 /**
  * 根据任务类型组装执行器
@@ -49,7 +50,7 @@ export async function assignTasks(taskType, config, resources) {
         executor = await creater?.default(config, taskType, resources);
         if (!(executor instanceof ITaskExecutor)) throw new AppError(`线程执行逻辑需实现接口[ITaskExecutor]。模块：${assemblerDir + createTask}\n`);
     } catch (error) {
-        console.warn("子线程执行失败-组装线程启动器失败：", createTask, "\n", error);
+        logger.warn("子线程执行失败-组装线程启动器失败：", createTask, "\n", error);
         throw error;
     }
 

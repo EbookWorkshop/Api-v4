@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { RuleName } from "../../../3-domain/constants/Rule.js"
 import { ICollector } from "../../ports/ICollector.js";
 import { COLLECT_EVENTS } from "../../constants/Event.js";
-
+import { logger } from "../../../5-shared/logging/index.js";
 export class FileCollector extends ICollector {
     #config;
     // #rules;//全套规则
@@ -34,13 +34,13 @@ export class FileCollector extends ICollector {
         do {
             result = await this.#fetcher.fetch(urlPage, setting);
             const ctx = result.get(RuleName.Content);
-            if (!ctx || !ctx[0].text) { runTime++; console.debug(`内容采集失败，重试${runTime}次：`, urlPage); continue; }
+            if (!ctx || !ctx[0].text) { runTime++; logger.debug(`内容采集失败，重试${runTime}次：`, urlPage); continue; }
             const { text: content } = ctx[0];
             pageCtx.push(content);
 
             const pg = result.get(RuleName.ContentNextPage);
             if (!pg) break;
-            if (pg[0]?.name === 'Error' || pg[0] instanceof Error) { runTime++; console.debug(`内容采集失败，重试${runTime}次：`, urlPage); continue; }
+            if (pg[0]?.name === 'Error' || pg[0] instanceof Error) { runTime++; logger.debug(`内容采集失败，重试${runTime}次：`, urlPage); continue; }
             const { Rule: rule, text, url } = pg[0];
             if (text === rule.checkSetting) urlPage = url;
             else break;

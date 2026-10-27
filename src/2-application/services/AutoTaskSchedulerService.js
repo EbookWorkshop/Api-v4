@@ -1,4 +1,5 @@
 // 2-application/services/AutoTaskSchedulerService.js
+import { logger } from '../../5-shared/logging/index.js';
 import { UserInputError } from '../../5-shared/errors/index.js';
 import { SYSTEM_AUTO_TASK } from '../constants/SystemConfigGroup.js';
 import { TASK_TYPES } from "../constants/Task.js";
@@ -31,7 +32,7 @@ export class AutoTaskSchedulerService {
         for (const job of jobs) {
             this.startJob(job);
         }
-        console.debug(`[${new Date().toLocaleString()}]\t已启动${this.#jobs.length}个任务。`)
+        logger.debug(`已启动${this.#jobs.length}个任务。`)
     }
 
     startJob(job) {
@@ -39,7 +40,7 @@ export class AutoTaskSchedulerService {
 
         const scheduledTask = this.#cron.addCron(job.cron, () => {
             this.#dispatch(job).catch((err) => {
-                console.error(`[AutoTask] ${job.name} 执行失败`, err);
+                logger.error(`[AutoTask] ${job.name} 执行失败`, err);
             });
         });
         if (!scheduledTask && this.#cache.lastError) {
@@ -79,7 +80,7 @@ export class AutoTaskSchedulerService {
                 return this.#taskScheduler.submitStorageCoverCacheTask({ highPriority: "lazy" });
 
             default:
-                console.warn(`[AutoTask] 未知任务类型: ${job.type}。需要在这里改代码：${import.meta.filename}`);
+                logger.warn(`[AutoTask] 未知任务类型: ${job.type}。需要在这里改代码：${import.meta.filename}`);
         }
     }
 
@@ -137,7 +138,7 @@ export class AutoTaskSchedulerService {
         try {
             const { type, name, id, ...value } = job;
             const valid = this.#cron.validateDetailed(value.cron);
-            // console.debug(valid);
+            // logger.debug(valid);
             if (!valid.valid) throw new UserInputError(valid.errors.map(err => err.message).join("；\n") + "。");
 
             this.stopJob(name ?? type);
@@ -169,7 +170,7 @@ export class AutoTaskSchedulerService {
 
         if (enabled) this.startJob(job);
         else this.stopJob(job.name)
-        // console.log(enabled, type)
+        // logger.log(enabled, type)
         return true;
     }
 

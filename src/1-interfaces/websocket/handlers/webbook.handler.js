@@ -1,5 +1,6 @@
 import { COLLECT_EVENTS } from '../../../2-application/constants/Event.js';
-import { Message } from "../../../5-shared/dtos/Message.dto.js"
+import { Message } from "../../../5-shared/dtos/Message.dto.js";
+import { logger } from '../../../5-shared/logging/index.js';
 
 /**
  * 注册客户端发起的请求（每个连接独立）
@@ -572,9 +573,8 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
      * 兜底：采集任务初始化阶段失败（未进入任何 Collector 分支）
      */
     eventManager.on(COLLECT_EVENTS.UNKNOW, (env) => {
-        console.warn('[采集任务初始化失败]', env.message);
-        console.warn('[错误]', env.error);
-        console.warn('[上下文]', env.ctx);
-        console.log(env);
+        logger.warn('[采集任务初始化失败]', env.message);
+        logger.warn('[错误]', env.error);
+        logger.warn('[ENV]', env);
     });
 }

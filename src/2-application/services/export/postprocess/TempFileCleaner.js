@@ -1,3 +1,5 @@
+import { logger as appLogger } from '../../../../5-shared/logging/index.js';
+
 export class TempFileCleaner {
     #fileWriter;
     #scheduler;
@@ -7,9 +9,9 @@ export class TempFileCleaner {
      * @param {Object} deps
      * @param {import('../../../ports/IFileWriter.js').IFileWriter} deps.fileWriter
      * @param {import('./TimerScheduler.js').TimerScheduler} deps.scheduler
-     * @param {Console} [deps.logger]
+     * @param {*} [deps.logger]
      */
-    constructor({ fileWriter, scheduler, logger = console }) {
+    constructor({ fileWriter, scheduler, logger = appLogger }) {
         this.#fileWriter = fileWriter;
         this.#scheduler = scheduler;
         this.#logger = logger;

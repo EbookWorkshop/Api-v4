@@ -30,7 +30,12 @@ export class BookmarkRepository {
                     as: 'Volume'
                 }]
             }],
-            order: [['createdAt', 'DESC']],
+            order: [[
+                { model: this.#ChapterModel, as: 'EbookChapter' },
+                { model: this.#EbookModel, as: 'Ebook' },
+                'BookName',
+                'DESC'
+            ]],
         })
         return bms.map(b => {
             return {

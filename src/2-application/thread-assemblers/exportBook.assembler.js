@@ -1,7 +1,5 @@
 import { EventEmitter } from 'node:events';
-
 import { ITaskExecutor } from "../ports/ITaskExecutor.js";
-import { EXPORT_EVENTS } from '../constants/Event.js';
 import { BookExportExecutor } from "../services/export/executor/BookExportExecutor.js";
 import { BookExportService } from "../services/export/BookExportService.js";
 import { BookQueryService } from "../services/BookQueryService.js";
@@ -66,13 +64,11 @@ export async function createExportBookTask(config, taskType, { repositories }) {
         fileWriter: fileServ,
         archivePath: config.archive.path,
         scheduler,
-        logger: console,
     });
 
     const tempFileCleaner = new TempFileCleaner({
         fileWriter: fileServ,
         scheduler,
-        logger: console,
     });
 
     const bookmarkService = new BookmarkService(bookmarkRepository);

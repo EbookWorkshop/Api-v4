@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import { registerAllClientEvents, registerAllGlobalBroadcasts } from './handlers/index.js';
+import { logger } from '../../5-shared/logging/index.js';
 
 export function setupWebsocket(httpServer, services, eventManager) {
     const io = new Server(httpServer, { cors: { origin: '*' } });
@@ -9,13 +10,13 @@ export function setupWebsocket(httpServer, services, eventManager) {
 
     // 2. 处理客户端连接
     io.on('connection', (socket) => {
-        console.debug(`[⇅] Client connected: ${socket.id}`);
+        logger.debug(`[⇅] Client connected: ${socket.id}`);
 
         // 注册所有客户端事件（每个连接独立）
         registerAllClientEvents(socket, services, eventManager);
 
         socket.on('disconnect', () => {
-            console.debug(`[⇅] Client disconnected: ${socket.id}`);
+            logger.debug(`[⇅] Client disconnected: ${socket.id}`);
         });
     });
 

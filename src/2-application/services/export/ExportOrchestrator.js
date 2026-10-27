@@ -1,5 +1,6 @@
 import { EXPORT_EVENTS } from "../../constants/Event.js";
 import { Message } from "../../../5-shared/dtos/Message.dto.js";
+import { logger } from "../../../5-shared/logging/index.js";
 
 export class ExportOrchestrator {
     #eventMgr;
@@ -81,7 +82,7 @@ export class ExportOrchestrator {
             this.#inventoryArchiver
                 .archive(files, 30_000)
                 .catch(err => {
-                    console.error('[ExportOrchestrator] 转存到库存失败', err);
+                    logger.error('[ExportOrchestrator] 转存到库存失败', err);
                 });
             jobDone.push("已尝试转存到库存");
         }
@@ -90,7 +91,7 @@ export class ExportOrchestrator {
         this.#tempFileCleaner
             .cleanup(filepath, 60_000)
             .catch(err => {
-                console.warn('[ExportOrchestrator] 清理临时文件失败', err);
+                logger.warn('[ExportOrchestrator] 清理临时文件失败', err);
             });
         jobDone.push("将进行临时文件清理");
 
@@ -113,7 +114,7 @@ export class ExportOrchestrator {
         try {
             await this.#bookmarkRecorder.record(id);
         } catch (err) {
-            console.error('[ExportOrchestrator] 记录最后一章书签失败', err);
+            logger.error('[ExportOrchestrator] 记录最后一章书签失败', err);
         }
     }
 

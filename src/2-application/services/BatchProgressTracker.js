@@ -15,6 +15,7 @@
 
 import { emitCollect } from '../events/collectEvents.js';
 import { COLLECT_EVENTS } from '../constants/Event.js';
+import { logger } from '../../5-shared/logging/index.js';
 
 /** 进度广播最小间隔（ms） */
 const PROGRESS_THROTTLE_MS = 200;
@@ -72,7 +73,7 @@ export class BatchProgressTracker {
      */
     register(batchId, meta) {
         if (this.#batches.has(batchId)) {
-            console.warn(`[BatchProgressTracker] 批次已存在，忽略重复注册：${batchId}`);
+            logger.warn(`[BatchProgressTracker] 批次已存在，忽略重复注册：${batchId}`);
             return;
         }
 

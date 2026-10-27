@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import { readdirSync } from "node:fs";
-
+import { logger } from '../../../5-shared/logging/index.js';
 /**
  * 
  * @param {*} controllers 
@@ -20,7 +20,7 @@ export function createMainRouter(controllers) {
 
         const moduleName = mf.replace(".routes.js", "");
         if (controllers[moduleName] === undefined) {
-            console.warn(`路由【${mf}】没有对应的控制器，请注意修改：[src/1-interfaces/http/controllers/index.js]，并导出一个含【${moduleName}】的控制器。`);
+            logger.warn(`路由【${mf}】没有对应的控制器，请注意修改：[src/1-interfaces/http/controllers/index.js]，并导出一个含【${moduleName}】的控制器。`);
         }
 
         import(`./${mf}`).then(module => {
@@ -31,7 +31,7 @@ export function createMainRouter(controllers) {
                 router.use(thisRouter.allowedMethods());
             })
         }).catch(error => {
-            console.warn(`装载路由【./${mf}】失败，请检查相关文件。\n原因：\n${error.stack}`);
+            logger.warn(`装载路由【./${mf}】失败，请检查相关文件。\n原因：\n${error.stack}`);
         });
     }
 

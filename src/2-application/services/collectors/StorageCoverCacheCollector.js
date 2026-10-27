@@ -118,7 +118,7 @@ export class StorageCoverCacheCollector extends ICollector {
 
         return this.#resultHandle(
             payload, true,
-            `封面已缓存：${relativePath}`,
+            `缓存库存图书封面：${relativePath}`,
             { storageId: id, path: relativePath, url: fullUrl }
         );
     }

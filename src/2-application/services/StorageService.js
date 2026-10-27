@@ -60,8 +60,7 @@ export class StorageService {
     async findOneMissingCover() {
         const nextCover = await this.#storageRepository.findOneMissingCover();
         if (!nextCover) {
-            const rrrn = await this.#storageRepository.restartCover();
-            console.log("pending 回收", rrrn);
+            await this.#storageRepository.restartCover();
         }
         else
             await this.#storageRepository.updateCover(nextCover.id, "pending");

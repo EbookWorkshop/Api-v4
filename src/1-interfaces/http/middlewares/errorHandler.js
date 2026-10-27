@@ -10,11 +10,6 @@ export function createErrorHandlerMiddleware(config) {
             const statusCode = err.statusCode || 500;
             const message = err.message || '未知的服务器错误';
 
-            // console.error(`[Error] ${statusCode} - ${message}`);
-            // if (config.env === 'development') {
-            //   console.error(err.stack);
-            // }
-
             ctx.status = statusCode;
             ctx.body = {
                 code: statusCode * 100,

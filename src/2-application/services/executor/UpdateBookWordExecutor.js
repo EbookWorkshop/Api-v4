@@ -1,4 +1,4 @@
-
+import { logger } from '../../../5-shared/logging/index.js';
 import { ITaskExecutor } from '../../ports/ITaskExecutor.js';
 
 export class UpdateBookWordExecutor extends ITaskExecutor {
@@ -16,7 +16,7 @@ export class UpdateBookWordExecutor extends ITaskExecutor {
 
     async updateBookWord() {
         const bookId = await this.#ebookRepository.findBookToCalc();
-        console.warn(`对书籍进行了字数统计：${bookId}`);
+        logger.info(`对书籍进行了字数统计：${bookId}`);
         return this.#bookAnalysis.analyze(bookId);
     }
 

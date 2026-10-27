@@ -1,3 +1,4 @@
+import { logger as appLogger } from '../../../../5-shared/logging/index.js';
 export class InventoryArchiver {
     #fileWriter;
     #archivePath;
@@ -9,9 +10,9 @@ export class InventoryArchiver {
      * @param {import('../../../ports/IFileWriter.js').IFileWriter} deps.fileWriter
      * @param {string} deps.archivePath
      * @param {import('./TimerScheduler.js').TimerScheduler} deps.scheduler
-     * @param {Console} [deps.logger]
+     * @param {*} [deps.logger]
      */
-    constructor({ fileWriter, archivePath, scheduler, logger = console }) {
+    constructor({ fileWriter, archivePath, scheduler, logger = appLogger }) {
         this.#fileWriter = fileWriter;
         this.#archivePath = archivePath;
         this.#scheduler = scheduler;

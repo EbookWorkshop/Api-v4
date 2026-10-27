@@ -1,14 +1,15 @@
 import { workerData } from 'worker_threads';
 import { initWorker } from "./index.js"
-const { workerId, config } = workerData;
+import { logger } from '../../../5-shared/logging/index.js';
+const { config } = workerData;
 
 function close() {
-    console.log(`🛑\t\t线程【${workerId}】关闭，已在线${(performance.now() / 60_000).toFixed(1)}分。`);
+    logger.log(`🛑\t\t线程关闭，已在线${(performance.now() / 60_000).toFixed(1)}分。`);
 }
 
 
 // 启动子线程
 initWorker({ config }, close).catch((err) => {
-    console.error('线程初始化失败:', err);
+    logger.error('线程初始化失败:', err);
     process.exit(1);
 });

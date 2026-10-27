@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-
+import { logger } from '../../5-shared/logging/index.js';
 /**
  * 数据库链接工厂
  * @param {*} dbPath 数据库地址
@@ -27,10 +27,8 @@ export async function createDatabaseConnection(dbPath, logging = false) {
         */
 
         await sequelize.query('PRAGMA busy_timeout = 2000;');       //超时设置，避免写入时长时间等待锁
-
-        // console.log(`[DB] Connected to ${dbPath} with WAL mode enabled.`);
     } catch (error) {
-        console.error(`数据库连接失败： ${error.message}`);
+        logger.error(`数据库连接失败： ${error.message}`);
         throw error;
     }
 

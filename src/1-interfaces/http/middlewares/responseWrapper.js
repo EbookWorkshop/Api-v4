@@ -1,3 +1,4 @@
+import { logger } from "../../../5-shared/logging/index.js";
 /**
  * 成功响应包装中间件    
  * 职责：将 Controller 返回的原始数据（ctx.body）包装为统一格式
@@ -9,7 +10,7 @@ export function createResponseWrapperMiddleware() {
         await next();   //不捕获处理错误，出错时会由错误处理中间件捕获。
 
         if (ctx.body instanceof Promise) {
-            console.error("错误返回了未完成的Promise:", ctx.method, ctx.href)
+            logger.error("错误返回了未完成的Promise:", ctx.method, ctx.href)
             ctx.body = await ctx.body;
         }
 

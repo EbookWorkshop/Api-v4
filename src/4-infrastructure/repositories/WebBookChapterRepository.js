@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { logger } from "../../5-shared/logging/index.js";
 export class WebBookChapterRepository {
     #WebBookChapterModel;
     #ChapterModel;
@@ -117,7 +118,7 @@ export class WebBookChapterRepository {
                 { Content: null },
                 { where: { Content: { [Op.eq]: "" } } }
             );
-            console.log("采集空章节任务已完成一轮，已重置任务数：", rows);
+            logger.log("采集空章节任务已完成一轮，已重置任务数：", rows);
             return { id: null };
         }
 

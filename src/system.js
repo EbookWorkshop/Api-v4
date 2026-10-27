@@ -33,11 +33,11 @@ const eventManager = new EventManager(new EventEmitter());//消息管理模块
 const memoryCache = new MemoryCache();
 const workerPool = new WorkerPool(config, eventManager);//线程池
 const cron = new Cron(memoryCache);
-const { repositories } = miniCore;
+const { repositories, logger } = miniCore;
 const { transactionManager } = miniCore;
 
 // 3.2 服务层 (Application) - 依赖 Repositories
-const services = createServices(repositories, transactionManager,memoryCache, workerPool, eventManager, cron, config);
+const services = createServices(repositories, transactionManager, memoryCache, workerPool, eventManager, cron, config);
 
 // 3.3 控制器层 (Interfaces) - 依赖 Services
 const controllers = createControllers(services, config);
@@ -76,7 +76,7 @@ async function initializeDatabase() {
     await services.autoTaskScheduler.start();//启动定时作业
 
     if (config.env === 'development') {
-        console.log('✅ 数据库表结构已同步 (development)');
+        logger.debug('✅ 数据库表结构已同步 (development)');
     }
 }
 
@@ -87,4 +87,4 @@ async function closeDatabase() {
     await miniCore.close();
 }
 
-export { app, httpServer, io, config, initializeDatabase, closeDatabase };
+export { app, httpServer, io, config, initializeDatabase, closeDatabase, logger };

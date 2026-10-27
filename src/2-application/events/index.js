@@ -14,7 +14,7 @@
  * 类型定义（JSDoc）：
  *   @typedef {import('./envelope.js').CollectEventEnvelope} CollectEventEnvelope
  *   @typedef {import('./envelope.js').CollectCtx} CollectCtx
- *   @typedef {import('./envelope.js').SerializedError} SerializedError
+ *   @typedef {import('../../5-shared/errors/index.js').SerializedError} SerializedError
  */
 
 // ============================================================
@@ -24,8 +24,6 @@
 export {
     // 归一化入口：把任意输入收敛为合法信封
     normalizeCollectEnvelope,
-    // 错误归一化：其它子域（导出、压缩）可复用
-    normalizeError,
     // 上下文白名单过滤：测试与自定义发射器可复用
     normalizeCtx,
     // 契约断言：测试、灰度校验、自定义发射路径使用

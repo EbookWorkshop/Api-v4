@@ -15,7 +15,7 @@ export default {
     },
     debug: {
         mode: false,
-        level: 'info',      //TODO: 优化-分层化消息层级 error:1>warn:2>info:3>debug:4>none:5  当config.debug.level<="当前消息等级"时，才打印消息。
+        level: 'info',      // level 表示"最详细的级别"，>= 该值的日志都会被打印 none:0>error:1>warn:2>info:3>log:4>debug:5。
         switch: {
             requireLog: false,
             worker: true,

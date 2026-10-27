@@ -46,14 +46,7 @@
  */
 
 /**
- * 可序列化的错误对象
- * 保证跨线程传递后结构稳定，接收端可统一处理
- * @typedef {Object} SerializedError
- * @property {string}         message
- * @property {string}         [name]
- * @property {string}         [stack]
- * @property {string|number}  [code]
- * @property {Object}         [details]
+ * @typedef {import('../../5-shared/errors/index.js').SerializedError} SerializedError
  */
 
 /**
@@ -92,6 +85,8 @@
         bookId, bookName  // 仅当它们是"新产生"时（如 CREATE_BOOK）
     }
 */
+
+import { normalizeError } from '../../5-shared/errors/index.js';
 // ============================================================
 // 常量
 // ============================================================
@@ -116,18 +111,6 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 // 内部工具
 // ============================================================
 
-/**
- * 剔除对象中值为 undefined 的键（保留 null）
- * @param {Object} obj
- * @returns {Object}
- */
-function omitUndefined(obj) {
-    const result = {};
-    for (const key of Object.keys(obj)) {
-        if (obj[key] !== undefined) result[key] = obj[key];
-    }
-    return result;
-}
 
 function warnDev(...args) {
     if (!IS_PROD) console.warn(...args);
@@ -137,45 +120,6 @@ function warnDev(...args) {
 // 公开 API
 // ============================================================
 
-/**
- * 归一化错误对象为可序列化的 SerializedError
- *
- * 支持的输入形态：
- *   - Error 实例（含自定义 code / details）
- *   - 字符串
- *   - 普通对象（{ message, name, stack, code, details }）
- *   - null / undefined  →  返回默认错误
- *
- * @param {*} err
- * @returns {SerializedError}
- */
-export function normalizeError(err) {
-    if (err === undefined || err === null) {
-        return { message: '未知错误' };
-    }
-    if (typeof err === 'string') {
-        return { message: err };
-    }
-    if (err instanceof Error) {
-        return omitUndefined({
-            message: err.message || '未知错误',
-            name: err.name,
-            stack: err.stack,
-            code: err.code,
-            details: err.details,
-        });
-    }
-    if (typeof err === 'object') {
-        return omitUndefined({
-            message: err.message || String(err),
-            name: err.name,
-            stack: err.stack,
-            code: err.code,
-            details: err.details,
-        });
-    }
-    return { message: String(err) };
-}
 
 /**
  * 归一化 ctx：只保留白名单字段，剔除 undefined / null

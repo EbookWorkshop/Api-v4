@@ -1,4 +1,4 @@
-
+import { logger } from "../../5-shared/logging/index.js";
 export class WebBookSyncService {
     #taskScheduler;
     #webBookRepository;
@@ -14,7 +14,7 @@ export class WebBookSyncService {
     async SyncOneChapter() {
         const upChap = await this.#webBookChapterRepository.findLatestEmpty();
         if (!upChap.id) return;
-        console.debug(`【${new Date().toLocaleString()}】自动更新章节任务即将进行：`, upChap.BookName, upChap.Title, upChap.id)
+        logger.debug(`自动更新章节任务即将进行：`, upChap.BookName, upChap.Title, upChap.id)
         return this.#taskScheduler.submitUpdateChapters([upChap.id], upChap.BookId, {
             bookName: upChap.BookName, highPriority: "lazy", keepsilent: true
         });

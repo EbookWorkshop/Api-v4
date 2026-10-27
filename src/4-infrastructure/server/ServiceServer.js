@@ -6,7 +6,8 @@ import { exec } from 'node:child_process';
 // import { exec } from 'node:child_process/promises';  //当前版本ESM加载器不支持promises子路径。以后升级node可以尝试。
 // import { promisify } from 'node:util';   
 import { VERSION_FILE } from "../../3-domain/constants/System.js";
-import { toMB_Unit, toGBStr } from "../../5-shared/utils/fileSize.js"
+import { toMB_Unit, toGBStr } from "../../5-shared/utils/fileSize.js";
+import { logger } from "../../5-shared/logging/index.js";
 
 
 //NOTE: 因为npm outdated会以失败退出码反馈是否有升级，node的promisify不能用，手搓一个从stdout读取内容。
@@ -76,7 +77,7 @@ export class ServiceServer {
             await fs.writeFile(VERSION_FILE, JSON.stringify(packageInfo));
         }
         catch (error) {
-            if (this.#config.env === "development") console.warn("执行更新包版本信息出错，错误信息：", error);
+            if (this.#config.env === "development") logger.warn("执行更新包版本信息出错，错误信息：", error);
         }
     }
 

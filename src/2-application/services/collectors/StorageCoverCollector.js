@@ -50,12 +50,11 @@ export class StorageCoverCollector extends ICollector {
             } else if (coverRsl?.[0] instanceof Error) {
                 return this.#resultHandle(
                     payload, false,
-                    `封面提取失败：${coverRsl[0].message}-\t ${record.Source}\n${record.BookName}`,
+                    `封面提取失败：${coverRsl[0].message}-\t ${record.Source}\t${record.BookName}`,
                     { storageId: record.id }
                 );
             }
         } catch (error) {
-            // console.error(`封面采集失败：${error.message}`, error);
             return this.#resultHandle(
                 payload, false,
                 `封面采集失败：${error.message}`,

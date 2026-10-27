@@ -3,10 +3,11 @@
 import { parentPort, workerData } from 'worker_threads';
 import { TASK_TYPES, TASK_MESSAGE_TYPE as TMT } from "../../../2-application/constants/Task.js";
 import { assignTasks } from "../tasks/assignTasks.js"
-import { AppError } from '../../../5-shared/errors/index.js';
+import { AppError, normalizeError } from '../../../5-shared/errors/index.js';
+import { logger } from '../../../5-shared/logging/index.js';
 
 const { workerId, config } = workerData;
-let beforeClose = () => { console.log('🛑 未定义子线程退出程序。'); }
+let beforeClose = () => { logger.log('🛑 未定义子线程退出程序。'); }
 let isrunning = false;
 
 // ============================================================
@@ -40,7 +41,7 @@ export async function initWorker(serverResources, onclose = () => { }) {
 async function runCommand(cmd, config, resources) {
     switch (cmd.cmd) {
         case "shutdown": return await closeMe();
-        default: console.log("尚未开发的子线程命令：", cmd); break
+        default: logger.log("尚未开发的子线程命令：", cmd); break
     }
 }
 
@@ -80,12 +81,7 @@ function throwError(error, taskId, data) {
         type: TMT.TASK_ERROR,
         workerId,
         taskId,
-        error: {
-            message: error.message,
-            stack: error.stack,
-            code: error.code || 'UNKNOWN',
-            data,
-        },
+        error: { ...normalizeError(error), data },
     };
     parentPort?.postMessage(errorPayload);
 }

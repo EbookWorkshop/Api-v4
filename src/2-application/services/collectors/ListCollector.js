@@ -1,7 +1,7 @@
 import { RuleName } from "../../../3-domain/constants/Rule.js"
 import { ICollector } from "../../ports/ICollector.js";
 import { COLLECT_EVENTS } from "../../constants/Event.js"
-
+import { logger } from "../../../5-shared/logging/index.js";
 const MAX_TRY_TIME = 10;
 
 export class ListCollector extends ICollector {
@@ -72,14 +72,14 @@ export class ListCollector extends ICollector {
         } catch (err) {
             const isBusy = /SQLITE_BUSY|database is locked/i.test(err?.message || '');
             if (isBusy) {
-                console.warn('[ListCollector] 数据库繁忙，终止本轮采集', err.message);
+                logger.warn('[ListCollector] 数据库繁忙，终止本轮采集', err.message);
                 throw err;   // 让上层 Executor 结束这个任务
             }
             if (err?.name?.startsWith("Sequelize") || err.sql || err?.parent?.sql) {
-                console.log(err.message, '\n', err?.parent?.message, '\n', err?.original);
-                console.warn(err.sql || err?.original?.sql);
+                logger.log(err.message, '\n', err?.parent?.message, '\n', err?.original);
+                logger.warn(err.sql || err?.original?.sql);
             } else
-                console.warn("ListCollector:;fetch", err);
+                logger.warn("ListCollector:;fetch", err);
         }
 
         return curURL;

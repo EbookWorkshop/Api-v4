@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import { TASK_TYPES } from '../constants/Task.js';
 import { Task } from '../../4-infrastructure/workers/index.js';
 import { AppError } from "../../5-shared/errors/index.js";
+import { logger } from "../../5-shared/logging/index.js";
 
 export class TaskSchedulerService {
     /** @type {import("../../4-infrastructure/workers/index.js").WorkerPool} 线程池 */
@@ -35,7 +36,7 @@ export class TaskSchedulerService {
                 taskType: TASK_TYPES.EXPORT_BOOK,
                 useDB: true,
                 // callback: async ({ data, error }) => {
-                //     console.log("导出完成后的回调函数，返回参数：", data, error);
+                //     logger.log("导出完成后的回调函数，返回参数：", data, error);
                 // },
             })
 
@@ -194,7 +195,7 @@ export class TaskSchedulerService {
                 useDB: true,
                 maxTaskNum: 1,
                 callback: ({ data, error }) => {
-                    console.log("【任务】网站书目列表抓取已完成。");
+                    logger.log("【任务】网站书目列表抓取已完成。");
                 }
             })
 
@@ -231,7 +232,7 @@ export class TaskSchedulerService {
                 taskType: TASK_TYPES.BOTRULE_VIS,
                 param: { testUrl, rule },
                 callback: ({ data, error }) => {
-                    console.log("【任务】规则预览已执行完成！，已采集数据：", data);
+                    logger.log("【任务】规则预览已执行完成！，已采集数据：", data);
                     //TODO: Socket 发消息展示采集结果
                 }
             });
@@ -287,8 +288,8 @@ export class TaskSchedulerService {
             useDB: true,
             maxTaskNum: 2,      // 避免并发写同一批记录
             callback: ({ data, error }) => {
-                if (error) console.log(`[${new Date().toLocaleString()}]`, error);
-                else console.log(`[${new Date().toLocaleString()}]`, data?.message);
+                if (error) logger.error(error);
+                else logger.log(data?.message);
             },
         });
         this.#workerPool.addTask(task);
@@ -310,8 +311,8 @@ export class TaskSchedulerService {
                 useDB: true,
                 maxTaskNum: 1,           // 避免并发写入
                 callback: ({ data, error }) => {
-                    console.debug("采集库存图书封面：", data?.message);
-                    if (error) console.log(error);
+                    logger.log(data?.message);
+                    if (error) logger.error(error);
                 },
             });
             this.#workerPool.addTask(task);

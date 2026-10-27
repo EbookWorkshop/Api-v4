@@ -8,13 +8,14 @@ import crypto from "node:crypto";
 import { Worker } from 'node:worker_threads';
 import { AsyncResource } from 'node:async_hooks';
 
+import { logger } from "../../../5-shared/logging/index.js";
 import { AppError } from "../../../5-shared/errors/index.js"
 import { TASK_MESSAGE_TYPE, TASK_STATUS, TASK_TYPES } from "../../../2-application/constants/Task.js"
 import { WORKERPOOL_ADD_TASK } from "../../../2-application/constants/Event.js"
 import { Task } from "../tasks/Task.js";
 import { WorkerQueue } from "./WorkerQueue.js";
 import { EventManager } from "../../event/EventManager.js";
-import { WorkerData } from "./WorkerData.js"
+import { WorkerData } from "./WorkerData.js";
 
 const MAX_DB_WORKER = 8;//SQLite 默认限制为 10 个并发连接
 const MAX_THREAD_NUM = 15;
@@ -110,7 +111,7 @@ export class WorkerPool {
             interval: null,      //扫描器句柄
         }
         this.#poolConfig.interval = setInterval(() => {
-            this.#scanPool().catch(err => console.error('[WorkerPool] scan failed', err));
+            this.#scanPool().catch(err => logger.error('[WorkerPool] scan failed', err));
         }, this.#poolConfig.scan);
     }
 
@@ -120,6 +121,8 @@ export class WorkerPool {
      * ### 回收闲置线程
      */
     async #scanPool() {
+        if (this.#taskHistory.length > 1000) this.#taskHistory.splice(0, this.#taskHistory.length / 2);//历史任务过多，记录减半
+
         const fwNum = this.feeWorkerNum;
         if (fwNum <= 0 && this.#maxThreadsNum <= this.workerCount) return;//无闲置线程，直接退出
 
@@ -131,9 +134,9 @@ export class WorkerPool {
             const worker = this.#workersQueue(flyTask.useDB).findById(workerId);
             const wD = this.#workerData.get(worker);
             if (!worker || worker[kIsDead] || !wD || wD?.taskId !== flyTask.taskId) {
-                console.debug("发现跑飞的任务：", JSON.stringify(flyTask));
-                if (!worker || worker[kIsDead]) console.debug("原因：执行器已死。");
-                if (!wd || wD?.taskId !== flyTask.taskId) console.debug("原因：执行器已安排新任务。");
+                logger.debug("发现跑飞的任务：", JSON.stringify(flyTask));
+                if (!worker || worker[kIsDead]) logger.debug("原因：执行器已死。");
+                if (!wd || wD?.taskId !== flyTask.taskId) logger.debug("原因：执行器已安排新任务。");
                 this.restartTask(flyTask.taskId);
             }
         }
@@ -172,7 +175,7 @@ export class WorkerPool {
             worker[kServicedTask] = [];
             worker[kWorkerFreeStart] = performance.now();
             worker[kIsDead] = false;
-            // console.debug("创建线程\t", worker.threadId, workerId);
+            // logger.debug("创建线程\t", worker.threadId, workerId);
 
             if (useDB) this.#workerQueueWithDB.add(worker);
             else this.#workerQueueNoDB.add(worker);
@@ -183,15 +186,15 @@ export class WorkerPool {
 
             return worker;
         } catch (error) {
-            console.warn("创建线程出错：", error);
+            logger.warn("创建线程出错：", error);
             return null;
         }
     }
 
     #remoteBroadcastEvent(message, worker) {
         const { eventName, args_data } = message;
-        // console.log("收到消息已转发：", message);
-        if (!eventName) { console.warn("消息转发失败：已丢失消息名。"); return; }
+        // logger.log("收到消息已转发：", message);
+        if (!eventName) { logger.warn("消息转发失败：已丢失消息名。"); return; }
         this.#event.emit(eventName, ...args_data);
     }
 
@@ -209,8 +212,8 @@ export class WorkerPool {
         const { type, error, data, taskId, workerId } = message;
         if (type === TASK_MESSAGE_TYPE.TASK_EVENT_ENVELOPE) return this.#remoteBroadcastEvent(message, worker);
         if (!this.#workerData.has(worker)) {
-            console.warn("注意：线程数据已提前释放，但当前线程仍然活跃，需要确认调度逻辑。");
-            console.debug(worker, type, message, taskId, workerId);
+            logger.warn("注意：线程数据已提前释放，但当前线程仍然活跃，需要确认调度逻辑。");
+            logger.debug(worker, type, message, taskId, workerId);
         } else {
             const callback = this.#workerData.get(worker)[kTaskCallback];
             //线程完成后-执行回调
@@ -219,7 +222,7 @@ export class WorkerPool {
                 try {
                     await aRunner.runInAsyncScope(callback, null, { data, error })
                 } catch (newerr) {
-                    console.log("线程的回调执行出错：", newerr);
+                    logger.log("线程的回调执行出错：", newerr);
                     throw newerr;
                 } finally {
                     aRunner.emitDestroy();
@@ -247,11 +250,11 @@ export class WorkerPool {
      */
     async #errorHandler(error, worker) {
         try {
-            console.warn("线程执行出错：", error);
-            console.log(error.stack);
+            logger.warn("线程执行出错：", error);
+            logger.log(error.stack);
             this.#freeAWorker(worker, TASK_STATUS.REJECTED, { error });//释放线程计数
         } catch (error) {
-            console.warn("新错误：", error)
+            logger.warn("新错误：", error)
         } finally {
             // //NOTE: 注意，线程上的程序通过定时器，存在多次触发错误消息的可能。
             // 如果源任务结果已经提交，线程已被安排新任务，这时的线程关闭会导致正在进行的任务丢失。
@@ -355,7 +358,7 @@ export class WorkerPool {
             if (curTask) {
                 curTask.status = TASK_STATUS.REJECTED;
                 setTimeout(() => this.restartTask(curTask.taskId), 60_000);//一分钟后重试
-                console.log("运行出错，任务可能已经丢失：", curTask);
+                logger.log("运行出错，任务可能已经丢失：", curTask);
             }
             throw new AppError("线程执行错误：" + error.message);
         }
@@ -374,8 +377,8 @@ export class WorkerPool {
         const tData = this.#workerData.get(worker);
         if (!tData && this.#workersQueue(worker.withDB).isFree(worker)) return;  //已经是闲置线程，出现了重复置闲。
         if (!tData) {
-            console.error("线程调度出现错误，尝试闲置的线程运行时数据不存在。");
-            console.trace();
+            logger.error("线程调度出现错误，尝试闲置的线程运行时数据不存在。");
+            logger.trace();
             return;
         }
         const task = tData[kTaskData];
@@ -392,8 +395,8 @@ export class WorkerPool {
         this.#workersQueue(worker.withDB).free(worker);
 
         if (this.workerDebug) {
-            console.log(`线程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。\n`, task.param, data, error);
-            if (resule === TASK_STATUS.REJECTED) console.warn("【线程执行失败】，原因：", error || data);
+            logger.log(`线程回收，任务状态：${resule}；\t耗时：${task.useMS}ms；\t任务类型：${task.taskType}。\n`, task.param, data, error);
+            if (resule === TASK_STATUS.REJECTED) logger.warn("【线程执行失败】，原因：", error || data);
         }
     }
 
@@ -405,7 +408,7 @@ export class WorkerPool {
         try {
             const { taskType, highPriority } = task;
             if (highPriority === "lazy" && this.allTaskNum > 0) {
-                console.debug(`系统非空闲（已有任务数：${this.allTaskNum}），已放弃任务：${taskType}。`);
+                logger.debug(`系统非空闲（已有任务数：${this.allTaskNum}），已放弃任务：${taskType}。`);
                 return false;
             }
 
@@ -421,7 +424,7 @@ export class WorkerPool {
 
             if (this.hasFeeWorker || this.workerCount < this.#maxThreadsNum) this.#runTask();
         } catch (error) {
-            if (this.#config?.debug?.mode) console.error(error);
+            if (this.#config?.debug?.mode) logger.error(error);
             throw error;
         }
     }
