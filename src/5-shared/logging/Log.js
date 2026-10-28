@@ -58,9 +58,12 @@ export class Log {
 
     #format(type, ...param) {
         const tInfo = workerId ? `\t【线程：${workerId}】` : ``;
-        return `(${new Date().toLocaleString()})[${type}]:\t${tInfo}${param.map(t =>
-            typeof t === 'object' ? normalizeError(t) : String(t)
-        ).join('\t')}`;
+        let showText = `(${new Date().toLocaleString()})[${type}]:\t${tInfo}${param.map(t => typeof t === 'object' ? JSON.stringify(normalizeError(t)) : String(t)).join('\t')}`;
+        if (type === "error") showText = `\x1b[31m${showText}\x1b[0m`;
+        else if (type === "info") showText = `\x1b[32m${showText}\x1b[0m`;
+        else if (type === "warn") showText = `\x1b[33m${showText}\x1b[0m`;
+        else if (type === "log") showText = `\x1b[34m${showText}\x1b[0m`;
+        return showText;
     }
 
     #write(type, ...param) {

@@ -28,6 +28,7 @@ export class StorageCoverCacheCollector extends ICollector {
     #fetcher;
     #storageService;
     #fileWriter;
+    /** @type{import('../../events/CollectEventEmitter.js').CollectEventEmitter} */
     #emitter;
 
     constructor(config, rules, fetcher, services) {
@@ -80,11 +81,7 @@ export class StorageCoverCacheCollector extends ICollector {
             buffer = await this.#fetcher.download(fullUrl, setting);
         } catch (error) {
             if (error?.cause.status === 404) await this.#storageService.updateCover(id, fullUrl + "#404#check");
-            return this.#resultHandle(
-                payload, false,
-                `下载封面失败：${error.message}——${fullUrl}`,
-                { storageId: id, url: fullUrl }
-            );
+            return this.#resultHandle(payload, false, error, { storageId: id, url: fullUrl });
         }
         if (!buffer || buffer.length === 0) {
             return this.#resultHandle(
@@ -191,11 +188,14 @@ export class StorageCoverCacheCollector extends ICollector {
         const ctx = { url: payload?.record?.Source };
         const event = COLLECT_EVENTS.STORAGE_COVER_CACHE;
 
+        //NOTE： 这儿的信息是通过主线成再用socket发向前端的
         if (ok) {
             this.#emitter?.success(event, { ctx, data, message });
         } else {
             this.#emitter?.failure(event, { ctx, error: { message }, message });
         }
-        return { payload, result: ok, message, data };
+
+        //NOTE： 这儿的信息通过回调，再由子线程post到主线成的回调函数。
+        return { payload, result: ok, message, data, error: ok ? undefined : message };
     }
 }

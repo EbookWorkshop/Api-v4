@@ -56,7 +56,9 @@ export class CollectEventEmitter {
     }
 
     /**
-     * 任务成功事件
+     * 任务成功事件    
+     * 跨线程发向主线程用的事件发送方法
+     * @param {string} event 向前端发送的socket事件名
      */
     success(event, { ctx = {}, data = {}, message = '' } = {}) {
         return this.#send(event, { ctx, ok: true, data, message });
@@ -64,7 +66,8 @@ export class CollectEventEmitter {
 
     /**
      * 任务失败事件
-     * @param {string} event
+     * 跨线程发向主线程用的事件发送方法
+     * @param {string} event 向前端发送的socket事件名
      * @param {Object} [options]
      * @param {Object} [options.ctx]
      * @param {*} [options.error]

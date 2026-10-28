@@ -101,13 +101,13 @@ export class AxiosDataFetcher extends IDataFetcher {
             // 增强错误信息，方便调试
             if (error.response) {
                 // 服务器响应了，但状态码不在 2xx 范围内
-                throw new Error(`下载图片失败: ${error.response.status} ${error.response.statusText}`, { cause: error });
+                throw new Error(`[AxiosDataFetcher::download]下载失败: ${error.response.status} ${error.response.statusText ?? ""}`, { cause: error });
             } else if (error.request) {
                 // 请求已发出，但没有收到响应
-                throw new Error(`下载图片失败: 无响应 (${error.message})`, { cause: error });
+                throw new Error(`[AxiosDataFetcher::download]下载失败: 无响应 (${error.message})`, { cause: error });
             } else {
                 // 请求配置出错
-                throw new Error(`下载图片失败: ${error.message}`, { cause: error });
+                throw new Error(`[AxiosDataFetcher::download]下载失败: ${error.message}`, { cause: error });
             }
         }
     }

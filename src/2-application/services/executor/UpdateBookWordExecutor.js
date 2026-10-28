@@ -16,7 +16,7 @@ export class UpdateBookWordExecutor extends ITaskExecutor {
 
     async updateBookWord() {
         const bookId = await this.#ebookRepository.findBookToCalc();
-        logger.info(`对书籍进行了字数统计：${bookId}`);
+        logger.info(`将对书籍进行字数统计：${bookId}`);
         return this.#bookAnalysis.analyze(bookId);
     }
 

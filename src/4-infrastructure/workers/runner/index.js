@@ -55,17 +55,17 @@ async function runTask(task, config, resources) {
     // (new AsyncLocalStorage()).run({ taskId }, async () => {//为子线程创建一个运行上下文，可以用于传送信息、调试等。取回： new AsyncLocalStorage().getStore()?.taskId
     try {
         isrunning = true;
-        let result = null;
         //执行线程逻辑
         const taskExe = await assignTasks(taskType, config, resources);
         if (!taskExe) throw new AppError(`任务类型【${taskType}】未分配到执行器！`);
-        result = await taskExe.execute(taskType, param);
+        let { error, ...result } = await taskExe.execute(taskType, param);//这里的Error是已在底层处理过的错误
 
         parentPort?.postMessage({
             type: TMT.TASK_COMPLETED,
             taskId,
             workerId,
             data: result,
+            error: error ? normalizeError(error) : error,
         });
         await taskExe.close();
     } catch (error) {

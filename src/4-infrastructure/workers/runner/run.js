@@ -4,7 +4,7 @@ import { logger } from '../../../5-shared/logging/index.js';
 const { config } = workerData;
 
 function close() {
-    logger.log(`🛑\t\t线程关闭，已在线${(performance.now() / 60_000).toFixed(1)}分。`);
+    logger.debug(`🛑\t\t线程关闭，已在线 ${(performance.now() / 60_000).toFixed(1)} 分钟。`);
 }
 
 
