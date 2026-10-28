@@ -18,9 +18,23 @@ export class VolumeCommandService {
      * @param {number} book.bookId 
      * @param {string} book.title 
      * @param {string?} book.introduction 
+     * @param {number} book.createNum 
      */
-    async createVolume({ bookId, title, introduction }) {
-        return this.#volumeRepository.createVolume({ bookId, title, introduction });
+    async createVolume({ bookId, title, introduction, createNum }) {
+        if (createNum <= 1) return this.#volumeRepository.createVolume({ bookId, title, introduction });
+        const titleArr = [title];
+        if (/\d+/.test(title)) {
+            for (let i = 2; i <= createNum; i++) titleArr.push(title.replace(/\d+/, `${i + 1}`));
+        } else if (/一/.test(title)) {
+            let numArr = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
+            for (let i = 2; i <= createNum; i++) titleArr.push(title.replace(/一/, numArr[i]));
+        }
+        let iTex = introduction;
+        return Promise.all(titleArr.map(item => {
+            const result = this.#volumeRepository.createVolume({ bookId, title: item, introduction: iTex });
+            iTex = "";
+            return result;
+        }))
     }
 
     /**

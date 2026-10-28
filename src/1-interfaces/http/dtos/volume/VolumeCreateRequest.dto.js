@@ -20,6 +20,10 @@ import { UserInputError } from "../../../../5-shared/errors/index.js";
  *           type: string
  *           description: 分卷简介
  *           example: "1887年11月出版的《血字的研究》是英国推理小说家阿瑟·柯南·道尔于1887年创作的中篇小说，这也是他第一本以夏洛克·福尔摩斯为主角的作品。"
+ *         createNum:
+ *           type: number
+ *           description: 同时创建的卷数
+ *           example: 0
  *       required:
  *         - bookId
  *         - title
@@ -34,8 +38,8 @@ import { UserInputError } from "../../../../5-shared/errors/index.js";
  */
 export class VolumeCreateRequest {
     static fromBody(body) {
-        const { bookId, title, introduction } = body;
+        const { bookId, title, introduction, createNum } = body;
         if (!title) throw new UserInputError("卷标题必须提供。");
-        return { bookId, title, introduction };
+        return { bookId, title, introduction, createNum };
     }
 }

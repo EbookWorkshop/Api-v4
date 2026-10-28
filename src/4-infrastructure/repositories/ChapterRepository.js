@@ -362,7 +362,7 @@ export class ChapterRepository {
         let order = maxOrderNum + 1;
         const processedChapters = chapters.map(({ VolumeId, ...cp }) => ({
             ...cp,
-            OrderNum: cp.OrderNum ? cp.OrderNum : order++,
+            OrderNum: cp.OrderNum && cp.OrderNum > maxOrderNum ? cp.OrderNum : order++,
             BookId: bookId,
             VolumeId: (volumeId || VolumeId || null)
         }));
