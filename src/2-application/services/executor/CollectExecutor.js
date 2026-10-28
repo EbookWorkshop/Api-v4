@@ -1,14 +1,8 @@
 import { EventEmitter } from "node:events"
 import { ITaskExecutor } from '../../ports/ITaskExecutor.js';
-import { TASK_TYPES } from '../../constants/Task.js';
-import { COLLECT_EVENTS } from "../../constants/Event.js";
-import { RULE_GROUP, RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
+import { RULE_ALL, RuleCommon } from "../../../3-domain/constants/Rule.js";
 import { AppError } from '../../../5-shared/errors/index.js';
-import { logger } from "../../../5-shared/logging/index.js";
-import {
-    WebBookCollector, ChapterCollector, FileCollector,
-    ListCollector, StorageCoverCollector, StorageCoverCacheCollector, ICollector
-} from "../collectors/index.js";
+// import { logger } from "../../../5-shared/logging/index.js";
 import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine } from "../../../4-infrastructure/fetchers/index.js";
 import { EventManager } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
@@ -27,6 +21,7 @@ import { FileSystemWriter } from "../../../4-infrastructure/server/adapters/File
 import { CollectEventEmitter } from "../../events/index.js";
 import { StorageService } from "../StorageService.js";
 
+import { COLLECT_DESCRIPTORS } from '../collectors/descriptors.js';
 export class CollectExecutor extends ITaskExecutor {
     #config;
     /** @type {RuleForWebQueryService} */
@@ -37,6 +32,12 @@ export class CollectExecutor extends ITaskExecutor {
     #eventManager;
     #fileWriter;
     #_fetcher;
+    /** @type {WebBookQueryService} */
+    #bookQuery;
+    /** @type {StorageService} */
+    #storageService;
+    #queryCtx;
+
     constructor(config, ruleService, resources, chapService) {
         super();
         this.#config = config;
@@ -47,127 +48,63 @@ export class CollectExecutor extends ITaskExecutor {
 
         this.#eventManager = new EventManager(new EventEmitter());
         this.#fileWriter = new FileSystemWriter(this.#config.repository.path);
-        this.#_fetcher;
+
+        this.#bookQuery = new WebBookQueryService(
+            this.#repositories.webBookRepository,
+            this.#repositories.webBookSourceURLRepository,
+        );
+        this.#storageService = new StorageService(this.#repositories.storageRepository);
+
+        this.#queryCtx = Object.freeze({
+            getBookDefaultSource: (bookId) => this.#bookQuery.getDefSources(bookId),
+            getChapterDefaultSource: (chapterId, bookId) => this.#chapService.getDefaultChapterSource(chapterId, bookId),
+            findBookName: async (bookId) => (await this.#repositories.ebookRepository.findById(bookId))?.BookName,
+            getLastListPage: () => this.#storageService.getLastPage(),
+            findOneMissingCover: () => this.#storageService.findOneMissingCover(),
+            findOneNeedingCoverCache: (threshold) => this.#storageService.findOneNeedingCoverCache(threshold),
+        });
     }
-
+    
     async execute(taskType, payload = {}) {
-        const { keepsilent } = payload;
+        const desc = COLLECT_DESCRIPTORS[taskType];
+        if (!desc) throw new AppError(`未知采集任务类型：${taskType}`);
 
-        const emitter = keepsilent ? null : new CollectEventEmitter(this.#eventManager, {
+        const emitter = payload.keepsilent ? null : new CollectEventEmitter(this.#eventManager, {
             taskId: payload.taskId,
             batchId: payload.batchId,
-            ctx: {
-                bookId: payload.bookId,
-                sourcePage: payload.sourcePage,
-                infoPage: payload.infoPage,
-            },
+            ctx: { bookId: payload.bookId, sourcePage: payload.sourcePage, infoPage: payload.infoPage },
         });
-        const ruleEngine = new RuleEngine();
-        let msgEvent = COLLECT_EVENTS.UNKNOW;
+
+        desc.prepare?.(payload);
+
         try {
-            let pageURL = await this.#getPageURL(taskType, payload);
-            if (pageURL === null) { return { success: true, skipped: true, message: `[${taskType}]没有需要处理的任务。` }; }
-            let Collector = ICollector;
-            let ruleGroup;
-            let services = { eventManager: this.#eventManager, emitter };
-            switch (taskType) {
-                case TASK_TYPES.WEB_BOOK_COLLECT: {
-                    Collector = WebBookCollector;
-                    ruleGroup = RULE_GROUP.INFO_INDEX_PAGE;
-                    msgEvent = COLLECT_EVENTS.CREATE_BOOK;
-                    payload.mode = "create";
-
-                    services = {
-                        ...services,
-                        ...this.#createWebBookServices(),
-                    }
-                    break;
-                }
-                case TASK_TYPES.WEB_BOOK_UPDATE_INDEX: {
-                    Collector = WebBookCollector;
-                    ruleGroup = RULE_GROUP.INDEX_PAGE;
-                    msgEvent = COLLECT_EVENTS.UPDATE_INDEX;
-                    payload.mode = "update";
-                    payload.sourcePage = pageURL;
-                    payload.bookName = (await this.#repositories.ebookRepository.findById(payload.bookId))?.BookName;
-                    services = {
-                        ...services,
-                        ...this.#createWebBookServices(),
-                    }
-                    break;
-                }
-                case TASK_TYPES.SINGLE_CHAPTER_COLLECT: {
-                    Collector = FileCollector;
-                    ruleGroup = RULE_GROUP.CHAPTER_PAGE;
-                    services.fileWriter = this.#fileWriter;
-                    break;
-                }
-                case TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT: {
-                    Collector = ChapterCollector;
-                    ruleGroup = RULE_GROUP.CHAPTER_PAGE;
-                    payload.url = pageURL;
-                    services = {
-                        ...services,
-                        ... this.#createChapterServices(),
-                    };
-                    msgEvent = COLLECT_EVENTS.UPDATE_CHAPTER;
-                    break;
-                }
-                case TASK_TYPES.WEB_BOOK_LIST_CACHE: {
-                    ruleGroup = RULE_GROUP.BOOK_LIST;
-                    Collector = ListCollector;
-                    services.storageService = new StorageService(this.#repositories.storageRepository);
-                    if (!payload.url) payload.url = pageURL;
-                    break;
-                }
-                case TASK_TYPES.STORAGE_COVER_COLLECT: {
-                    Collector = StorageCoverCollector;
-                    ruleGroup = RULE_GROUP.STORAGE_COVER;
-                    msgEvent = COLLECT_EVENTS.STORAGE_COVER;
-                    services.storageService = new StorageService(this.#repositories.storageRepository);
-                    break;
-                }
-                case TASK_TYPES.STORAGE_COVER_CACHE: {
-                    Collector = StorageCoverCacheCollector;
-                    ruleGroup = null;
-                    msgEvent = COLLECT_EVENTS.STORAGE_COVER_CACHE;
-                    services.storageService = new StorageService(this.#repositories.storageRepository);
-                    services.fileWriter = this.#fileWriter;               // 用于保存图片
-                    break;
-                }
-                default:
-                    throw new AppError('未知任务类型！');
+            const pageURL = await desc.resolveURL(this.#createCtx(), payload);
+            if (pageURL === null) {
+                return { success: true, skipped: true, message: `[${taskType}] 没有需要处理的任务。` };
             }
 
+            const services = { eventManager: this.#eventManager, emitter, ...this.#buildServices(desc.services) };
+
+            // 是否需要查规则，由 descriptor 声明；无 ruleGroup 即 rules = []
             let rules = [];
-            try {
-                if (ruleGroup != null) {
-                    rules = await this.#ruleService.getRulesWithGroup(pageURL, ruleGroup);
-                }
-            } catch (err) {
-                // 本地缓存任务不依赖站点规则，站点未配置也不影响
-                if (taskType !== TASK_TYPES.STORAGE_COVER_CACHE) throw err;
-                logger.debug(`[CollectExecutor] 站点未配置规则，使用默认下载器：${pageURL}`);
+            if (desc.ruleGroup != null) {
+                rules = await this.#ruleService.getRulesWithGroup(pageURL, desc.ruleGroup);
             }
 
-            const scraper = rules.find(({ ruleName }) => ruleName === RuleCommon.Scraping);
-            // 默认：本地缓存任务用 http 下载器（图片小、无需等待 JS）
-            const defaultScraper = taskType === TASK_TYPES.STORAGE_COVER_CACHE ? "http" : "puppeteer";
-            const scraperType = scraper?.selector ?? defaultScraper;
-            switch (scraperType) {
-                case "puppeteer": this.#_fetcher = new PuppeteerDataFetcher(this.#config, ruleEngine, true); break;
-                case "http":
-                default: this.#_fetcher = new AxiosDataFetcher(this.#config, ruleEngine, true); break;
-            }
-            const collector = new Collector(this.#config, rules, this.#_fetcher, services);
+            const scraperType = rules.find(r => r.ruleName === RuleCommon.Scraping)?.selector
+                ?? desc.scraperDefault;
+            this.#_fetcher = scraperType === 'http'
+                ? new AxiosDataFetcher(this.#config, new RuleEngine(), true)
+                : new PuppeteerDataFetcher(this.#config, new RuleEngine(), true);
 
-            const setting = this.#rangeSetting(rules);
-            return await collector.fetch(setting, payload);
+            const collector = new desc.Collector(this.#config, rules, this.#_fetcher, services);
+            return await collector.fetch(this.#rangeSetting(rules), payload);
+
         } catch (error) {
             error.stack = `CollectExecutor::execute: ${import.meta.filename}\n${error.stack}`;
             const message = "采集任务执行失败：" + (error.message || '未知错误');
             const { batchId, taskId, ...ctx } = payload;
-            emitter?.failure(msgEvent, { error, message, ctx });
+            emitter?.failure(desc.msgEvent, { error, ctx, message });
             throw error;
         } finally {
             await this.#_fetcher?.close?.();
@@ -176,50 +113,6 @@ export class CollectExecutor extends ITaskExecutor {
 
     async close() {
         await this.#_fetcher?.close?.();
-    }
-
-    /**
-     * 根据任务类型，获取任务开始页面地址
-     * @param {*} taskType 
-     * @param {*} payload 
-     * @returns {Promise<string|null>} 采集网址
-     */
-    async #getPageURL(taskType, payload) {
-        switch (taskType) {
-            case TASK_TYPES.WEB_BOOK_COLLECT: return payload.sourcePage;
-            case TASK_TYPES.SINGLE_CHAPTER_COLLECT: return payload.url;
-            case TASK_TYPES.WEB_BOOK_UPDATE_INDEX: {
-                const bookQuery = new WebBookQueryService(this.#repositories.webBookRepository, this.#repositories.webBookSourceURLRepository);
-                const urlInfo = await bookQuery.getDefSources(payload.bookId);
-                return urlInfo.Path;
-            }
-            case TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT: {
-                const { chapterId, bookId } = payload;
-                const urlInfo = await this.#chapService.getDefaultChapterSource(chapterId, bookId);
-                return urlInfo.Path;
-            }
-            case TASK_TYPES.WEB_BOOK_LIST_CACHE: {
-                if (payload.url) return payload.url;
-                const s = new StorageService(this.#repositories.storageRepository);
-                return await s.getLastPage()
-            }
-            case TASK_TYPES.STORAGE_COVER_COLLECT: {
-                const s = new StorageService(this.#repositories.storageRepository);
-                const record = await s.findOneMissingCover();
-                if (!record) return null;              // 哨兵值，上层据此判定"无工作"
-                payload.record = record;
-                return record.Source;
-            }
-            case TASK_TYPES.STORAGE_COVER_CACHE: {
-                const s = new StorageService(this.#repositories.storageRepository);
-                const record = await s.findOneNeedingCoverCache(3);
-                if (!record) return null;                              // 哨兵：无工作
-                payload.record = record;                               // 注入给 Collector
-                return record.Source;                                  // 仅作为 base URL
-            }
-            default:
-                throw new AppError('未知任务类型，未能获取采集主机！');
-        }
     }
 
     /**
@@ -261,5 +154,21 @@ export class CollectExecutor extends ITaskExecutor {
             webBookChapterService,
             webBookChapterURLService: new WebBookChapterURLService(webBookChapterURLRepository, webBookQueryService),
         }
+    }
+
+    /** 把 Executor 需要的能力以显式白名单暴露给 descriptor */
+    #createCtx() {
+        return this.#queryCtx;
+    }
+
+    /** 按 descriptor 声明的服务名装配，避免"按 taskType if/switch" */
+    #buildServices(names = []) {
+        const builders = {
+            webBook: () => this.#createWebBookServices(),
+            chapter: () => this.#createChapterServices(),
+            storage: () => ({ storageService: this.#storageService }),
+            fileWriter: () => ({ fileWriter: this.#fileWriter }),
+        };
+        return names.reduce((acc, n) => Object.assign(acc, builders[n]?.() ?? {}), {});
     }
 }

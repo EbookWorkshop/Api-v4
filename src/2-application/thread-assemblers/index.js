@@ -1,0 +1,1 @@
+export { COLLECT_DESCRIPTORS } from '../services/collectors/descriptors.js';

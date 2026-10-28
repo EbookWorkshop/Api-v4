@@ -21,14 +21,15 @@ export function createCollectExecutor(config, taskType, resources) {
     const systemConfigService = new SystemConfigService(repositories.systemConfigRepository);
     const rdSer = new ReviewDictionaryService(repositories.dictionaryRepository);
     const ruleService = new RuleForWebQueryService(repositories.ruleForWebRepository, systemConfigService, rdSer);
-    /** @type{WebBookChapterURLService|null} */
-    let chapService = null;
-    if (taskType === TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT) {
-        const webBookQueryService = new WebBookQueryService(repositories.webBookRepository, repositories.webBookSourceURLRepository);
-        chapService = new WebBookChapterURLService(repositories.webBookChapterURLRepository, webBookQueryService)
 
-    }
-
+    const webBookQueryService = new WebBookQueryService(
+        repositories.webBookRepository,
+        repositories.webBookSourceURLRepository,
+    );
+    const chapService = new WebBookChapterURLService(
+        repositories.webBookChapterURLRepository,
+        webBookQueryService,
+    );
 
     return new CollectExecutor(config, ruleService, resources, chapService);
 }

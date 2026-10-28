@@ -3,6 +3,8 @@ import { TASK_TYPES } from "../../../2-application/constants/Task.js";
 import { ITaskExecutor } from "../../../2-application/ports/ITaskExecutor.js"
 import { AppError } from "../../../5-shared/errors/index.js";
 import { logger } from "../../../5-shared/logging/index.js";
+// 4-infrastructure/workers/tasks/assignTasks.js
+import { COLLECT_DESCRIPTORS } from '../../../2-application/thread-assemblers/index.js';
 
 /**
  * 根据任务类型组装执行器
@@ -16,18 +18,11 @@ export async function assignTasks(taskType, config, resources) {
     const assemblerDir = "../../../2-application/thread-assemblers/";//线程专用服务，装配工厂目录
     let createTask = "";
 
-    switch (taskType) {
+    if (COLLECT_DESCRIPTORS[taskType]) {
+        createTask = 'collect.assembler.js';
+    } else switch (taskType) {
         case TASK_TYPES.EXPORT_BOOK:
             createTask = "exportBook.assembler.js";
-            break;
-        case TASK_TYPES.WEB_BOOK_COLLECT:
-        case TASK_TYPES.WEB_BOOK_UPDATE_INDEX:
-        case TASK_TYPES.WEB_BOOK_CHAPTER_COLLECT:
-        case TASK_TYPES.SINGLE_CHAPTER_COLLECT:
-        case TASK_TYPES.WEB_BOOK_LIST_CACHE:
-        case TASK_TYPES.STORAGE_COVER_COLLECT:
-        case TASK_TYPES.STORAGE_COVER_CACHE:
-            createTask = "collect.assembler.js";
             break;
         case TASK_TYPES.SYSTEM_VERSION:
             createTask = "version.assembler.js";
