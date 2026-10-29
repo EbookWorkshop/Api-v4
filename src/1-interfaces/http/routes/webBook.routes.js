@@ -14,10 +14,13 @@ export function createWebBookRoutes(bookController) {
     router.get('/defsources', (ctx) => bookController.getWebBookDefSources(ctx));
 
     router.post('/', (ctx) => bookController.createWebBook(ctx));
+    router.post('/crawler', (ctx) => bookController.createWebBookByCrawler(ctx));
     router.post('/sources', (ctx) => bookController.addWebBookSources(ctx));
     router.post('/autosync', (ctx) => bookController.setAutoSync(ctx));
     router.post('/singlechapter', (ctx) => bookController.collectSingleChapter(ctx));
     router.post('/fetchlist', (ctx) => bookController.fetchList(ctx));
+
+    router.put('/sources', (ctx) => bookController.editWebBookSources(ctx));
 
     router.patch('/mergeindex', (ctx) => bookController.updateWebBookIndex(ctx));
     router.patch('/updatechapter', (ctx) => bookController.updateWebBookChapters(ctx));

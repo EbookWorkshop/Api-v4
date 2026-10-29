@@ -51,4 +51,8 @@ export class WebBookSourceURLService {
             return result;
         });
     }
+
+    async editSource(id, data) {
+        return this.#webBookSourceURLRepository.editById(id, data);
+    }
 }

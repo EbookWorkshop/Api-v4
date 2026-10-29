@@ -18,16 +18,16 @@ export class WebBookChapterService {
     /**
      * 批量创建章节
      * @param {number} bookId 
-     * @param {*} ChapterList 
+     * @param {Array<{text:string,order:number,url:string;content:string}>} ChapterList 
      * @param {{ transaction?: import('sequelize').Transaction }} [options]
      */
     async batchCreate(bookId, ChapterList, { transaction } = {}) {
         const runTrans = async (transaction) => {
+            let tempDTO = {};
             let order = await this.#chapterRepository.getMaxOrder(bookId) + 1;
+            const chapAll = ChapterList.map((c => ({ Title: c.text, OrderNum: order++, WebTitle: c.text, Path: c.url, Content: c.content })));
 
-            const chapAll = ChapterList.map((c => ({ Title: c.text, OrderNum: order++, WebTitle: c.text, Path: c.url })));
-
-            let tempDTO = chapAll.map(({ Title, OrderNum }) => ({ Title, OrderNum }));
+            tempDTO = chapAll.map(({ Title, OrderNum, Content }) => ({ Title, OrderNum, Content }));
             await this.#chapterRepository.batchInsertChapters({ bookId, chapters: tempDTO }, { transaction });
 
             let orderOfId = await this.#chapterRepository.findIdOrderByBookId(bookId, { transaction });

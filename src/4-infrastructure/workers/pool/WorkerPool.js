@@ -222,7 +222,7 @@ export class WorkerPool {
                 try {
                     await aRunner.runInAsyncScope(callback, null, { data, error })
                 } catch (newerr) {
-                    logger.log("线程的回调执行出错：", newerr);
+                    logger.warn("线程的回调执行出错：", newerr);
                     throw newerr;
                 } finally {
                     aRunner.emitDestroy();

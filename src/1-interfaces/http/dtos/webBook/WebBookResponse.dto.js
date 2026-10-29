@@ -183,6 +183,35 @@
  * @swagger
  * components:
  *   schemas:
+ *     CreateWebBookCrawlerRequest:
+ *       type: object
+ *       description: 创建网页图书的请求体
+ *       properties:
+ *         url:
+ *           type: string
+ *           description: 开始页面
+ *           example: "https://www.example.com/source"
+ *         bookName:
+ *           type: string
+ *           description: 书名
+ *           example: 三国演义
+ *         bookId:
+ *           type: integer
+ *           description: 已缓存书籍ID
+ *           example: 321
+ *
+ *   examples:
+ *     CreateWebBookCrawlerRequestExample:
+ *       summary: 创建网页图书请求示例
+ *       value:
+ *         url: "https://www.example.com/source"
+ *         bookName: 三国演义
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
  *     UpdateWebBookChapterRequest:
  *       type: object
  *       description: 批量更新网页图书章节的请求体

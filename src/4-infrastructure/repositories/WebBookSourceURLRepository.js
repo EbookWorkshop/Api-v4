@@ -58,4 +58,10 @@ export class WebBookSourceURLRepository {
     async add(data, option) {
         return this.#WebBookSourceURLModel.create(data, option);
     }
+
+    async editById(id, data) {
+        return this.#WebBookSourceURLModel.update(data, {
+            where: { id: { [Op.eq]: id } }
+        });
+    }
 }

@@ -9,7 +9,7 @@ import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
 
 // import { ChapterQueryService } from "../ChapterQueryService.js";
 import { ChapterCommandService } from "../ChapterCommandService.js";
-
+import { BookQueryService } from "../BookQueryService.js";
 import { WebBookQueryService } from "../WebBookQueryService.js";
 import { WebBookCommandService } from "../WebBookCommandService.js";
 import { WebBookChapterService } from "../WebBookChapterService.js";
@@ -36,6 +36,7 @@ export class CollectExecutor extends ITaskExecutor {
     #bookQuery;
     /** @type {StorageService} */
     #storageService;
+    /** @type {import('../collectors/descriptors.js').CollectQueryCtx} 当前业务上下文*/
     #queryCtx;
 
     constructor(config, ruleService, resources, chapService) {
@@ -64,7 +65,7 @@ export class CollectExecutor extends ITaskExecutor {
             findOneNeedingCoverCache: (threshold) => this.#storageService.findOneNeedingCoverCache(threshold),
         });
     }
-    
+
     async execute(taskType, payload = {}) {
         const desc = COLLECT_DESCRIPTORS[taskType];
         if (!desc) throw new AppError(`未知采集任务类型：${taskType}`);
@@ -80,6 +81,7 @@ export class CollectExecutor extends ITaskExecutor {
         try {
             const pageURL = await desc.resolveURL(this.#createCtx(), payload);
             if (pageURL === null) {
+                if (payload.taskType && payload.taskType != taskType) return await this.execute(payload.taskType, payload);
                 return { success: true, skipped: true, message: `[${taskType}] 没有需要处理的任务。` };
             }
 
@@ -150,6 +152,8 @@ export class CollectExecutor extends ITaskExecutor {
         const webBookQueryService = new WebBookQueryService(webBookRepository, webBookSourceURLRepository);
         return {
             webBookService: new WebBookCommandService(webBookRepository, this.#transactionManager, ebookRepository, chapterRepository, webBookSourceURLRepository, webBookChapterService),
+            webBookQueryService: this.#bookQuery,
+            bookQueryService: new BookQueryService(ebookRepository),
             coverService: new CoverService(this.#fileWriter, null, this.#config),
             webBookChapterService,
             webBookChapterURLService: new WebBookChapterURLService(webBookChapterURLRepository, webBookQueryService),

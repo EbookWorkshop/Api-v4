@@ -111,6 +111,13 @@ export class EbookRepository {
         return await this.#EbookModel.findByPk(bookId, { raw: true });
     }
 
+    async findByBookName(bookName) {
+        return this.#EbookModel.findOne({
+            where: { BookName: { [Op.eq]: bookName } },
+            order: [["id", "DESC"]],
+        });
+    }
+
     /**
      * 为指定字段加1
      * 原子性地增加数值（能避免并发导致数据覆盖丢失问题）

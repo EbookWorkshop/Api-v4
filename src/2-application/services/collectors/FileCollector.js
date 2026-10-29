@@ -51,7 +51,7 @@ export class FileCollector extends ICollector {
 
         //写入到硬盘
         let fileName = `未定义文件名_${randomBytes(3).toString("hex")}.txt`;
-        let cn = result.get(RuleName.CapterTitle);
+        let cn = result.get(RuleName.ChapterTitle);
         if (cn && cn[0]?.text) fileName = `${cn[0]?.text}.txt`;
         const filePath = await this.#fileWriter.saveFile([this.#config.archive.path, fileName], pageCtx);
 

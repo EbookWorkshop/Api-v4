@@ -55,11 +55,7 @@ export class StorageCoverCollector extends ICollector {
                 );
             }
         } catch (error) {
-            return this.#resultHandle(
-                payload, false,
-                `封面采集失败：${error.message}`,
-                { storageId: record.id }
-            );
+            return this.#resultHandle(payload, false, error, { storageId: record.id });
         }
 
         if (!coverUrl) {
@@ -91,7 +87,7 @@ export class StorageCoverCollector extends ICollector {
      * 统一的结果/事件出口
      * @param {Object} payload
      * @param {boolean} ok
-     * @param {string} message
+     * @param {string|Error} message
      * @param {Object} data
      */
     #resultHandle(payload, ok, message, data = {}) {

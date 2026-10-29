@@ -45,6 +45,16 @@ export class WebBookRepository {
         return book.toJSON();
     }
 
+    async findByBookName(bookName) {
+        const book = await this.#WebBookModel.findOne({
+            where: { WebBookName: { [Op.eq]: bookName } }
+        });
+        if (!book) return null;
+        return book.toJSON();
+    }
+
+
+
     /**
      * 找到合适更新目录的书籍
      * @param {object} param 
@@ -100,6 +110,21 @@ export class WebBookRepository {
             ...data
         }, {
             where: { BookId: bookId },
+            transaction
+        })
+    }
+    /**
+     * 更新书籍信息
+     * @param {*} id 
+     * @param {*} data 
+     * @param {{ transaction?: import('sequelize').Transaction }} [options]
+     * @returns 
+     */
+    async updateById(id, data, { transaction } = {}) {
+        return this.#WebBookModel.update({
+            ...data
+        }, {
+            where: { id: id },
             transaction
         })
     }

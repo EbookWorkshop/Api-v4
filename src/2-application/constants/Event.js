@@ -59,6 +59,7 @@ export const COLLECT_EVENTS = {
     UNKNOW: "Unknow.Task",      //未定义任务类型
     CREATE_BOOK: "Create.Book", //
     UPDATE_INDEX: "Update.Index",    //更新目录
+    CRAWLER_CHAPTER: "Crawler.Chapter",   //以爬虫方式获取一本书的信息
     UPDATE_CHAPTER: "Update.Chapter",       //章节采集
     UPDATE_CHAPTER_START: "Update.Chapter.Start",       //单章采集-开始
     UPDATE_CHAPTER_BATCH_FINISH: "Update.Chapter.Batch.Finish",

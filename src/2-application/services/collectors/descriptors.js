@@ -2,7 +2,7 @@ import { TASK_TYPES } from '../../constants/Task.js';
 import { COLLECT_EVENTS } from '../../constants/Event.js';
 import { RULE_GROUP } from '../../../3-domain/constants/Rule.js';
 import {
-    WebBookCollector, ChapterCollector, FileCollector,
+    WebBookCollector, ChapterCollector, FileCollector, CrawlerCollector,
     ListCollector, StorageCoverCollector, StorageCoverCacheCollector,
 } from './index.js';
 
@@ -10,7 +10,7 @@ import {
  * 采集执行时暴露给 descriptor 的查询能力（白名单）
  *
  * @typedef {Object} CollectQueryCtx
- * @property {(bookId: number) => Promise<{ Path: string }>}                          getBookDefaultSource
+ * @property {(bookId: number) => Promise<{ Path: string, Type:string}>}              getBookDefaultSource
  * @property {(chapterId: number, bookId: number) => Promise<{ Path: string }>}       getChapterDefaultSource
  * @property {(bookId: number) => Promise<string|undefined>}                          findBookName
  * @property {() => Promise<string|null>}                                             getLastListPage
@@ -27,7 +27,7 @@ import {
  * @property {string}                                                   msgEvent
  * @property {'puppeteer'|'http'}                                      scraperDefault
  * @property {Array<'webBook'|'chapter'|'storage'|'fileWriter'>}       services
- * @property {(payload: Object) => void}                    [prepare]
+ * @property {(payload: Object) => void}                    [prepare]   初始化
  * @property {(ctx: CollectQueryCtx, payload: Object) => Promise<string|null>} resolveURL
  */
 
@@ -58,6 +58,11 @@ export const COLLECT_DESCRIPTORS = {
         prepare: (payload) => { payload.mode = 'update'; },
         resolveURL: async (ctx, payload) => {
             const urlInfo = await ctx.getBookDefaultSource(payload.bookId);
+            if (urlInfo.Type === "chapter") {
+                payload.url = urlInfo.Path;
+                payload.taskType = TASK_TYPES.WEB_BOOK_CRAWLER;
+                return null;
+            }
             payload.sourcePage = urlInfo.Path;
             payload.bookName = (await ctx.findBookName(payload.bookId)) ?? '';
             return urlInfo.Path;
@@ -86,13 +91,33 @@ export const COLLECT_DESCRIPTORS = {
         },
     },
 
+    [TASK_TYPES.WEB_BOOK_CRAWLER]: {
+        Collector: CrawlerCollector,
+        ruleGroup: RULE_GROUP.CHAPTER_PAGE_ALL,
+        msgEvent: COLLECT_EVENTS.CRAWLER_CHAPTER,
+        scraperDefault: 'puppeteer',
+        services: ['webBook'],
+        resolveURL: async (ctx, payload) => {
+            if (payload.url) return payload.url;     //新增模式
+            if (payload.bookId) {                       //已有书籍继续爬模式
+                const urlInfo = await ctx.getBookDefaultSource(payload.bookId);
+                return urlInfo.Path;
+            }
+            return null;
+        },
+    },
+
     [TASK_TYPES.WEB_BOOK_LIST_CACHE]: {
         Collector: ListCollector,
         ruleGroup: RULE_GROUP.BOOK_LIST,
         msgEvent: COLLECT_EVENTS.UNKNOW,
         scraperDefault: 'puppeteer',
         services: ['storage'],
-        resolveURL: async (ctx, payload) => payload.url ?? await ctx.getLastListPage(),
+        resolveURL: async (ctx, payload) => {
+            let url = payload.url || await ctx.getLastListPage();
+            if (url != payload.url) payload.url = url;
+            return url;
+        },
     },
 
     [TASK_TYPES.STORAGE_COVER_COLLECT]: {

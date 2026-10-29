@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 export class WebBookChapterURLRepository {
     #WebBookChapterURLModel;
     #WebBookChapterModel;
@@ -39,6 +40,20 @@ export class WebBookChapterURLRepository {
                 required: true   // 转为 INNER JOIN，确保关联存在才返回     
             }],
             attributes: { exclude: ["createdAt", "updatedAt"] },
+            raw: true
+        })
+    }
+
+    async queryByURL(url) {
+        return this.#WebBookChapterURLModel.findAll({
+            include: [{
+                model: this.#WebBookChapterModel,
+                attributes: [], // 不需要查章节字段，只用来做过滤
+                required: true   // 转为 INNER JOIN，确保关联存在才返回   
+            }],
+            where: {
+                Path: { [Op.eq]: url }
+            },
             raw: true
         })
     }

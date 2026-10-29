@@ -52,7 +52,7 @@ export class PuppeteerDataFetcher extends IDataFetcher {
 
             if (!pageResult || pageResult.status() >= 400) {
                 const logFile = await promiseResult(promise, null, this.#config, url, page.url(), await page.content());
-                throw new AppError(`目标地址访问出错：地址-${url};状态-${pageResult?.status() ?? null}。\n参考：${logFile}`);
+                throw new AppError(`目标地址访问出错：地址-${url};状态-${pageResult?.status() ?? null}。\t参考-${logFile}`);
             }
 
             //数据分析采集

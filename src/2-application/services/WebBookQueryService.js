@@ -18,6 +18,10 @@ export class WebBookQueryService {
         return this.#webBookRepository.findAll();
     }
 
+    async getWebBook(bookId) {
+        return this.#webBookRepository.findByBookId(bookId);
+    }
+
     /**
      * 获取来源列表
      * @param {*} bookId 

@@ -74,6 +74,37 @@ export class TaskSchedulerService {
     }
 
     /**
+     * 爬虫方式获取书籍
+     * @param {*} setting 
+     * @returns 
+     */
+    async submitCreateWebBookByCrawlerTask(setting) {
+        try {
+            const task = new Task({
+                taskId: crypto.randomUUID(),
+                param: setting,
+                taskType: TASK_TYPES.WEB_BOOK_CRAWLER,
+                useDB: true,
+                maxTaskNum: 1,
+                callback: ({ data, error }) => {
+                    if (error) {
+                        logger.warn("【爬取书籍出错】", error);
+                        return;
+                    }
+                    let { result, message } = data;
+                    if (!result) logger.log(message);   //下载封面失败：下载图片失败: 
+                    else if (result) logger.debug(message);//缓存库存图书封面：XXXX
+                },
+            })
+
+            this.#workerPool.addTask(task);
+            return `已添加任务：${task.taskId}` //{ taskId: task.taskId };
+        } catch (error) {
+            throw new AppError("添加采集任务失败：" + error.message);
+        }
+    }
+
+    /**
      * 提交采集单章任务
      * @param {object} setting 
      * @returns 

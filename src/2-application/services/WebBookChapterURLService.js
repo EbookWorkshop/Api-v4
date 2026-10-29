@@ -44,6 +44,10 @@ export class WebBookChapterURLService {
         return result;
     }
 
+    async queryByURL(url) {
+        return this.#webBookChapterURLRepository.queryByURL(url);
+    }
+
     /**
      * 根据记录ID更新章节来源网址
      * @param {*} id 

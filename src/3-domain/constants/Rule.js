@@ -10,6 +10,8 @@ export const RULE_GROUP = {
     INFO_INDEX_PAGE: Symbol("INFO_INDEX_PAGE"),
     /** 章节正文 */
     CHAPTER_PAGE: Symbol("CHAPTER_PAGE"),
+    /** 章节正文 （包含全部信息）*/
+    CHAPTER_PAGE_ALL: Symbol("CHAPTER_PAGE_ALL"),
     /** 获取书本类表 */
     BOOK_LIST: Symbol("BOOK_LIST"),
     /** 更新书本列表封面 */
@@ -18,11 +20,12 @@ export const RULE_GROUP = {
 export const RuleName = {
     BookName: "BookName",
     ChapterList: "ChapterList",
-    CapterTitle: "CapterTitle",
+    ChapterTitle: "ChapterTitle",
     Content: "Content",
     BookCover: "BookCover",
     IndexNextPage: "IndexNextPage",
     ContentNextPage: "ContentNextPage",
+    ChapterNextPage: "ChapterNextPage",
     Author: "Author",
     Introduction: "Introduction",
     BookList: "BookList",
@@ -50,9 +53,15 @@ export const RULE_BOOK_LIST = [
 ]
 export const RULE_INFO_INDEX = RULE_INFO.concat(RULE_INDEX)
 export const RULE_CHAPTER = [
-    RuleName.CapterTitle,
+    RuleName.ChapterTitle,
     RuleName.Content,
     RuleName.ContentNextPage,
+]
+export const CHAPTER_PAGE_ALL = [
+    RuleName.ChapterTitle,
+    RuleName.Content,
+    RuleName.ContentNextPage,
+    RuleName.ChapterNextPage,
 ]
 export const RULE_STORAGE_COVER = [RuleName.BookCover];
 
@@ -61,9 +70,10 @@ export const RULE_GROUP_SETTING = {
     [RULE_GROUP.INDEX_PAGE]: RULE_INDEX,
     [RULE_GROUP.INFO_INDEX_PAGE]: RULE_INFO_INDEX,
     [RULE_GROUP.CHAPTER_PAGE]: RULE_CHAPTER,
+    [RULE_GROUP.CHAPTER_PAGE_ALL]: CHAPTER_PAGE_ALL,
     [RULE_GROUP.BOOK_LIST]: RULE_BOOK_LIST,
     [RULE_GROUP.STORAGE_COVER]: RULE_STORAGE_COVER,
 }
 
 // export const RULE_ALL = RULE_INFO_INDEX.concat(RULE_CHAPTER).concat(RULE_BOOK_LIST)
-export const RULE_ALL = [...RULE_INFO_INDEX, ...RULE_CHAPTER, ...RULE_BOOK_LIST];
+export const RULE_ALL = [...RULE_INFO_INDEX, ...CHAPTER_PAGE_ALL, ...RULE_BOOK_LIST];
