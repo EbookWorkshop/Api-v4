@@ -14,6 +14,7 @@ export class WebBookCollector extends ICollector {
     #setting;
     #emitter;
     #webBookService;
+    /** @type{import('../WebBookChapterService.js').WebBookChapterService} */
     #webBookChapterService;
     #webBookChapterURLService;
     #coverService;
@@ -89,11 +90,7 @@ export class WebBookCollector extends ICollector {
 
         //存储到数据库
         const bookId = await this.#save(bookResult, { isEmbedBookName, sourcePage, infoPage });
-        return this.#successHandle(
-            payload,
-            { bookId, bookName: bookResult.BookName },
-            `已创建书籍《${bookResult.BookName}》`
-        );
+        return this.#successHandle({ bookId, bookName: bookResult.BookName, ...payload }, bookResult.ChapterList.map(i => i.text), `已创建书籍《${bookResult.BookName}》`);
     }
 
     /**
@@ -117,12 +114,15 @@ export class WebBookCollector extends ICollector {
             const curHost = getHost(sourcePage);
             let testCount = Math.min(hasChaptList.length, 800);
             const tempURLs = hasChaptList.slice(0, testCount).flatMap(t => t.urls);
-            let diffSource = tempURLs.some(u => !u.includes(curHost));
+            let diffSource = tempURLs.some(u => !u.includes(curHost ?? ""));
+            /**
+             * @type {Array<{text: string, url?: string, urls?: string[]}>}
+             */
             let excludeChapters = hasChaptList.map(({ webTitle, urls }) => ({ text: webTitle, urls }));
             const key = ["text"];           //不同源下的比较
             if (!diffSource) {             //同源情况下的比较
                 key.push("url");
-                excludeChapters = excludeChapters.map(({ text, urls }) => ({ text, url: urls[0] }));
+                excludeChapters = excludeChapters.map(({ text, urls }) => ({ text, url: urls?.[0] }));
             }
             //求差集
             chapterList = difference(chapterList, excludeChapters, key);
@@ -162,12 +162,8 @@ export class WebBookCollector extends ICollector {
         }
 
         //去重后的结果
-        if (chapterList.length > 0) await this.#saveBatchChapter(bookId, chapterList);
-        return this.#successHandle(
-            option,
-            { addedCount: chapterList.length },
-            `已完成章节合并，新增章节：${chapterList.length}`
-        );
+        if (chapterList.length > 0) await this.#webBookChapterService.batchCreate(bookId, chapterList);
+        return this.#successHandle(option, chapterList.map(i => i.text), `已完成章节合并，新增章节：${chapterList.length}`);
     }
 
     /**
@@ -309,10 +305,6 @@ export class WebBookCollector extends ICollector {
      */
     async #save(bookData, option) {
         return await this.#webBookService.createBook(bookData, option);
-    }
-
-    async #saveBatchChapter(bookId, chapterList) {
-        return this.#webBookChapterService.batchCreate(bookId, chapterList);
     }
 
     /**

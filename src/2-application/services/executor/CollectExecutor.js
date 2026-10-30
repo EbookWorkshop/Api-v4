@@ -7,7 +7,7 @@ import { AxiosDataFetcher, PuppeteerDataFetcher, RuleEngine } from "../../../4-i
 import { EventManager } from "../../../4-infrastructure/event/EventManager.js"
 import { RuleForWebQueryService } from '../RuleForWebQueryService.js';
 
-// import { ChapterQueryService } from "../ChapterQueryService.js";
+import { ChapterQueryService } from "../ChapterQueryService.js";
 import { ChapterCommandService } from "../ChapterCommandService.js";
 import { BookQueryService } from "../BookQueryService.js";
 import { WebBookQueryService } from "../WebBookQueryService.js";
@@ -140,7 +140,7 @@ export class CollectExecutor extends ITaskExecutor {
 
     #createChapterServices() {
         return {
-            // chapQueryServices: new ChapterQueryService(this.#repositories.chapterRepository),
+            chapQueryServices: new ChapterQueryService(this.#repositories.chapterRepository, null),
             index: { find: this.#repositories.indexRepository.findById.bind(this.#repositories.indexRepository) },
             chapCommaServices: new ChapterCommandService(this.#repositories.chapterRepository, this.#repositories.indexRepository, this.#repositories.volumeRepository, this.#transactionManager)
         }

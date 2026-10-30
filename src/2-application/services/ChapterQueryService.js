@@ -1,10 +1,10 @@
-
 import { ChapterRepository } from '../../4-infrastructure/repositories/ChapterRepository.js';
 import { AppError } from "../../5-shared/errors/index.js"
 
 export class ChapterQueryService {
     /** @type {ChapterRepository} */
     #chapterRepository;
+    /** @type {import('./TextCleanupService.js').TextCleanupService|null} */
     #textCleanup;
 
     /**
@@ -113,6 +113,10 @@ export class ChapterQueryService {
         return this.#chapterRepository.findIntroduction(bookId);
     }
 
+    async getBookByChapterIds(ids) {
+        return this.#chapterRepository.getBookByChapterIds(ids)
+    }
+
     /**
      * 清洗文章
      * 根据规则替换文章内容
@@ -121,9 +125,10 @@ export class ChapterQueryService {
      * @returns 
      */
     async #cleanChapter(bookId, chapter) {
+        if (!this.#textCleanup) throw new AppError("未能正确初始化[ChapterQueryService]，需要注入[TextCleanupService]。");
+
         const Title = await this.#textCleanup.cleanup(bookId, chapter.Title);
         const Content = await this.#textCleanup.cleanup(bookId, chapter.Content);
-
         return { ...chapter, Title, Content };
     }
 }

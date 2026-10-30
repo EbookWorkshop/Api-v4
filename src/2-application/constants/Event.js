@@ -57,7 +57,7 @@ export const EXPORT_EVENTS = {
  */
 export const COLLECT_EVENTS = {
     UNKNOW: "Unknow.Task",      //未定义任务类型
-    CREATE_BOOK: "Create.Book", //
+    CREATE_BOOK: "Create.Book", //创建书籍成功
     UPDATE_INDEX: "Update.Index",    //更新目录
     CRAWLER_CHAPTER: "Crawler.Chapter",   //以爬虫方式获取一本书的信息
     UPDATE_CHAPTER: "Update.Chapter",       //章节采集

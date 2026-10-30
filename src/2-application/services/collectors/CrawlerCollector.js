@@ -1,12 +1,11 @@
 import { ICollector } from "../../ports/ICollector.js";
-import { RULE_INDEX, RULE_INFO, RuleName } from "../../../3-domain/constants/Rule.js";
+import { RuleName } from "../../../3-domain/constants/Rule.js";
 import { logger } from "../../../5-shared/logging/index.js";
 import { AppError, normalizeError } from "../../../5-shared/errors/index.js";
 import { COLLECT_EVENTS } from "../../constants/Event.js";
-import { getHost } from "../../../5-shared/utils/site.js";
+// import { getHost } from "../../../5-shared/utils/site.js";
 
-// const TitleReg = "第[^章回]+[章回](\\s+)?";
-const MAX_TRY_TIME = 15;
+const MAX_TRY_TIME = 250;
 
 export class CrawlerCollector extends ICollector {
     // #rules;
@@ -15,30 +14,27 @@ export class CrawlerCollector extends ICollector {
     /** @type{import('../../events/CollectEventEmitter.js').CollectEventEmitter} */
     #emitter;
     #bookQueryService;
-    // #chapterCommandService;
+    #chapterQueryService;
     #webBookService;
     #webBookQueryService;
     /** @type{import('../../services/WebBookChapterService.js').WebBookChapterService} */
     #webBookChapterService;
     #webBookChapterURLService;
-    // #coverService;
 
     #addChapt;
 
     constructor(config, rules, fetcher, services) {
         super(config, rules, fetcher, services);
-        // this.#rules = rules;
         this.#fetcher = fetcher;
         this.#emitter = services.emitter;
         this.#bookQueryService = services.bookQueryService;
-        // this.#chapterCommandService = services.chapCommaServices;
+        this.#chapterQueryService = services.chapQueryServices;
         this.#webBookService = services.webBookService;
         this.#webBookQueryService = services.webBookQueryService;
         this.#webBookChapterService = services.webBookChapterService;
         this.#webBookChapterURLService = services.webBookChapterURLService;
-        // this.#coverService = services.coverService;
-        // this.#coverService.dataFetcher = fetcher;
     }
+
     /**
      * 获取数据
      * @param {{ timeout, userAgent, dictionaries, rules }} setting 
@@ -72,6 +68,10 @@ export class CrawlerCollector extends ICollector {
                 book = b.book;
                 webbook = b.webbook;
             }
+
+            payload.bookId = book.id;
+            payload.bookName = book.BookName;
+            // payload.sourcePage = curURL ?? url;
 
             let tryTime = 0
             while (curURL && tryTime++ < MAX_TRY_TIME) {
@@ -127,17 +127,16 @@ export class CrawlerCollector extends ICollector {
         //存到数据库
         const data = await this.#webBookChapterURLService.queryByURL(url);
         if (data.length > 0) {
-            console.log(data)
-            // data[0].WebBookChapterId
+            let ids = data.map(i => i["WebBookChapter.IndexId"]);
+            let bookData = await this.#chapterQueryService.getBookByChapterIds(ids);
+            let bookIds = new Set(bookData.map(i => i.BookId));
+            if (bookIds.has(bookId)) return urlPage;//已在本书存在重复，跳过存储
         }
-
         await this.#webBookChapterService.batchCreate(bookId, [{ text: chapTitle, url, order: -1, content: pageCtx.join("") }]);
-        console.debug("爬虫录入章节：", chapTitle);
+
         this.#addChapt.push(chapTitle);
         return urlPage;
     }
-
-
 
     /**
      * 提取当前 payload 的业务上下文
@@ -146,14 +145,13 @@ export class CrawlerCollector extends ICollector {
         return {
             bookId: payload.bookId,
             bookName: payload.bookName,
-            sourcePage: payload.sourcePage,
-            infoPage: payload.infoPage,
+            url: payload.url,
         };
     }
 
     #successHandle(payload, data, message) {
         const ctx = this.#resolveCtx(payload);
-        this.#emitter?.success(COLLECT_EVENTS.CREATE_BOOK, { ctx, data, message });
+        this.#emitter?.success(COLLECT_EVENTS.CRAWLER_CHAPTER, { ctx, data, message });
         // 保留对上游的兼容返回：result 中保留 data，接收端已无需从此处拆包
         return { ...payload, result: data, message };
     }
@@ -163,7 +161,7 @@ export class CrawlerCollector extends ICollector {
         if (error.parent) error = error.parent;
         else if (error.original) error = error.original
         const normalized = normalizeError(error);
-        this.#emitter?.failure(COLLECT_EVENTS.CREATE_BOOK, { ctx, error: normalized, message });
+        this.#emitter?.failure(COLLECT_EVENTS.CRAWLER_CHAPTER, { ctx, error: normalized, message });
         // 兼容返回：原代码此处的 result 里包含 error 字段供上游判错
         return { ...payload, result: { error: normalized }, message };
     }

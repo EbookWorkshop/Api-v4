@@ -56,7 +56,7 @@ export class CollectEventEmitter {
     }
 
     /**
-     * 任务成功事件    
+     * 【向前端发送】任务成功事件    
      * 跨线程发向主线程用的事件发送方法
      * @param {string} event 向前端发送的socket事件名
      */
@@ -65,7 +65,7 @@ export class CollectEventEmitter {
     }
 
     /**
-     * 任务失败事件
+     * 【向前端发送】任务失败事件
      * 跨线程发向主线程用的事件发送方法
      * @param {string} event 向前端发送的socket事件名
      * @param {Object} [options]

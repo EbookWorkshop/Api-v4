@@ -48,8 +48,8 @@ export class WebBookChapterURLRepository {
         return this.#WebBookChapterURLModel.findAll({
             include: [{
                 model: this.#WebBookChapterModel,
-                attributes: [], // 不需要查章节字段，只用来做过滤
-                required: true   // 转为 INNER JOIN，确保关联存在才返回   
+                attributes: ["IndexId"],
+                required: true
             }],
             where: {
                 Path: { [Op.eq]: url }

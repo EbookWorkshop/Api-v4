@@ -319,11 +319,12 @@ export class TaskSchedulerService {
             useDB: true,
             maxTaskNum: 2,      // 避免并发写同一批记录
             callback: ({ data, error }) => {
-                const { result, message, payload } = data;
                 if (error) {
-                    logger.warn("【更新封面出错】", error.message, `《${payload.record.BookName}》`, payload.record.Source);
+                    let record = data?.payload?.record;
+                    logger.warn("【下载封面出错】", error.message, `《${record?.BookName}》`, record?.CoverImage);
                     return;
                 }
+                const { result, message } = data;
                 if (!result) logger.log(message); //已更新《XXXX》的封面：XXX
                 else if (result) logger.debug(message)
             },
@@ -347,11 +348,12 @@ export class TaskSchedulerService {
                 useDB: true,
                 maxTaskNum: 1,           // 避免并发写入
                 callback: ({ data, error }) => {
-                    const { result, message, payload } = data;
                     if (error) {
-                        logger.warn("【下载封面出错】", error.message, `《${payload.record.BookName}》`, payload.record.CoverImage);
+                        let record = data?.payload?.record;
+                        logger.warn("【下载封面出错】", error.message, `《${record?.BookName}》`, record?.CoverImage);
                         return;
                     }
+                    const { result, message } = data;
                     if (!result) logger.log(message);   //下载封面失败：下载图片失败: 
                     else if (result) logger.debug(message);//缓存库存图书封面：XXXX
                 },

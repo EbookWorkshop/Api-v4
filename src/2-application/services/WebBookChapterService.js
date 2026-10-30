@@ -18,7 +18,7 @@ export class WebBookChapterService {
     /**
      * 批量创建章节
      * @param {number} bookId 
-     * @param {Array<{text:string,order:number,url:string;content:string}>} ChapterList 
+     * @param {Array<{text: string, url: string, content?: string, order?: number}>} ChapterList
      * @param {{ transaction?: import('sequelize').Transaction }} [options]
      */
     async batchCreate(bookId, ChapterList, { transaction } = {}) {
@@ -57,10 +57,9 @@ export class WebBookChapterService {
     /**
      * 
      * @param {*} bookId 
-     * @returns {Promise<Array<{title:string,ruls:Array<string>}>>}
+     * @returns {Promise<Array<{title:string,urls:Array<string>,webTitle:string,WebBookChapterId:number|null}>>}
      */
     async findChapterWithURL(bookId) {
         return this.#webBookChapterRepository.findChapterWithURL(bookId);
     }
-
 }

@@ -278,10 +278,32 @@ export function registerGlobalBroadcasts(io, services, eventManager) {
             ));
         }
 
-        const { bookId, bookName } = env.data;
+        const { bookId, bookName } = env.ctx;
         io.emit('WebBook.Create.Finish', {
             bookId,
             bookName,
+            chapters: env.data,
+            message: env.message,
+        });
+    });
+
+    eventManager.on(COLLECT_EVENTS.CRAWLER_CHAPTER, (env) => {
+        if (!env.ok) {
+            return eventManager.messageToClient(new Message(
+                `${env.error.message}\n采集来源：${env.ctx.url || '未知'}`,
+                "notice",
+                {
+                    title: env.message || "创建书籍失败",
+                    avatar: "error",
+                }
+            ));
+        }
+
+        const { bookId, bookName } = env.ctx;
+        io.emit('WebBook.Create.Finish', {
+            bookId,
+            bookName,
+            chapters: env.data,
             message: env.message,
         });
     });

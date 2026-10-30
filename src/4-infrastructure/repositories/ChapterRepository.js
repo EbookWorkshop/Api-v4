@@ -261,6 +261,16 @@ export class ChapterRepository {
         });
     }
 
+    async getBookByChapterIds(ids) {
+        return this.#ChapterModel.findAll({
+            where: {
+                id: { [Op.in]: ids }
+            },
+            attributes: ["BookId","id"],
+            raw: true
+        })
+    }
+
     /*************
      *  修改 
      *************/

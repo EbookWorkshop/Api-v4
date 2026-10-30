@@ -96,7 +96,7 @@ export const COLLECT_DESCRIPTORS = {
         ruleGroup: RULE_GROUP.CHAPTER_PAGE_ALL,
         msgEvent: COLLECT_EVENTS.CRAWLER_CHAPTER,
         scraperDefault: 'puppeteer',
-        services: ['webBook'],
+        services: ['webBook','chapter'],
         resolveURL: async (ctx, payload) => {
             if (payload.url) return payload.url;     //新增模式
             if (payload.bookId) {                       //已有书籍继续爬模式

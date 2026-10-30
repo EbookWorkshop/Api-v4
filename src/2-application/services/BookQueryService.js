@@ -35,5 +35,4 @@ export class BookQueryService {
     async getBook(bookId) {
         return this.#ebookRepository.findById(bookId);
     }
-
 }
